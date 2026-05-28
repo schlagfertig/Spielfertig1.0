@@ -4,8 +4,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
 // Minimal Supabase REST helper
 const sb = {
-headers: () => { const t = sb._token || SUPABASE_KEY; return { "Content-Type": "application
-_token: null,
+headers: () => { const t = sb._token || SUPABASE_KEY; return { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + t }; },
 async query(table, options = {}) {
 let url = SUPABASE_URL + "/rest/v1/" + table + "?";
 if (options.select) url += "select=" + encodeURIComponent(options.select) + "&";
