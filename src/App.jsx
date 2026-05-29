@@ -196,6 +196,7 @@ function AuthScreen({ onAuth }) {
   const handle = async () => {
     if (!email || !password) { setError("Bitte E-Mail und Passwort eingeben."); return; }
     setLoading(true); setError("");
+    await new Promise(r => setTimeout(r, 300)); // Safari iOS fix
     try {
       const res = mode === "login" ? await sb.auth.signIn(email, password) : await sb.auth.signUp(email, password);
       if (res.error || res.error_description || res.msg) { setError(JSON.stringify(res).substring(0, 200)); }
