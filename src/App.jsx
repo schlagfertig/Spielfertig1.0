@@ -4,17 +4,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
 // Fetch with timeout
 const fetchWithTimeout = async (url, options, ms=8000) => {
-const controller = new AbortController();
-const id = setTimeout(() => controller.abort(), ms);
-try {
-const res = await fetch(url, { ...options, signal: controller.signal });
-clearTimeout(id);
-return res;
-} catch(e) {
-clearTimeout(id);
-if (e.name === "AbortError") throw new Error("Timeout – Supabase antwortet nicht");
-throw e;
-}
+return fetch(url, options);
 };
 // Minimal Supabase REST helper
 const sb = {
@@ -176,11 +166,6 @@ const handle = async () => {
 if (!email || !password) { setError("Bitte E-Mail und Passwort eingeben."); return; }
 setLoading(true); setError("");
 try {
-// Test connection first
-setError("Verbinde mit Supabase...");
-const testRes = await fetchWithTimeout(SUPABASE_URL + "/auth/v1/settings", { headers: {
-const testData = await testRes.json();
-setError("Verbunden! Registriere...");
 const res = mode === "login" ? await sb.auth.signIn(email, password) : await sb.auth.si
 if (res.error || res.error_description || res.msg) { setError(JSON.stringify(res).subst
 else if (res.access_token) {
@@ -194,13 +179,13 @@ setError("Bestätigungs-E-Mail gesendet! Bitte bestätigen, dann einloggen.");
 } catch(e) { setError("Fehler: " + e.message + " | URL: " + SUPABASE_URL.substring(0,30))
 setLoading(false);
 };
+}}>ZEI
 return (
 <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column",
 <div style={{ marginBottom:32, textAlign:"center" }}>
 <SealIcon size={56}/>
 <div style={{ color:C.white, fontWeight:900, fontSize:24, fontFamily:"'Space Mono',mo
-<div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.2em", marginTop:4 }}>ZEI
-</div>
+<div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.2em", marginTop:4 </div>
 <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:10, padding
 <SealLine/>
 <div style={{ display:"flex", gap:6, margin:"16px 0" }}>
@@ -213,7 +198,7 @@ return (
 <Field value={password} onChange={setPass} placeholder="Passwort" type="password"/>
 {error && <div style={{ color:mode==="register"&&error.includes("Bestätigung")?C.te
 <Btn full onClick={handle} disabled={loading}>
-{loading ? <Spinner/> : mode==="login" ? "Anmelden" : "Konto erstellen"}
+{loading ? " Lädt..." : mode==="login" ? "Anmelden" : "Konto erstellen"}
 </Btn>
 </div>
 </div>
@@ -265,9 +250,9 @@ style={{ background:"transparent", border:pulseBorder, borderRadius:"50%", width
 <div style={{ width:14, height:14, borderRadius:"50%", background:pulseColor, trans
 </button>
 )}
-overfl
 <div style={{ flex:1, minWidth:0 }}>
 <div style={{ fontWeight:600, color:C.white, fontSize:14, whiteSpace:"nowrap", <div style={{ color:C.gray, fontSize:12 }}>
+overfl
 {song.artist}
 {song.bpm>0&&<span style={{ color:active?C.teal:C.grayDim, fontFamily:"'Space Mono'
 </div>
@@ -313,6 +298,7 @@ setTimeout(()=>w.print(), 400);
 // ── AI Set Notes ───────────────────────────────────────────────────────────
 function AISetNotes({ setName, songs }) {
 const [notes, setNotes] = useState(""); const [loading, setLoading] = useState(false); cons
+header
 const generate = async () => {
 setLoading(true);
 const list = songs.map((s,i)=>`${i+1}. ${s.title} – ${s.artist} (${s.bpm} BPM, Drummer: $
@@ -323,7 +309,6 @@ const d = await res.json();
 setNotes(d.content?.[0]?.text || "Keine Analyse.");
 } catch { setNotes("Verbindungsfehler."); }
 setLoading(false);
-header
 };
 return (
 <div>
@@ -745,7 +730,6 @@ onMouseEnter={e=>e.currentTarget.style.borderColor="#2a2a2a"} onMouseLeave={e=>e
 {confirm&&<Confirm msg={`Gig „${confirm.item.name}" löschen?`} onOk={async()=>{ await s
 );
 }
-Mono',
 // ── Band Detail ────────────────────────────────────────────────────────────
 function BandDetail({ band, songs, gigs, playlists, playlistSongs, onBack, onRefresh, show })
 const [tab, setTab] = useState("songs");
@@ -754,7 +738,8 @@ return (
 <header style={{ borderBottom:"1px solid #111", background:"rgba(0,0,0,.95)", backdropF
 <div style={{ maxWidth:720, margin:"0 auto", padding:"0 16px", height:50, display:"fl
 <Btn variant="ghost" size="sm" onClick={onBack}>←</Btn>
-<div style={{ color:C.white, fontWeight:800, fontSize:16, fontFamily:"'Space </div>
+<div style={{ color:C.white, fontWeight:800, fontSize:16, fontFamily:"'Space Mono',
+</div>
 <div style={{ maxWidth:720, margin:"0 auto", padding:"0 16px 10px", display:"flex", g
 {[{key:"songs",label:" Songs"},{key:"setlist",label:" Setlist"}].map(({key,labe
 <button key={key} onClick={()=>setTab(key)} style={{ flex:1, background:tab===key
