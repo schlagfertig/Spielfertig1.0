@@ -176,6 +176,11 @@ const handle = async () => {
 if (!email || !password) { setError("Bitte E-Mail und Passwort eingeben."); return; }
 setLoading(true); setError("");
 try {
+// Test connection first
+setError("Verbinde mit Supabase...");
+const testRes = await fetchWithTimeout(SUPABASE_URL + "/auth/v1/settings", { headers: {
+const testData = await testRes.json();
+setError("Verbunden! Registriere...");
 const res = mode === "login" ? await sb.auth.signIn(email, password) : await sb.auth.si
 if (res.error || res.error_description || res.msg) { setError(JSON.stringify(res).subst
 else if (res.access_token) {
@@ -189,13 +194,13 @@ setError("Bestätigungs-E-Mail gesendet! Bitte bestätigen, dann einloggen.");
 } catch(e) { setError("Fehler: " + e.message + " | URL: " + SUPABASE_URL.substring(0,30))
 setLoading(false);
 };
-}}>ZEI
 return (
 <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column",
 <div style={{ marginBottom:32, textAlign:"center" }}>
 <SealIcon size={56}/>
 <div style={{ color:C.white, fontWeight:900, fontSize:24, fontFamily:"'Space Mono',mo
-<div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.2em", marginTop:4 </div>
+<div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.2em", marginTop:4 }}>ZEI
+</div>
 <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:10, padding
 <SealLine/>
 <div style={{ display:"flex", gap:6, margin:"16px 0" }}>
@@ -212,8 +217,8 @@ return (
 </Btn>
 </div>
 </div>
-</div>
-<div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em", marginTop:24 }}>THO
+<div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em", marginTop:24 </div>
+}}>THO
 );
 }
 // ── Metronome ──────────────────────────────────────────────────────────────
@@ -568,8 +573,8 @@ return (
 <Btn full onClick={handleUpdate}>Speichern</Btn>
 </div>
 </Modal>}
-</div>
 {confirm&&<Confirm msg={`„${confirm.title}" wirklich löschen?`} onOk={()=>handleDelete(
+</div>
 );
 }
 // ── Playlist Editor ────────────────────────────────────────────────────────
@@ -736,8 +741,8 @@ onMouseEnter={e=>e.currentTarget.style.borderColor="#2a2a2a"} onMouseLeave={e=>e
 </div>
 ))}
 </div>
-{confirm&&<Confirm msg={`Gig „${confirm.item.name}" löschen?`} onOk={async()=>{ await s
 </div>
+{confirm&&<Confirm msg={`Gig „${confirm.item.name}" löschen?`} onOk={async()=>{ await s
 );
 }
 Mono',
