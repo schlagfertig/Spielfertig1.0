@@ -744,59 +744,50 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         {songsInSet.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:24, fontSize:13 }}>Keine Songs in diesem Set</div>
         :<div style={{ display:"flex", flexDirection:"column", gap:5 }}>
           {songsInSet.map(song=>(
-            <div key={song.id} style={{display:"flex",alignItems:"center",gap:4}}>
-              {/* Up/Down arrows */}
-              <div style={{display:"flex",flexDirection:"column",gap:2,flexShrink:0}}>
-                <button
-                  disabled={song.position===1||saving}
-                  onClick={async(e)=>{
-                    e.stopPropagation(); e.preventDefault();
-                    if(song.position===1) return;
-                    setSaving(true);
-                    const above=songsInSet.find(s=>s.position===song.position-1);
-                    if(above){
-                      await sb.update("playlist_songs",{position:song.position},"id=eq."+above.id);
-                      await sb.update("playlist_songs",{position:song.position-1},"id=eq."+song.id);
-                    }
-                    await onRefresh(); setSaving(false);
-                  }}
-                  style={{background:"transparent",border:"none",color:song.position===1?C.grayDim:C.teal,cursor:song.position===1?"default":"pointer",fontSize:16,padding:"2px 6px",lineHeight:1}}
-                >▲</button>
-                <button
-                  disabled={song.position===songsInSet.length||saving}
-                  onClick={async(e)=>{
-                    e.stopPropagation(); e.preventDefault();
-                    if(song.position===songsInSet.length) return;
-                    setSaving(true);
-                    const below=songsInSet.find(s=>s.position===song.position+1);
-                    if(below){
-                      await sb.update("playlist_songs",{position:song.position},"id=eq."+below.id);
-                      await sb.update("playlist_songs",{position:song.position+1},"id=eq."+song.id);
-                    }
-                    await onRefresh(); setSaving(false);
-                  }}
-                  style={{background:"transparent",border:"none",color:song.position===songsInSet.length?C.grayDim:C.teal,cursor:song.position===songsInSet.length?"default":"pointer",fontSize:16,padding:"2px 6px",lineHeight:1}}
-                >▼</button>
-              </div>
+            <div key={song.id} style={{display:"flex",alignItems:"center",gap:6}}>
               <div style={{flex:1}}>
-                <SongRow song={song} pos={song.position}
-                  onDelete={()=>removeFromSet(song)}/>
+                <SongRow song={song} pos={song.position} onDelete={()=>removeFromSet(song)}/>
               </div>
-              {/* Move to other set */}
-              <select
-                value={activeSet}
-                onChange={async e=>{
-                  const newSet=e.target.value;
-                  if(newSet===activeSet) return;
-                  setSaving(true);
-                  const newPos=mySongs.filter(ps=>ps.set_name===newSet&&ps.playlist_id===playlist.id).length+1;
-                  await sb.update("playlist_songs",{set_name:newSet,position:newPos},"id=eq."+song.id);
-                  await onRefresh(); setSaving(false);
-                }}
-                style={{background:"#111",border:"1px solid #333",color:C.teal,borderRadius:4,padding:"4px 6px",fontSize:11,fontFamily:"inherit",cursor:"pointer",flexShrink:0}}
-              >
-                {SETS.map(s=><option key={s} value={s}>{s==="Set 1"?"→S1":s==="Set 2"?"→S2":s==="Set 3"?"→S3":"→Zug"}</option>)}
-              </select>
+              {/* Move: set + position */}
+              <div style={{display:"flex",gap:4,flexShrink:0,alignItems:"center"}}>
+                <select
+                  value={song.set_name}
+                  onChange={async e=>{
+                    e.stopPropagation();
+                    const newSet=e.target.value;
+                    if(newSet===song.set_name) return;
+                    setSaving(true);
+                    const newPos=mySongs.filter(ps=>ps.set_name===newSet&&ps.playlist_id===playlist.id).length+1;
+                    await sb.update("playlist_songs",{set_name:newSet,position:newPos},"id=eq."+song.id);
+                    await onRefresh(); setSaving(false);
+                  }}
+                  style={{background:"#111",border:"1px solid #333",color:C.teal,borderRadius:4,padding:"5px 6px",fontSize:11,fontFamily:"inherit",cursor:"pointer"}}
+                >
+                  {SETS.map(s=><option key={s} value={s}>{s}</option>)}
+                </select>
+                <input
+                  type="number"
+                  min="1"
+                  max={mySongs.filter(ps=>ps.set_name===song.set_name&&ps.playlist_id===playlist.id).length}
+                  defaultValue={song.position}
+                  onBlur={async e=>{
+                    e.stopPropagation();
+                    const newPos=parseInt(e.target.value);
+                    if(!newPos||newPos===song.position) return;
+                    setSaving(true);
+                    // Shift other songs
+                    const setItems=[...mySongs.filter(ps=>ps.set_name===song.set_name&&ps.playlist_id===playlist.id)].sort((a,b)=>a.position-b.position);
+                    const filtered=setItems.filter(ps=>ps.id!==song.id);
+                    const clamped=Math.max(1,Math.min(newPos,setItems.length));
+                    filtered.splice(clamped-1,0,song);
+                    for(let i=0;i<filtered.length;i++){
+                      await sb.update("playlist_songs",{position:i+1},"id=eq."+filtered[i].id);
+                    }
+                    await onRefresh(); setSaving(false);
+                  }}
+                  style={{background:"#111",border:"1px solid #333",color:C.white,borderRadius:4,padding:"5px 4px",fontSize:12,fontFamily:"'Space Mono',monospace",width:40,textAlign:"center"}}
+                />
+              </div>
             </div>
           ))}
         </div>}
