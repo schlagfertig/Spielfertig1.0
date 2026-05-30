@@ -606,6 +606,18 @@ function SongDatabase({ band, songs, onRefresh, show }) {
         </div>
       </div>
       <Field value={search} onChange={setSearch} placeholder="Suchen…"/>
+      <div style={{display:"flex",gap:6}}>
+        {[{k:"none",l:"Standard"},{k:"title",l:"A–Z Titel"},{k:"artist",l:"A–Z Interpret"}].map(({k,l})=>(
+          <button key={k} onClick={()=>setSortBy(k)} style={{
+            flex:1, background:sortBy===k?C.teal:"transparent",
+            color:sortBy===k?"#000":C.gray,
+            border:"1px solid "+(sortBy===k?C.teal:"#222"),
+            borderRadius:4, padding:"5px 0", fontSize:11, fontWeight:700,
+            letterSpacing:"0.06em", textTransform:"uppercase",
+            cursor:"pointer", fontFamily:"inherit"
+          }}>{l}</button>
+        ))}
+      </div>
       <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:15 }}>
         <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Neuer Song</div>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:8 }}>
