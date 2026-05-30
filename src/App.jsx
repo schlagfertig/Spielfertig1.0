@@ -704,6 +704,51 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
     setDragId(null); await onRefresh(); setSaving(false);
   };
 
+  // ── GIG MODE ────────────────────────────────────────────────
+  if (gigMode) {
+    const drummerColor = (d) => d==="Ron" ? C.red : d==="Tom" ? C.teal : C.gray;
+    return (
+      <div style={{position:"fixed",inset:0,background:"#000",zIndex:200,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        {/* Gig header */}
+        <div style={{background:"#0a0a0a",borderBottom:"1px solid #1a1a1a",padding:"12px 20px",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+          <button onClick={()=>setGigMode(false)} style={{background:"transparent",border:"none",color:C.teal,cursor:"pointer",fontSize:20,padding:"4px 8px"}}>✕</button>
+          <div style={{flex:1,color:C.white,fontWeight:800,fontSize:18,fontFamily:"'Space Mono',monospace"}}>{playlist.name}</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {SETS.map(set=>(
+              <button key={set} onClick={()=>{setActiveSet(set);}} style={{
+                background:activeSet===set?C.teal:"transparent",
+                color:activeSet===set?"#000":C.gray,
+                border:"1px solid "+(activeSet===set?C.teal:"#333"),
+                borderRadius:4,padding:"6px 14px",fontSize:12,fontWeight:700,
+                letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer",fontFamily:"inherit"
+              }}>{set} ({setCounts[set]})</button>
+            ))}
+          </div>
+        </div>
+        {/* Song list */}
+        <div style={{flex:1,overflowY:"auto",padding:"16px 20px",display:"flex",flexDirection:"column",gap:8}}>
+          {songsInSet.map((song,i)=>{
+            const st=dStyle(song.drummer);
+            return (
+              <div key={song.id} style={{background:st.bg,border:"1px solid "+st.border,borderRadius:8,padding:"14px 18px",display:"flex",alignItems:"center",gap:14}}>
+                <div style={{color:C.grayDim,fontSize:16,fontFamily:"'Space Mono',monospace",width:28,textAlign:"right",flexShrink:0}}>{song.position}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{color:C.white,fontWeight:800,fontSize:22,lineHeight:1.2}}>{song.title}</div>
+                  <div style={{color:C.gray,fontSize:15,marginTop:2}}>{song.artist}</div>
+                  {song.specialties&&<div style={{color:C.grayDim,fontSize:13,fontStyle:"italic",marginTop:2}}>{song.specialties}</div>}
+                </div>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6,flexShrink:0}}>
+                  {song.bpm>0&&<GigMetronome bpm={song.bpm}/>}
+                  {song.drummer&&<div style={{color:drummerColor(song.drummer),border:"1px solid "+drummerColor(song.drummer),borderRadius:3,padding:"3px 10px",fontSize:13,fontWeight:700,letterSpacing:"0.08em"}}>{song.drummer}</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
       <div style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -713,6 +758,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           <div style={{ color:C.grayDim, fontSize:11 }}>{mySongs.length} Songs gesamt</div>
         </div>
         <Btn variant="outline" size="sm" onClick={()=>exportPDF(playlist,allSongs,playlistSongs,bandName)}>🖨 PDF</Btn>
+        <Btn variant="primary" size="sm" onClick={()=>setGigMode(true)}>🎸 Gig</Btn>
         {saving&&<Spinner/>}
       </div>
       <SealLine/>
