@@ -570,8 +570,15 @@ function SongDatabase({ band, songs, onRefresh, show }) {
   const [confirm, setConfirm] = useState(null);
   const [saving, setSaving]   = useState(false);
 
+  const [sortBy, setSortBy] = useState("none");
   const bandSongs = songs.filter(s=>s.band_id===band.id);
-  const filtered  = bandSongs.filter(s=>s.title.toLowerCase().includes(search.toLowerCase())||(s.artist?.toLowerCase()??"").includes(search.toLowerCase()));
+  const filtered = bandSongs
+    .filter(s=>s.title.toLowerCase().includes(search.toLowerCase())||(s.artist?.toLowerCase()??"").includes(search.toLowerCase()))
+    .sort((a,b)=>{
+      if(sortBy==="title") return a.title.localeCompare(b.title);
+      if(sortBy==="artist") return (a.artist||"").localeCompare(b.artist||"");
+      return 0;
+    });
 
   const handleAdd = async () => {
     if (!form.title||!form.artist||!form.bpm) return;
@@ -582,12 +589,12 @@ function SongDatabase({ band, songs, onRefresh, show }) {
   };
 
   const handleDelete = async (song) => {
-    await sb.delete("songs", `id=eq.${song.id}`);
+    await sb.delete("songs", "id=eq."+song.id);
     await onRefresh(); show("Song gelöscht."); setConfirm(null);
   };
 
   const handleUpdate = async () => {
-    await sb.update("songs", { title:editSong.title, artist:editSong.artist, bpm:parseInt(editSong.bpm), drummer:editSong.drummer, specialties:editSong.specialties }, `id=eq.${editSong.id}`);
+    await sb.update("songs", { title:editSong.title, artist:editSong.artist, bpm:parseInt(editSong.bpm), drummer:editSong.drummer, specialties:editSong.specialties }, "id=eq."+editSong.id);
     await onRefresh(); show("Song gespeichert!"); setEdit(null);
   };
 
