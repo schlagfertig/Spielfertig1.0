@@ -730,7 +730,8 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
               <div style={{display:"flex",flexDirection:"column",gap:2,flexShrink:0}}>
                 <button
                   disabled={song.position===1||saving}
-                  onClick={async()=>{
+                  onClick={async(e)=>{
+                    e.stopPropagation(); e.preventDefault();
                     if(song.position===1) return;
                     setSaving(true);
                     const above=songsInSet.find(s=>s.position===song.position-1);
@@ -744,7 +745,8 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                 >▲</button>
                 <button
                   disabled={song.position===songsInSet.length||saving}
-                  onClick={async()=>{
+                  onClick={async(e)=>{
+                    e.stopPropagation(); e.preventDefault();
                     if(song.position===songsInSet.length) return;
                     setSaving(true);
                     const below=songsInSet.find(s=>s.position===song.position+1);
