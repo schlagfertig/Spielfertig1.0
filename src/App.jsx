@@ -793,7 +793,6 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
             <SongRowMove key={song.id} song={song} mySongs={mySongs} playlist={playlist}
               onDelete={()=>removeFromSet(song)} onRefresh={onRefresh} setSaving={setSaving} saving={saving}/>
           ))}
-          ))}
         </div>}
       </div>
     </div>
