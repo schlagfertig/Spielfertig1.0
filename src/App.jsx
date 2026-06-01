@@ -662,6 +662,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const [dragId, setDragId]       = useState(null);
   const [showAdd, setShowAdd]     = useState(false);
   const [saving, setSaving]       = useState(false);
+  const [gigMode, setGigMode]     = useState(false);
 
   const mySongs  = playlistSongs.filter(ps=>ps.playlist_id===playlist.id);
   const bandId   = useMemo(()=>allSongs.find(s=>mySongs.some(ps=>ps.song_id===s.id))?.band_id??null,[mySongs,allSongs]);
@@ -687,10 +688,10 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
 
   const removeFromSet = async (ps) => {
     setSaving(true);
-    await sb.delete("playlist_songs", `id=eq.${ps.id}`);
+    await sb.delete("playlist_songs", "id=eq."+ps.id);
     // reindex
     const remaining = mySongs.filter(x=>x.set_name===activeSet&&x.playlist_id===playlist.id&&x.id!==ps.id).sort((a,b)=>a.position-b.position);
-    for (let i=0;i<remaining.length;i++) await sb.update("playlist_songs",{position:i+1},`id=eq.${remaining[i].id}`);
+    for (let i=0;i<remaining.length;i++) await sb.update("playlist_songs",{position:i+1},"id=eq."+remaining[i].id);
     await onRefresh(); setSaving(false);
   };
 
@@ -700,7 +701,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
     if (fi===-1||ti===-1) return;
     setSaving(true);
     const items=[...songsInSet]; const [mv]=items.splice(fi,1); items.splice(ti,0,mv);
-    for (let i=0;i<items.length;i++) await sb.update("playlist_songs",{position:i+1},`id=eq.${items[i].id}`);
+    for (let i=0;i<items.length;i++) await sb.update("playlist_songs",{position:i+1},"id=eq."+items[i].id);
     setDragId(null); await onRefresh(); setSaving(false);
   };
 
@@ -764,7 +765,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
       <SealLine/>
       <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
         {SETS.map(set=>(
-          <button key={set} onClick={()=>{setActiveSet(set);setSearch("");}} style={{ background:activeSet===set?C.teal:"transparent", color:activeSet===set?"#000":C.gray, border:`1px solid ${activeSet===set?C.teal:"#222"}`, borderRadius:3, padding:"5px 12px", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>
+          <button key={set} onClick={()=>{setActiveSet(set);setSearch("");}} style={{ background:activeSet===set?C.teal:"transparent", color:activeSet===set?"#000":C.gray, border:"1px solid "+(activeSet===set?C.teal:"#222"), borderRadius:3, padding:"5px 12px", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>
             {set} <span style={{ opacity:.7 }}>({setCounts[set]})</span>
           </button>
         ))}
@@ -843,7 +844,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, onRefr
           </div>
         ))}
       </div>
-      {confirm&&<Confirm msg={`„${confirm.item.name}" löschen?`} onOk={async()=>{ await sb.delete("playlists",`id=eq.${confirm.item.id}`); await onRefresh(); show("Playlist gelöscht."); setConfirm(null); }} onCancel={()=>setConfirm(null)}/>}
+      {confirm&&<Confirm msg={`„${confirm.item.name}" löschen?`} onOk={async()=>{ await sb.delete("playlists","id=eq."+confirm.item.id); await onRefresh(); show("Playlist gelöscht."); setConfirm(null); }} onCancel={()=>setConfirm(null)}/>}
     </div>
   );
 
@@ -876,7 +877,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, onRefr
           </div>
         ))}
       </div>
-      {confirm&&<Confirm msg={`Gig „${confirm.item.name}" löschen?`} onOk={async()=>{ await sb.delete("gigs",`id=eq.${confirm.item.id}`); await onRefresh(); show("Gig gelöscht."); setConfirm(null); }} onCancel={()=>setConfirm(null)}/>}
+      {confirm&&<Confirm msg={`Gig „${confirm.item.name}" löschen?`} onOk={async()=>{ await sb.delete("gigs","id=eq."+confirm.item.id); await onRefresh(); show("Gig gelöscht."); setConfirm(null); }} onCancel={()=>setConfirm(null)}/>}
     </div>
   );
 }
