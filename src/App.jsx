@@ -655,6 +655,84 @@ function SongDatabase({ band, songs, onRefresh, show }) {
   );
 }
 
+// ── Gig Metronome (compact, for Gig Mode) ─────────────────────────────────────
+function GigMetronome({ bpm }) {
+  const { active, beat, toggle } = useMetronome(bpm);
+  const pulseColor = beat ? "#fff" : active ? C.teal : C.grayDim;
+  const glow = beat ? "0 0 12px 4px " + C.teal : active ? "0 0 5px 2px " + C.tealBorder : "none";
+  return (
+    <button onClick={toggle} title={(active?"Stop":"Start")+" ("+bpm+" BPM)"}
+      style={{ background:"transparent", border:"1px solid "+(active?C.teal:"#333"), borderRadius:"50%", width:44, height:44, cursor:"pointer", padding:0, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:glow, transition:"all .1s" }}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:1 }}>
+        <div style={{ width:16, height:16, borderRadius:"50%", background:pulseColor, transition:"background .05s" }}/>
+        <div style={{ color:active?C.teal:C.grayDim, fontSize:10, fontFamily:"'Space Mono',monospace", lineHeight:1 }}>{bpm}</div>
+      </div>
+    </button>
+  );
+}
+
+// ── Song Row with Move popup ─────────────────────────────────────────────────
+function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, saving }) {
+  const [open, setOpen] = useState(false);
+  const [newSet, setNewSet] = useState(song.set_name);
+  const [newPos, setNewPos] = useState(String(song.position));
+
+  const apply = async () => {
+    setOpen(false);
+    setSaving(true);
+    const targetSet = newSet;
+    const targetPos = parseInt(newPos) || 1;
+    const psId = song.ps_id;
+    const setItems = mySongs.filter(ps=>ps.set_name===song.set_name && ps.playlist_id===playlist.id).sort((a,b)=>a.position-b.position);
+    const targetItems = mySongs.filter(ps=>ps.set_name===targetSet && ps.playlist_id===playlist.id).sort((a,b)=>a.position-b.position);
+
+    if (targetSet === song.set_name) {
+      const others = setItems.filter(ps=>ps.id!==psId);
+      const clamped = Math.max(1, Math.min(targetPos, setItems.length));
+      others.splice(clamped-1, 0, setItems.find(ps=>ps.id===psId));
+      for (let i=0;i<others.length;i++) await sb.update("playlist_songs",{position:i+1},"id=eq."+others[i].id);
+    } else {
+      const oldOthers = setItems.filter(ps=>ps.id!==psId);
+      for (let i=0;i<oldOthers.length;i++) await sb.update("playlist_songs",{position:i+1},"id=eq."+oldOthers[i].id);
+      const newOthers = [...targetItems];
+      const clamped = Math.max(1, Math.min(targetPos, targetItems.length+1));
+      newOthers.splice(clamped-1, 0, { id: psId });
+      for (let i=0;i<newOthers.length;i++) await sb.update("playlist_songs",{set_name:targetSet,position:i+1},"id=eq."+newOthers[i].id);
+    }
+    await onRefresh(); setSaving(false);
+  };
+
+  return (
+    <div style={{ position:"relative" }}>
+      <SongRow song={song} pos={song.position} onDelete={onDelete}
+        onEdit={()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setOpen(!open); }}/>
+      {open&&(
+        <div style={{ position:"absolute", right:0, top:"100%", zIndex:100, background:"#1a1a1a", border:"1px solid "+C.tealBorder, borderRadius:8, padding:14, minWidth:220, boxShadow:"0 8px 32px rgba(0,0,0,.8)" }}>
+          <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:10 }}>Verschieben nach</div>
+          <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+            <div style={{ flex:1 }}>
+              <div style={{ color:C.grayDim, fontSize:10, marginBottom:4 }}>SET</div>
+              <select value={newSet} onChange={e=>setNewSet(e.target.value)}
+                style={{ background:"#0a0a0a", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:12, fontFamily:"inherit", width:"100%" }}>
+                {SETS.map(s=><option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div style={{ width:64 }}>
+              <div style={{ color:C.grayDim, fontSize:10, marginBottom:4 }}>PLATZ</div>
+              <input type="number" min="1" value={newPos} onChange={e=>setNewPos(e.target.value)}
+                style={{ background:"#0a0a0a", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:13, fontFamily:"'Space Mono',monospace", width:"100%", textAlign:"center" }}/>
+            </div>
+          </div>
+          <div style={{ display:"flex", gap:6 }}>
+            <Btn variant="ghost" size="sm" onClick={()=>setOpen(false)}>Abbrechen</Btn>
+            <Btn size="sm" onClick={apply} disabled={saving}>OK ✓</Btn>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Playlist Editor ────────────────────────────────────────────────────────
 function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, show }) {
   const [activeSet, setActiveSet] = useState("Set 1");
@@ -670,7 +748,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
 
   const songsInSet = useMemo(()=>
     mySongs.filter(ps=>ps.set_name===activeSet)
-      .map(ps=>({...ps,...(allSongs.find(s=>s.id===ps.song_id)||{})}))
+      .map(ps=>({...ps,...(allSongs.find(s=>s.id===ps.song_id)||{}), ps_id:ps.id, set_name:ps.set_name, position:ps.position}))
       .filter(s=>s.title?.toLowerCase().includes(search.toLowerCase())||(s.artist?.toLowerCase()??"").includes(search.toLowerCase()))
       .sort((a,b)=>a.position-b.position),
     [mySongs,activeSet,search,allSongs]);
@@ -686,11 +764,12 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
     await onRefresh(); setSaving(false);
   };
 
-  const removeFromSet = async (ps) => {
+  const removeFromSet = async (song) => {
     setSaving(true);
-    await sb.delete("playlist_songs", "id=eq."+ps.id);
+    const psId = song.ps_id;
+    await sb.delete("playlist_songs", "id=eq."+psId);
     // reindex
-    const remaining = mySongs.filter(x=>x.set_name===activeSet&&x.playlist_id===playlist.id&&x.id!==ps.id).sort((a,b)=>a.position-b.position);
+    const remaining = mySongs.filter(x=>x.set_name===song.set_name&&x.playlist_id===playlist.id&&x.id!==psId).sort((a,b)=>a.position-b.position);
     for (let i=0;i<remaining.length;i++) await sb.update("playlist_songs",{position:i+1},"id=eq."+remaining[i].id);
     await onRefresh(); setSaving(false);
   };
