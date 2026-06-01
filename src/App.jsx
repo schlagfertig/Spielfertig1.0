@@ -792,7 +792,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           {songsInSet.map(song=>(
             <SongRowMove key={song.id} song={song} mySongs={mySongs} playlist={playlist}
               onDelete={()=>removeFromSet(song)} onRefresh={onRefresh} setSaving={setSaving} saving={saving}/>
-          )
+          ))}
           ))}
         </div>}
       </div>
