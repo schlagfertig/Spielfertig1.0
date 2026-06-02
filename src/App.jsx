@@ -7,6 +7,67 @@ const SUPABASE_KEY =
   ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzdHdobXF3eG12bG9idnlnc3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDE3NjAsImV4cCI6MjA5NTE3Nzc2MH0" +
   ".DZK81qIrUo3gLldLO344T_wY_Al1MSzg3oCASPkaVqo";
 
+// ── AI Set Notes ───────────────────────────────────────────────────────────
+function AISetNotes({ setName, songs }) {
+  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const generate = async () => {
+    if (!ENABLE_AI) {
+      setNotes("KI-Analyse ist derzeit deaktiviert.\n\nSobald der Feature aktiv ist, bekommst du hier eine smarte Set-Analyse (Energie-Kurve, BPM-Übergänge, Drummer-Wechsel, Tipps).");
+      return;
+    }
+    // Später hier der echte KI-Aufruf
+    setNotes("KI-Funktion wird vorbereitet...");
+  };
+
+  return (
+    <div>
+      <button 
+        onClick={()=>setOpen(!open)} 
+        style={{ 
+          background:"transparent", 
+          border:`1px solid #1e1e1e`, 
+          color: open ? C.teal : C.grayDim, 
+          borderRadius:4, 
+          padding:"5px 13px", 
+          fontSize:11, 
+          fontWeight:700, 
+          letterSpacing:"0.08em", 
+          textTransform:"uppercase", 
+          cursor:"pointer", 
+          fontFamily:"inherit" 
+        }}
+      >
+        ✦ KI-Analyse {open ? "▲" : "▼"}
+      </button>
+
+      {open && (
+        <div style={{ marginTop:8, background:"#080808", border:"1px solid #1e1e1e", borderRadius:4, padding:14 }}>
+          <Btn size="sm" onClick={generate} disabled={loading}>
+            {loading ? "Analysiere…" : "Analyse starten"}
+          </Btn>
+          
+          {notes && (
+            <p style={{ 
+              marginTop:10, 
+              color:"#aaa", 
+              fontSize:13, 
+              lineHeight:1.7, 
+              whiteSpace:"pre-wrap", 
+              borderTop:"1px solid #1a1a1a", 
+              paddingTop:10 
+            }}>
+              {notes}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const ENABLE_AI = false;
 const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_KEY || "";
 
