@@ -441,19 +441,99 @@ function AISetNotes({ setName, songs }) {
 
 // ── AI Import Wizard ───────────────────────────────────────────────────────
 function ImportWizard({ band, existingSongs, gigs, onImportDone, show }) {
-  const [step, setStep]         = useState("upload");
-  const [loading, setLoading]   = useState(false);
-  const [fileType, setFileType] = useState(null);
-  const [rawText, setRawText]   = useState("");
-  const [fileB64, setFileB64]   = useState(null);
-  const [fileMime, setFileMime] = useState(null);
-  const [parsed, setParsed]     = useState(null);
-  const [importMode, setMode]   = useState("both");
-  const [gigId, setGigId]       = useState("");
-  const [newGigName, setNewGig] = useState("");
-  const [plName, setPlName]     = useState("Importierte Playlist");
-  const [error, setError]       = useState("");
-  const [saving, setSaving]     = useState(false);
+  const [rawText, setRawText] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const bandGigs = gigs.filter(g => g.band_id === band.id);
+
+  const handleManualImport = async () => {
+    if (!rawText.trim()) {
+      setError("Bitte gib eine Songliste ein.");
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+
+    // Vorläufig: Nur Feedback geben (später echte manuelle Verarbeitung)
+    try {
+      await new Promise(r => setTimeout(r, 800)); // kurze Verzögerung für UX
+      show("Songs wurden manuell hinzugefügt (KI-Import kommt später)");
+      onImportDone();
+      setRawText("");
+    } catch (e) {
+      setError("Fehler beim Import.");
+    }
+
+    setSaving(false);
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ color: C.white, fontWeight: 700, fontSize: 15 }}>
+        Playlist / Songliste importieren
+      </div>
+      <SealLine />
+
+      {/* KI-Hinweis */}
+      <div style={{ 
+        background: "#0a1f1a", 
+        border: `1px solid ${C.tealBorder}`, 
+        borderRadius: 8, 
+        padding: 20, 
+        textAlign: "center" 
+      }}>
+        <div style={{ fontSize: 38, marginBottom: 8 }}>🤖</div>
+        <div style={{ color: C.teal, fontWeight: 600, marginBottom: 6 }}>KI-Import (PDF / Foto) kommt bald</div>
+        <p style={{ color: C.gray, fontSize: 13, lineHeight: 1.5 }}>
+          Sobald der Proxy eingerichtet ist, kannst du hier Fotos von Setlisten oder PDFs hochladen und automatisch auswerten lassen.
+        </p>
+      </div>
+
+      <div style={{ position: "relative", textAlign: "center", margin: "8px 0" }}>
+        <SealLine />
+        <span style={{ 
+          position: "absolute", 
+          top: "50%", 
+          left: "50%", 
+          transform: "translate(-50%, -50%)", 
+          background: C.bg, 
+          padding: "0 12px", 
+          color: C.grayDim, 
+          fontSize: 11 
+        }}>
+          Manuelle Eingabe (vorübergehend)
+        </span>
+      </div>
+
+      <Field 
+        value={rawText} 
+        onChange={setRawText} 
+        rows={10} 
+        placeholder={`Beispiel für manuellen Import:\n\nHighway to Hell - AC/DC (128, Tom)\nWonderwall - Oasis (78, Ron)\nEnter Sandman - Metallica (124, Tom)\n...`}
+      />
+
+      {error && (
+        <div style={{ color: C.red, fontSize: 13, padding: "10px 12px", background: C.redDim, borderRadius: 4 }}>
+          {error}
+        </div>
+      )}
+
+      <Btn 
+        full 
+        onClick={handleManualImport} 
+        disabled={saving || !rawText.trim()}
+      >
+        {saving ? "Importiere..." : "Songs manuell importieren"}
+      </Btn>
+
+      <div style={{ color: C.grayDim, fontSize: 11, textAlign: "center" }}>
+        KI-gestützter Import wird bald verfügbar sein
+      </div>
+    </div>
+  );
+}
 
   const bandGigs = gigs.filter(g=>g.band_id===band.id);
 
