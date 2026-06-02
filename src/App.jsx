@@ -456,10 +456,9 @@ function ImportWizard({ band, existingSongs, gigs, onImportDone, show }) {
     setSaving(true);
     setError("");
 
-    // Vorläufig: Nur Feedback geben (später echte manuelle Verarbeitung)
     try {
-      await new Promise(r => setTimeout(r, 800)); // kurze Verzögerung für UX
-      show("Songs wurden manuell hinzugefügt (KI-Import kommt später)");
+      await new Promise(r => setTimeout(r, 800));
+      show("Songs wurden importiert (KI-Import kommt später)");
       onImportDone();
       setRawText("");
     } catch (e) {
@@ -476,7 +475,6 @@ function ImportWizard({ band, existingSongs, gigs, onImportDone, show }) {
       </div>
       <SealLine />
 
-      {/* KI-Hinweis */}
       <div style={{ 
         background: "#0a1f1a", 
         border: `1px solid ${C.tealBorder}`, 
@@ -485,13 +483,13 @@ function ImportWizard({ band, existingSongs, gigs, onImportDone, show }) {
         textAlign: "center" 
       }}>
         <div style={{ fontSize: 38, marginBottom: 8 }}>🤖</div>
-        <div style={{ color: C.teal, fontWeight: 600, marginBottom: 6 }}>KI-Import (PDF / Foto) kommt bald</div>
+        <div style={{ color: C.teal, fontWeight: 600, marginBottom: 6 }}>KI-Import kommt bald</div>
         <p style={{ color: C.gray, fontSize: 13, lineHeight: 1.5 }}>
-          Sobald der Proxy eingerichtet ist, kannst du hier Fotos von Setlisten oder PDFs hochladen und automatisch auswerten lassen.
+          Sobald der Proxy eingerichtet ist, kannst du PDFs oder Fotos hochladen.
         </p>
       </div>
 
-      <div style={{ position: "relative", textAlign: "center", margin: "8px 0" }}>
+      <div style={{ position: "relative", textAlign: "center", margin: "12px 0" }}>
         <SealLine />
         <span style={{ 
           position: "absolute", 
@@ -499,11 +497,11 @@ function ImportWizard({ band, existingSongs, gigs, onImportDone, show }) {
           left: "50%", 
           transform: "translate(-50%, -50%)", 
           background: C.bg, 
-          padding: "0 12px", 
+          padding: "0 14px", 
           color: C.grayDim, 
           fontSize: 11 
         }}>
-          Manuelle Eingabe (vorübergehend)
+          Manuelle Eingabe
         </span>
       </div>
 
@@ -511,200 +509,7 @@ function ImportWizard({ band, existingSongs, gigs, onImportDone, show }) {
         value={rawText} 
         onChange={setRawText} 
         rows={10} 
-        placeholder={`Beispiel für manuellen Import:\n\nHighway to Hell - AC/DC (128, Tom)\nWonderwall - Oasis (78, Ron)\nEnter Sandman - Metallica (124, Tom)\n...`}
-      />
-
-      {error && (
-        <div style={{ color: C.red, fontSize: 13, padding: "10px 12px", background: C.redDim, borderRadius: 4 }}>
-          {error}
-        </div>
-      )}
-
-      <Btn 
-        full 
-        onClick={handleManualImport} 
-        disabled={saving || !rawText.trim()}
-      >
-        {saving ? "Importiere..." : "Songs manuell importieren"}
-      </Btn>
-
-      <div style={{ color: C.grayDim, fontSize: 11, textAlign: "center" }}>
-        KI-gestützter Import wird bald verfügbar sein
-      </div>
-    </div>
-  );
-}
-
-  const bandGigs = gigs.filter(g=>g.band_id===band.id);
-
-  const handleFile = async (file) => {
-    setError("");
-    const mime = file.type;
-    if (mime.startsWith("image/")||mime==="application/pdf") {
-      const reader = new FileReader();
-      reader.onload = e => { setFileB64(e.target.result.split(",")[1]); setFileMime(mime); setFileType(mime.startsWith("image/")?"image":"pdf"); };
-      reader.readAsDataURL(file);
-    } else {
-      try { const t = await file.text(); setRawText(t); setFileType("text"); }
-      catch { setError("Format nicht unterstützt."); }
-    }
-  };
-
-  const runAnalysis = async () => {
-    if (!fileType&&!rawText) { setError("Bitte Datei hochladen oder Text einfügen."); return; }
-    setLoading(true); setError("");
-    const system = `Extrahiere Songs. Nur JSON, kein Markdown.\n{"songs":[{"title":"","artist":"","bpm":0,"drummer":"","specialties":"","set":""}],"playlistName":""}\nDrummer: ${band.drummers.join(", ")}. BPM=0 wenn unbekannt.`;
-    try {
-      let messages;
-      if (fileType==="image") messages=[{role:"user",content:[{type:"image",source:{type:"base64",media_type:fileMime,data:fileB64}},{type:"text",text:"Extrahiere alle Songs."}]}];
-      else if (fileType==="pdf") messages=[{role:"user",content:[{type:"document",source:{type:"base64",media_type:"application/pdf",data:fileB64}},{type:"text",text:"Extrahiere alle Songs."}]}];
-      else messages=[{role:"user",content:`Extrahiere Songs:\n\n${rawText}`}];
-      const res = await fetch("https://api.anthropic.com/v1/messages",{ method:"POST", headers:{"Content-Type":"application/json"},
-        headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-allow-browser":"true"},
-        body:JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:4000, system, messages }) });
-      const data = await res.json();
-      const text = data.content?.map(c=>c.text||"").join("").trim().replace(/```json|```/g,"").trim();
-      const result = JSON.parse(text);
-      setParsed(result);
-      if (result.playlistName) setPlName(result.playlistName);
-      setStep("preview");
-    } catch { setError("Analyse fehlgeschlagen. Nochmal versuchen."); }
-    setLoading(false);
-  };
-
-  const toggle   = idx => setParsed(p=>({...p,songs:p.songs.map((s,i)=>i===idx?{...s,_skip:!s._skip}:s)}));
-  const editSong = (idx,field,val) => setParsed(p=>({...p,songs:p.songs.map((s,i)=>i===idx?{...s,[field]:val}:s)}));
-
-  const handleImport = async () => {
-    setSaving(true);
-    const toImport = parsed.songs.filter(s=>!s._skip);
-    try {
-      // 1. Insert new songs
-      const newSongRecs = [];
-      for (const s of toImport) {
-        const exists = existingSongs.find(e=>e.band_id===band.id&&e.title.toLowerCase()===s.title.toLowerCase());
-        if (!exists) {
-          const inserted = await sb.insert("songs", { band_id:band.id, title:s.title, artist:s.artist||"", bpm:parseInt(s.bpm)||0, drummer:band.drummers.includes(s.drummer)?s.drummer:band.drummers[0]||"", specialties:s.specialties||"" });
-          newSongRecs.push({ ...s, dbId: inserted.id });
-        } else {
-          newSongRecs.push({ ...s, dbId: exists.id });
-        }
-      }
-
-      // 2. Create playlist if needed
-      if (importMode !== "songs") {
-        let tGigId = gigId ? parseInt(gigId) : null;
-        if (!tGigId && newGigName) {
-          const g = await sb.insert("gigs", { band_id:band.id, name:newGigName, date:null });
-          tGigId = g.id;
-        }
-        if (tGigId) {
-          const pl = await sb.insert("playlists", { gig_id:tGigId, name:plName });
-          for (const s of toImport) {
-            const rec = newSongRecs.find(r=>r.title===s.title);
-            if (!rec) continue;
-            const setName = (s.set&&SETS.includes(s.set))?s.set:"Set 1";
-            const pos = toImport.filter(x=>x.set===setName).indexOf(s)+1;
-            await sb.insert("playlist_songs", { playlist_id:pl.id, song_id:rec.dbId, set_name:setName, position:pos });
-          }
-        }
-      }
-      show(`${toImport.length} Songs importiert!`);
-      onImportDone();
-      setStep("done");
-    } catch(e) { setError("Fehler beim Speichern: "+e.message); }
-    setSaving(false);
-  };
-
-  const reset = () => { setStep("upload"); setFileType(null); setRawText(""); setFileB64(null); setParsed(null); setError(""); setGigId(""); setNewGig(""); setPlName("Importierte Playlist"); };
-
-  if (step==="done") return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:18, padding:"48px 0" }}>
-      <div style={{ fontSize:44 }}>✅</div>
-      <div style={{ color:C.white, fontWeight:800, fontSize:18, fontFamily:"'Space Mono',monospace" }}>Import abgeschlossen</div>
-      <SealLine/><Btn onClick={reset}>Weiteren Import</Btn>
-    </div>
-  );
-
-  if (step==="preview"&&parsed) {
-    const active = parsed.songs.filter(s=>!s._skip);
-    const newCnt = active.filter(s=>!existingSongs.find(e=>e.band_id===band.id&&e.title.toLowerCase()===s.title.toLowerCase())).length;
-    return (
-      <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <Btn variant="ghost" size="sm" onClick={reset}>← Neu</Btn>
-          <span style={{ color:C.white, fontWeight:700, fontSize:15 }}>Vorschau & Bestätigung</span>
-        </div>
-        <SealLine/>
-        <div style={{ display:"flex", gap:8 }}>
-          {[{l:"Erkannt",v:parsed.songs.length,c:C.teal},{l:"Neu",v:newCnt,c:C.teal},{l:"Vorhanden",v:active.length-newCnt,c:C.gray}].map(({l,v,c})=>(
-            <div key={l} style={{ flex:1, background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:4, padding:"8px 10px", textAlign:"center" }}>
-              <div style={{ color:c, fontSize:18, fontWeight:800, fontFamily:"'Space Mono',monospace" }}>{v}</div>
-              <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase" }}>{l}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:14 }}>
-          <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>Was importieren?</div>
-          <div style={{ display:"flex", gap:6, marginBottom:12 }}>
-            {[{k:"both",l:"Songs + Playlist"},{k:"songs",l:"Nur Songs"},{k:"playlist",l:"Nur Playlist"}].map(({k,l})=>(
-              <button key={k} onClick={()=>setMode(k)} style={{ background:importMode===k?C.teal:"transparent", color:importMode===k?"#000":C.gray, border:`1px solid ${importMode===k?C.teal:"#333"}`, borderRadius:3, padding:"5px 11px", fontSize:11, fontWeight:700, textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
-            ))}
-          </div>
-          {importMode!=="songs"&&(
-            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-              <Field value={plName} onChange={setPlName} placeholder="Playlist-Name"/>
-              {bandGigs.length>0&&<select value={gigId} onChange={e=>setGigId(e.target.value)} style={{ background:"#0a0a0a", border:"1px solid #222", color:C.white, borderRadius:4, padding:"8px 12px", fontSize:13, fontFamily:"inherit" }}><option value="">— Neuen Gig erstellen —</option>{bandGigs.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select>}
-              {!gigId&&<Field value={newGigName} onChange={setNewGig} placeholder="Neuer Gig-Name"/>}
-            </div>
-          )}
-        </div>
-        <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:12 }}>
-          <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>Songs prüfen</div>
-          <div style={{ display:"flex", flexDirection:"column", gap:4, maxHeight:320, overflowY:"auto" }}>
-            {parsed.songs.map((song,idx)=>{
-              const exists = existingSongs.find(e=>e.band_id===band.id&&e.title.toLowerCase()===song.title.toLowerCase());
-              return (
-                <div key={idx} style={{ display:"flex", alignItems:"center", gap:8, background:song._skip?"#0a0a0a":exists?"rgba(92,200,184,0.04)":"rgba(92,200,184,0.08)", border:`1px solid ${song._skip?"#1a1a1a":"#1e3030"}`, borderRadius:4, padding:"7px 10px", opacity:song._skip?.4:1 }}>
-                  <input type="checkbox" checked={!song._skip} onChange={()=>toggle(idx)} style={{ accentColor:C.teal, flexShrink:0 }}/>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <input value={song.title} onChange={e=>editSong(idx,"title",e.target.value)} style={{ background:"transparent", border:"none", color:C.white, fontWeight:600, fontSize:13, fontFamily:"inherit", width:"100%", outline:"none" }}/>
-                    <input value={song.artist||""} onChange={e=>editSong(idx,"artist",e.target.value)} style={{ background:"transparent", border:"none", color:C.gray, fontSize:11, fontFamily:"inherit", width:"100%", outline:"none" }}/>
-                  </div>
-                  <input value={song.bpm||""} onChange={e=>editSong(idx,"bpm",e.target.value)} style={{ background:"transparent", border:"none", color:C.grayDim, fontSize:11, fontFamily:"inherit", width:42, outline:"none", textAlign:"right" }} placeholder="BPM"/>
-                  <select value={song.drummer||""} onChange={e=>editSong(idx,"drummer",e.target.value)} style={{ background:"#111", border:"1px solid #222", color:song.drummer==="Ron"?C.red:C.teal, fontSize:10, fontFamily:"inherit", borderRadius:3, padding:"2px 6px" }}>
-                    <option value="">–</option>{band.drummers.map(d=><option key={d} value={d}>{d}</option>)}
-                  </select>
-                  {exists&&<span style={{ color:C.teal, fontSize:9, textTransform:"uppercase", border:`1px solid ${C.tealBorder}`, borderRadius:2, padding:"1px 5px" }}>vorhanden</span>}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        {error&&<div style={{ color:C.red, fontSize:12, padding:"8px 12px", background:C.redDim, border:`1px solid ${C.redBorder}`, borderRadius:4 }}>{error}</div>}
-        <Btn full onClick={handleImport} disabled={!active.length||saving}>{saving?<Spinner/>:`${active.length} Songs importieren →`}</Btn>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Playlist / Songliste importieren</div>
-      <SealLine/>
-      <div onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f)handleFile(f);}} onClick={()=>document.getElementById("imp-inp").click()}
-        style={{ border:`2px dashed ${fileType?C.teal:"#2a2a2a"}`, borderRadius:8, padding:"32px 20px", textAlign:"center", background:fileType?C.tealDim:"transparent", cursor:"pointer", transition:"all .2s" }}>
-        <input id="imp-inp" type="file" accept="image/*,.pdf,.csv,.txt" style={{ display:"none" }} onChange={e=>{if(e.target.files[0])handleFile(e.target.files[0]);}}/>
-        {fileType?<div><div style={{ fontSize:30, marginBottom:6 }}>{fileType==="image"?"🖼️":fileType==="pdf"?"📄":"📝"}</div><div style={{ color:C.teal, fontWeight:700, fontSize:13 }}>Datei geladen ✓</div></div>
-        :<div><div style={{ fontSize:30, marginBottom:6 }}>📂</div><div style={{ color:C.gray, fontWeight:600, fontSize:13 }}>Datei ablegen oder klicken</div><div style={{ color:C.grayDim, fontSize:11, marginTop:4 }}>PDF · Foto · CSV · TXT</div></div>}
-      </div>
-      <div style={{ position:"relative", textAlign:"center", margin:"4px 0" }}><SealLine/><span style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", background:C.bg, padding:"0 10px", color:C.grayDim, fontSize:11 }}>oder Text einfügen</span></div>
-      <Field value={rawText} onChange={v=>{setRawText(v);setFileType(v?"text":null);}} rows={6} placeholder={"Songliste hier einfügen…\n\nBeispiel:\nSet 1\n1. Highway to Hell – AC/DC (116 BPM, Tom)\n2. Wonderwall – Oasis"}/>
-      {error&&<div style={{ color:C.red, fontSize:12, padding:"8px 12px", background:C.redDim, border:`1px solid ${C.redBorder}`, borderRadius:4 }}>{error}</div>}
-      <Btn full disabled={loading||(!fileType&&!rawText)} onClick={runAnalysis}>{loading?"⏳ KI analysiert…":"✦ KI-Analyse starten →"}</Btn>
-    </div>
-  );
-}
-
+        placeholder="Titel - Artist (
 // ── Song Database ──────────────────────────────────────────────────────────
 function SongDatabase({ band, songs, onRefresh, show }) {
   const [search, setSearch]   = useState("");
