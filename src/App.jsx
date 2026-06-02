@@ -499,6 +499,7 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
   const [open, setOpen] = useState(false);
   const [newSet, setNewSet] = useState(song.set_name);
   const [newPos, setNewPos] = useState(String(song.position));
+  const [notes, setNotes] = useState(song.specialties||"");
 
   const apply = async () => {
     setOpen(false);
@@ -522,13 +523,17 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
       newOthers.splice(clamped-1, 0, { id: psId });
       for (let i=0;i<newOthers.length;i++) await sb.update("playlist_songs",{set_name:targetSet,position:i+1},"id=eq."+newOthers[i].id);
     }
+    // Save notes if changed
+    if (notes !== (song.specialties||"")) {
+      await sb.update("songs", { specialties: notes }, "id=eq."+song.id);
+    }
     await onRefresh(); setSaving(false);
   };
 
   return (
     <div style={{ position:"relative" }}>
       <SongRow song={song} pos={song.position} onDelete={onDelete}
-        onEdit={()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setOpen(!open); }}/>
+        onEdit={()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setNotes(song.specialties||""); setOpen(!open); }}/>
       {open&&(
         <div style={{ position:"absolute", right:0, top:"100%", zIndex:100, background:"#1a1a1a", border:"1px solid "+C.tealBorder, borderRadius:8, padding:14, minWidth:220, boxShadow:"0 8px 32px rgba(0,0,0,.8)" }}>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:10 }}>Verschieben nach</div>
@@ -545,6 +550,16 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
               <input type="number" min="1" value={newPos} onChange={e=>setNewPos(e.target.value)}
                 style={{ background:"#0a0a0a", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:13, fontFamily:"'Space Mono',monospace", width:"100%", textAlign:"center" }}/>
             </div>
+          </div>
+          <div style={{ marginBottom:10 }}>
+            <div style={{ color:C.grayDim, fontSize:10, marginBottom:4 }}>NOTIZEN</div>
+            <textarea
+              value={notes}
+              onChange={e=>setNotes(e.target.value)}
+              placeholder="z.B. Drums beginnt, Count-In…"
+              rows={2}
+              style={{ background:"#0a0a0a", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:12, fontFamily:"inherit", width:"100%", resize:"none", lineHeight:1.5 }}
+            />
           </div>
           <div style={{ display:"flex", gap:6 }}>
             <Btn variant="ghost" size="sm" onClick={()=>setOpen(false)}>Abbrechen</Btn>
