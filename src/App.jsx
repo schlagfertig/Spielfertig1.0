@@ -7,71 +7,6 @@ const SUPABASE_KEY =
   ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzdHdobXF3eG12bG9idnlnc3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDE3NjAsImV4cCI6MjA5NTE3Nzc2MH0" +
   ".DZK81qIrUo3gLldLO344T_wY_Al1MSzg3oCASPkaVqo";
 
-const ENABLE_AI = false;
-
-// ── AI Set Notes ───────────────────────────────────────────────────────────
-function AISetNotes({ setName, songs }) {
-  const [notes, setNotes] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-
-  const generate = async () => {
-    if (!ENABLE_AI) {
-      setNotes("KI-Analyse ist derzeit deaktiviert.\n\nSobald der Feature aktiv ist, bekommst du hier eine smarte Set-Analyse (Energie-Kurve, BPM-Übergänge, Drummer-Wechsel, Tipps).");
-      return;
-    }
-    // Später hier der echte KI-Aufruf
-    setNotes("KI-Funktion wird vorbereitet...");
-  };
-
-  return (
-    <div>
-      <button 
-        onClick={()=>setOpen(!open)} 
-        style={{ 
-          background:"transparent", 
-          border:`1px solid #1e1e1e`, 
-          color: open ? C.teal : C.grayDim, 
-          borderRadius:4, 
-          padding:"5px 13px", 
-          fontSize:11, 
-          fontWeight:700, 
-          letterSpacing:"0.08em", 
-          textTransform:"uppercase", 
-          cursor:"pointer", 
-          fontFamily:"inherit" 
-        }}
-      >
-        ✦ KI-Analyse {open ? "▲" : "▼"}
-      </button>
-
-      {open && (
-        <div style={{ marginTop:8, background:"#080808", border:"1px solid #1e1e1e", borderRadius:4, padding:14 }}>
-          <Btn size="sm" onClick={generate} disabled={loading}>
-            {loading ? "Analysiere…" : "Analyse starten"}
-          </Btn>
-          
-          {notes && (
-            <p style={{ 
-              marginTop:10, 
-              color:"#aaa", 
-              fontSize:13, 
-              lineHeight:1.7, 
-              whiteSpace:"pre-wrap", 
-              borderTop:"1px solid #1a1a1a", 
-              paddingTop:10 
-            }}>
-              {notes}
-            </p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_KEY || "";
-
 // Global metronome tracker - only one at a time
 let activeMetronomeStop = null;
 
@@ -412,104 +347,41 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName) {
   setTimeout(()=>w.print(), 400);
 }
 
-// ── AI Set Notes ───────────────────────────────────────────────────────────
+// ── KI-Analyse (Platzhalter) ─────────────────────────────────────────────────
 function AISetNotes({ setName, songs }) {
-  const [notes, setNotes] = useState(""); const [loading, setLoading] = useState(false); const [open, setOpen] = useState(false);
-  const generate = async () => {
-    setLoading(true);
-    const list = songs.map((s,i)=>`${i+1}. ${s.title} – ${s.artist} (${s.bpm} BPM, Drummer: ${s.drummer})`).join("\n");
-    try {
-      const res = await fetch("https://api.anthropic.com/v1/messages",{ method:"POST", headers:{"Content-Type":"application/json"},
-        headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-allow-browser":"true"},
-        body:JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:800,
-          messages:[{role:"user",content:`Analysiere diese Setlist für "${setName}" (max 150 Wörter):\n\n${list}\n\nGib: Energie-Kurve, BPM-Übergänge, Drummer-Wechsel, 1-2 Tipps. Kurz und direkt.`}] }) });
-      const d = await res.json();
-      setNotes(d.content?.[0]?.text || "Keine Analyse.");
-    } catch { setNotes("Verbindungsfehler."); }
-    setLoading(false);
-  };
+  const [open, setOpen] = useState(false);
   return (
     <div>
-      <button onClick={()=>setOpen(!open)} style={{ background:"transparent", border:`1px solid #1e1e1e`, color:open?C.teal:C.grayDim, borderRadius:4, padding:"5px 13px", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>✦ KI-Analyse {open?"▲":"▼"}</button>
-      {open&&<div style={{ marginTop:8, background:"#080808", border:"1px solid #1e1e1e", borderRadius:4, padding:14 }}>
-        <Btn size="sm" onClick={generate} disabled={loading||!songs.length}>{loading?"Analysiere…":"Analyse starten"}</Btn>
-        {notes&&<p style={{ marginTop:10, color:"#aaa", fontSize:13, lineHeight:1.7, whiteSpace:"pre-wrap", borderTop:"1px solid #1a1a1a", paddingTop:10 }}>{notes}</p>}
-      </div>}
+      <button onClick={()=>setOpen(!open)} style={{ background:"transparent", border:"1px solid #1e1e1e", color:open?C.teal:C.grayDim, borderRadius:4, padding:"5px 13px", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>✦ KI-Analyse {open?"▲":"▼"}</button>
+      {open&&(
+        <div style={{ marginTop:8, background:"#080808", border:"1px solid #1e1e1e", borderRadius:4, padding:14 }}>
+          <p style={{ color:"#888", fontSize:13, lineHeight:1.6, margin:0 }}>
+            Die KI-Analyse ist derzeit deaktiviert. Sobald sie aktiv ist, bekommst du hier eine Set-Auswertung: Energie-Kurve, BPM-Übergänge, Drummer-Wechsel und Tipps.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
 
-// ── AI Import Wizard ───────────────────────────────────────────────────────
+// ── Import (Platzhalter) ──────────────────────────────────────────────────────
 function ImportWizard({ band, existingSongs, gigs, onImportDone, show }) {
-  const [rawText, setRawText] = useState("");
-  const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const bandGigs = gigs.filter(g => g.band_id === band.id);
-
-  const handleManualImport = async () => {
-    if (!rawText.trim()) {
-      setError("Bitte gib eine Songliste ein.");
-      return;
-    }
-
-    setSaving(true);
-    setError("");
-
-    try {
-      await new Promise(r => setTimeout(r, 800));
-      show("Songs wurden importiert (KI-Import kommt später)");
-      onImportDone();
-      setRawText("");
-    } catch (e) {
-      setError("Fehler beim Import.");
-    }
-
-    setSaving(false);
-  };
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <div style={{ color: C.white, fontWeight: 700, fontSize: 15 }}>
-        Playlist / Songliste importieren
-      </div>
-      <SealLine />
-
-      <div style={{ 
-        background: "#0a1f1a", 
-        border: `1px solid ${C.tealBorder}`, 
-        borderRadius: 8, 
-        padding: 20, 
-        textAlign: "center" 
-      }}>
-        <div style={{ fontSize: 38, marginBottom: 8 }}>🤖</div>
-        <div style={{ color: C.teal, fontWeight: 600, marginBottom: 6 }}>KI-Import kommt bald</div>
-        <p style={{ color: C.gray, fontSize: 13, lineHeight: 1.5 }}>
-          Sobald der Proxy eingerichtet ist, kannst du PDFs oder Fotos hochladen.
+    <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+      <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Songs importieren</div>
+      <SealLine/>
+      <div style={{ background:"#0a1f1a", border:"1px solid "+C.tealBorder, borderRadius:8, padding:22, textAlign:"center" }}>
+        <div style={{ fontSize:38, marginBottom:8 }}>🤖</div>
+        <div style={{ color:C.teal, fontWeight:600, marginBottom:6 }}>KI-Import kommt bald</div>
+        <p style={{ color:C.gray, fontSize:13, lineHeight:1.5, margin:0 }}>
+          Songs trägst du am besten direkt im Tab „🎵 Songs“ ein. Der automatische Import von PDFs oder Fotos folgt später.
         </p>
       </div>
+    </div>
+  );
+}
 
-      <div style={{ position: "relative", textAlign: "center", margin: "12px 0" }}>
-        <SealLine />
-        <span style={{ 
-          position: "absolute", 
-          top: "50%", 
-          left: "50%", 
-          transform: "translate(-50%, -50%)", 
-          background: C.bg, 
-          padding: "0 14px", 
-          color: C.grayDim, 
-          fontSize: 11 
-        }}>
-          Manuelle Eingabe
-        </span>
-      </div>
 
-      <Field 
-        value={rawText} 
-        onChange={setRawText} 
-        rows={10} 
-        placeholder="Titel - Artist (
 // ── Song Database ──────────────────────────────────────────────────────────
 function SongDatabase({ band, songs, onRefresh, show }) {
   const [search, setSearch]   = useState("");
