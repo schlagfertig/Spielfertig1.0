@@ -658,6 +658,12 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           <div style={{ color:C.grayDim, fontSize:11 }}>{mySongs.length} Songs gesamt</div>
         </div>
         <Btn variant="outline" size="sm" onClick={()=>exportPDF(playlist,allSongs,playlistSongs,bandName)}>🖨 PDF</Btn>
+        <Btn variant="outline" size="sm" onClick={()=>{
+          const url = window.location.origin + "/?share=" + playlist.id;
+          if (navigator.clipboard&&navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(()=>show("Link kopiert! An Bandkollegen senden 🐟")).catch(()=>show(url,"success"));
+          } else { show(url,"success"); }
+        }}>🔗 Teilen</Btn>
         <Btn variant="primary" size="sm" onClick={()=>setGigMode(true)}>🎸 Gig</Btn>
         {saving&&<Spinner/>}
       </div>
@@ -868,6 +874,120 @@ function Landing({ bands, songs, user, onSelect, onLogout }) {
 }
 
 // ── Root ───────────────────────────────────────────────────────────────────
+// ── Shared Read-Only View (für Bandkollegen) ─────────────────────────────────
+function SharedView({ playlistId }) {
+  const [data, setData]         = useState(null);
+  const [activeSet, setActiveSet] = useState("Set 1");
+  const [error, setError]       = useState("");
+  const [loading, setLoading]   = useState(true);
+
+  useEffect(()=>{
+    (async()=>{
+      try {
+        const pls = await sb.query("playlists", { select:"*", filter:"id=eq."+playlistId });
+        const playlist = Array.isArray(pls)&&pls[0] ? pls[0] : null;
+        if (!playlist) { setError("Setlist nicht gefunden oder nicht freigegeben."); setLoading(false); return; }
+        const ps = await sb.query("playlist_songs", { select:"*", filter:"playlist_id=eq."+playlistId, order:"position.asc" });
+        const psArr = Array.isArray(ps) ? ps : [];
+        const ids = [...new Set(psArr.map(p=>p.song_id))];
+        let songs = [];
+        if (ids.length) {
+          const sres = await sb.query("songs", { select:"*", filter:"id=in.("+ids.join(",")+")" });
+          songs = Array.isArray(sres) ? sres : [];
+        }
+        let bandName = "";
+        const gres = await sb.query("gigs", { select:"*", filter:"id=eq."+playlist.gig_id });
+        const gig = Array.isArray(gres)&&gres[0] ? gres[0] : null;
+        if (gig) {
+          const bres = await sb.query("bands", { select:"*", filter:"id=eq."+gig.band_id });
+          if (Array.isArray(bres)&&bres[0]) bandName = bres[0].name;
+        }
+        // first non-empty set as default
+        const firstSet = SETS.find(s=>psArr.some(p=>p.set_name===s)) || "Set 1";
+        setActiveSet(firstSet);
+        setData({ playlist, ps:psArr, songs, bandName });
+      } catch(e) { setError("Fehler beim Laden."); }
+      setLoading(false);
+    })();
+  },[playlistId]);
+
+  const drummerColor = (d) => d==="Ron" ? C.red : d==="Tom" ? C.teal : C.gray;
+  const setCounts = SETS.reduce((a,s)=>{ a[s]=(data?.ps||[]).filter(p=>p.set_name===s).length; return a; },{});
+  const songsInSet = (data?.ps||[])
+    .filter(p=>p.set_name===activeSet)
+    .map(p=>({ ...(data.songs.find(s=>s.id===p.song_id)||{}), position:p.position }))
+    .sort((a,b)=>a.position-b.position);
+
+  const fontStyle = { fontFamily:"'Inter',sans-serif" };
+
+  if (loading) return (
+    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, ...fontStyle }}>
+      <SealIcon size={52}/><Spinner/>
+      <div style={{ color:C.grayDim, fontSize:11, letterSpacing:"0.15em" }}>SETLIST LÄDT…</div>
+    </div>
+  );
+
+  if (error) return (
+    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:14, padding:24, textAlign:"center", ...fontStyle }}>
+      <SealIcon size={48}/>
+      <div style={{ color:C.red, fontSize:14 }}>{error}</div>
+    </div>
+  );
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"#000", display:"flex", flexDirection:"column", overflow:"hidden", ...fontStyle }}>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800;900&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#000}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}"}</style>
+      {/* Header */}
+      <div style={{ background:"#0a0a0a", borderBottom:"1px solid #1a1a1a", padding:"12px 18px", flexShrink:0 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
+          <SealIcon size={28}/>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ color:C.white, fontWeight:800, fontSize:16, fontFamily:"'Space Mono',monospace", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{data.playlist.name}</div>
+            <div style={{ color:C.grayDim, fontSize:11 }}>{data.bandName} · nur Ansicht</div>
+          </div>
+        </div>
+        <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+          {SETS.map(set=>(
+            <button key={set} onClick={()=>setActiveSet(set)} style={{
+              background:activeSet===set?C.teal:"transparent",
+              color:activeSet===set?"#000":C.gray,
+              border:"1px solid "+(activeSet===set?C.teal:"#333"),
+              borderRadius:4, padding:"6px 14px", fontSize:12, fontWeight:700,
+              letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit"
+            }}>{set} ({setCounts[set]})</button>
+          ))}
+        </div>
+      </div>
+      {/* Songs */}
+      <div style={{ flex:1, overflowY:"auto", padding:"16px 18px", display:"flex", flexDirection:"column", gap:8 }}>
+        {songsInSet.length===0
+          ? <div style={{ textAlign:"center", color:C.grayDim, padding:32, fontSize:14 }}>Keine Songs in diesem Set</div>
+          : songsInSet.map((song,i)=>{
+              const st = dStyle(song.drummer);
+              return (
+                <div key={i} style={{ background:st.bg, border:"1px solid "+st.border, borderRadius:8, padding:"14px 18px", display:"flex", alignItems:"center", gap:14 }}>
+                  <div style={{ color:C.grayDim, fontSize:16, fontFamily:"'Space Mono',monospace", width:28, textAlign:"right", flexShrink:0 }}>{song.position}</div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ color:C.white, fontWeight:800, fontSize:21, lineHeight:1.2 }}>{song.title}</div>
+                    <div style={{ color:C.gray, fontSize:15, marginTop:2 }}>{song.artist}</div>
+                    {song.specialties&&<div style={{ color:C.grayDim, fontSize:13, fontStyle:"italic", marginTop:2 }}>{song.specialties}</div>}
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6, flexShrink:0 }}>
+                    {song.bpm>0&&<GigMetronome bpm={song.bpm}/>}
+                    {song.drummer&&<div style={{ color:drummerColor(song.drummer), border:"1px solid "+drummerColor(song.drummer), borderRadius:3, padding:"3px 10px", fontSize:13, fontWeight:700, letterSpacing:"0.08em" }}>{song.drummer}</div>}
+                  </div>
+                </div>
+              );
+            })}
+      </div>
+      {/* Footer */}
+      <div style={{ padding:"10px 18px", textAlign:"center", borderTop:"1px solid #111", flexShrink:0 }}>
+        <div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em" }}>SPIELFERTIG<span style={{ color:C.teal }}>‽</span> · GETEILTE SETLIST</div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [user,          setUser]   = useState(null);
   const [bands,         setBands]  = useState([]);
@@ -880,6 +1000,9 @@ export default function App() {
   const [toast,         setToast]  = useState(null);
 
   const show = (msg, type="success") => setToast({msg,type});
+
+  // Shared read-only view via ?share=<playlistId>
+  const shareId = typeof window!=="undefined" ? new URLSearchParams(window.location.search).get("share") : null;
 
   // Restore session
   useEffect(()=>{
@@ -912,6 +1035,8 @@ export default function App() {
 
   const handleAuth = (u) => { setUser(u); };
   const handleLogout = async () => { await sb.auth.signOut(); setUser(null); setBands([]); setSongs([]); setGigs([]); setPls([]); setPS([]); };
+
+  if (shareId) return <SharedView playlistId={shareId}/>;
 
   if (loading) return (
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16 }}>
