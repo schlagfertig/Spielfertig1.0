@@ -7,6 +7,8 @@ const SUPABASE_KEY =
   ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzdHdobXF3eG12bG9idnlnc3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDE3NjAsImV4cCI6MjA5NTE3Nzc2MH0" +
   ".DZK81qIrUo3gLldLO344T_wY_Al1MSzg3oCASPkaVqo";
 
+const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_KEY || "";
+
 // Global metronome tracker - only one at a time
 let activeMetronomeStop = null;
 
@@ -260,24 +262,26 @@ function useMetronome(bpm) {
     } catch {}
     setBeat(true); setTimeout(()=>setBeat(false), 80);
   }, []);
-  const stop = useCallback(() => {
-    clearInterval(iRef.current);
-    setActive(false); setBeat(false);
-    activeMetronomeStop = null;
-  }, []);
-  const start = useCallback(() => {
-    if (!bpm || bpm <= 0) return;
-    if (activeMetronomeStop) activeMetronomeStop();
-    setActive(true); tick();
-    iRef.current = setInterval(tick, (60/bpm)*1000);
-    activeMetronomeStop = () => { clearInterval(iRef.current); setActive(false); setBeat(false); };
-  }, [bpm, tick]);
   const toggle = useCallback((e) => {
     e.stopPropagation();
-    if (active) stop(); else start();
-  }, [active, start, stop]);
+    if (!bpm || bpm <= 0) return;
+    if (active) {
+      clearInterval(iRef.current);
+      setActive(false); setBeat(false);
+      activeMetronomeStop = null;
+    } else {
+      // Stop any other running metronome
+      if (activeMetronomeStop) activeMetronomeStop();
+      setActive(true); tick();
+      iRef.current = setInterval(tick, (60/bpm)*1000);
+      activeMetronomeStop = () => {
+        clearInterval(iRef.current);
+        setActive(false); setBeat(false);
+      };
+    }
+  }, [active, bpm, tick]);
   useEffect(()=>()=>clearInterval(iRef.current), []);
-  return { active, beat, toggle, start, stop };
+  return { active, beat, toggle };
 }
 
 // ── Song Row ───────────────────────────────────────────────────────────────
@@ -345,40 +349,218 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName) {
   setTimeout(()=>w.print(), 400);
 }
 
-// ── KI-Analyse (Platzhalter) ─────────────────────────────────────────────────
+// ── AI Set Notes ───────────────────────────────────────────────────────────
 function AISetNotes({ setName, songs }) {
-  const [open, setOpen] = useState(false);
+  const [notes, setNotes] = useState(""); const [loading, setLoading] = useState(false); const [open, setOpen] = useState(false);
+  const generate = async () => {
+    setLoading(true);
+    const list = songs.map((s,i)=>`${i+1}. ${s.title} – ${s.artist} (${s.bpm} BPM, Drummer: ${s.drummer})`).join("\n");
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages",{ method:"POST", headers:{"Content-Type":"application/json"},
+        headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-allow-browser":"true"},
+        body:JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:800,
+          messages:[{role:"user",content:`Analysiere diese Setlist für "${setName}" (max 150 Wörter):\n\n${list}\n\nGib: Energie-Kurve, BPM-Übergänge, Drummer-Wechsel, 1-2 Tipps. Kurz und direkt.`}] }) });
+      const d = await res.json();
+      setNotes(d.content?.[0]?.text || "Keine Analyse.");
+    } catch { setNotes("Verbindungsfehler."); }
+    setLoading(false);
+  };
   return (
     <div>
-      <button onClick={()=>setOpen(!open)} style={{ background:"transparent", border:"1px solid #1e1e1e", color:open?C.teal:C.grayDim, borderRadius:4, padding:"5px 13px", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>✦ KI-Analyse {open?"▲":"▼"}</button>
-      {open&&(
-        <div style={{ marginTop:8, background:"#080808", border:"1px solid #1e1e1e", borderRadius:4, padding:14 }}>
-          <p style={{ color:"#888", fontSize:13, lineHeight:1.6, margin:0 }}>
-            Die KI-Analyse ist derzeit deaktiviert. Sobald sie aktiv ist, bekommst du hier eine Set-Auswertung: Energie-Kurve, BPM-Übergänge, Drummer-Wechsel und Tipps.
-          </p>
-        </div>
-      )}
+      <button onClick={()=>setOpen(!open)} style={{ background:"transparent", border:`1px solid #1e1e1e`, color:open?C.teal:C.grayDim, borderRadius:4, padding:"5px 13px", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>✦ KI-Analyse {open?"▲":"▼"}</button>
+      {open&&<div style={{ marginTop:8, background:"#080808", border:"1px solid #1e1e1e", borderRadius:4, padding:14 }}>
+        <Btn size="sm" onClick={generate} disabled={loading||!songs.length}>{loading?"Analysiere…":"Analyse starten"}</Btn>
+        {notes&&<p style={{ marginTop:10, color:"#aaa", fontSize:13, lineHeight:1.7, whiteSpace:"pre-wrap", borderTop:"1px solid #1a1a1a", paddingTop:10 }}>{notes}</p>}
+      </div>}
     </div>
   );
 }
 
-// ── Import (Platzhalter) ──────────────────────────────────────────────────────
+// ── AI Import Wizard ───────────────────────────────────────────────────────
 function ImportWizard({ band, existingSongs, gigs, onImportDone, show }) {
+  const [step, setStep]         = useState("upload");
+  const [loading, setLoading]   = useState(false);
+  const [fileType, setFileType] = useState(null);
+  const [rawText, setRawText]   = useState("");
+  const [fileB64, setFileB64]   = useState(null);
+  const [fileMime, setFileMime] = useState(null);
+  const [parsed, setParsed]     = useState(null);
+  const [importMode, setMode]   = useState("both");
+  const [gigId, setGigId]       = useState("");
+  const [newGigName, setNewGig] = useState("");
+  const [plName, setPlName]     = useState("Importierte Playlist");
+  const [error, setError]       = useState("");
+  const [saving, setSaving]     = useState(false);
+
+  const bandGigs = gigs.filter(g=>g.band_id===band.id);
+
+  const handleFile = async (file) => {
+    setError("");
+    const mime = file.type;
+    if (mime.startsWith("image/")||mime==="application/pdf") {
+      const reader = new FileReader();
+      reader.onload = e => { setFileB64(e.target.result.split(",")[1]); setFileMime(mime); setFileType(mime.startsWith("image/")?"image":"pdf"); };
+      reader.readAsDataURL(file);
+    } else {
+      try { const t = await file.text(); setRawText(t); setFileType("text"); }
+      catch { setError("Format nicht unterstützt."); }
+    }
+  };
+
+  const runAnalysis = async () => {
+    if (!fileType&&!rawText) { setError("Bitte Datei hochladen oder Text einfügen."); return; }
+    setLoading(true); setError("");
+    const system = `Extrahiere Songs. Nur JSON, kein Markdown.\n{"songs":[{"title":"","artist":"","bpm":0,"drummer":"","specialties":"","set":""}],"playlistName":""}\nDrummer: ${band.drummers.join(", ")}. BPM=0 wenn unbekannt.`;
+    try {
+      let messages;
+      if (fileType==="image") messages=[{role:"user",content:[{type:"image",source:{type:"base64",media_type:fileMime,data:fileB64}},{type:"text",text:"Extrahiere alle Songs."}]}];
+      else if (fileType==="pdf") messages=[{role:"user",content:[{type:"document",source:{type:"base64",media_type:"application/pdf",data:fileB64}},{type:"text",text:"Extrahiere alle Songs."}]}];
+      else messages=[{role:"user",content:`Extrahiere Songs:\n\n${rawText}`}];
+      const res = await fetch("https://api.anthropic.com/v1/messages",{ method:"POST", headers:{"Content-Type":"application/json"},
+        headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-allow-browser":"true"},
+        body:JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:4000, system, messages }) });
+      const data = await res.json();
+      const text = data.content?.map(c=>c.text||"").join("").trim().replace(/```json|```/g,"").trim();
+      const result = JSON.parse(text);
+      setParsed(result);
+      if (result.playlistName) setPlName(result.playlistName);
+      setStep("preview");
+    } catch { setError("Analyse fehlgeschlagen. Nochmal versuchen."); }
+    setLoading(false);
+  };
+
+  const toggle   = idx => setParsed(p=>({...p,songs:p.songs.map((s,i)=>i===idx?{...s,_skip:!s._skip}:s)}));
+  const editSong = (idx,field,val) => setParsed(p=>({...p,songs:p.songs.map((s,i)=>i===idx?{...s,[field]:val}:s)}));
+
+  const handleImport = async () => {
+    setSaving(true);
+    const toImport = parsed.songs.filter(s=>!s._skip);
+    try {
+      // 1. Insert new songs
+      const newSongRecs = [];
+      for (const s of toImport) {
+        const exists = existingSongs.find(e=>e.band_id===band.id&&e.title.toLowerCase()===s.title.toLowerCase());
+        if (!exists) {
+          const inserted = await sb.insert("songs", { band_id:band.id, title:s.title, artist:s.artist||"", bpm:parseInt(s.bpm)||0, drummer:band.drummers.includes(s.drummer)?s.drummer:band.drummers[0]||"", specialties:s.specialties||"" });
+          newSongRecs.push({ ...s, dbId: inserted.id });
+        } else {
+          newSongRecs.push({ ...s, dbId: exists.id });
+        }
+      }
+
+      // 2. Create playlist if needed
+      if (importMode !== "songs") {
+        let tGigId = gigId ? parseInt(gigId) : null;
+        if (!tGigId && newGigName) {
+          const g = await sb.insert("gigs", { band_id:band.id, name:newGigName, date:null });
+          tGigId = g.id;
+        }
+        if (tGigId) {
+          const pl = await sb.insert("playlists", { gig_id:tGigId, name:plName });
+          for (const s of toImport) {
+            const rec = newSongRecs.find(r=>r.title===s.title);
+            if (!rec) continue;
+            const setName = (s.set&&SETS.includes(s.set))?s.set:"Set 1";
+            const pos = toImport.filter(x=>x.set===setName).indexOf(s)+1;
+            await sb.insert("playlist_songs", { playlist_id:pl.id, song_id:rec.dbId, set_name:setName, position:pos });
+          }
+        }
+      }
+      show(`${toImport.length} Songs importiert!`);
+      onImportDone();
+      setStep("done");
+    } catch(e) { setError("Fehler beim Speichern: "+e.message); }
+    setSaving(false);
+  };
+
+  const reset = () => { setStep("upload"); setFileType(null); setRawText(""); setFileB64(null); setParsed(null); setError(""); setGigId(""); setNewGig(""); setPlName("Importierte Playlist"); };
+
+  if (step==="done") return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:18, padding:"48px 0" }}>
+      <div style={{ fontSize:44 }}>✅</div>
+      <div style={{ color:C.white, fontWeight:800, fontSize:18, fontFamily:"'Space Mono',monospace" }}>Import abgeschlossen</div>
+      <SealLine/><Btn onClick={reset}>Weiteren Import</Btn>
+    </div>
+  );
+
+  if (step==="preview"&&parsed) {
+    const active = parsed.songs.filter(s=>!s._skip);
+    const newCnt = active.filter(s=>!existingSongs.find(e=>e.band_id===band.id&&e.title.toLowerCase()===s.title.toLowerCase())).length;
+    return (
+      <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <Btn variant="ghost" size="sm" onClick={reset}>← Neu</Btn>
+          <span style={{ color:C.white, fontWeight:700, fontSize:15 }}>Vorschau & Bestätigung</span>
+        </div>
+        <SealLine/>
+        <div style={{ display:"flex", gap:8 }}>
+          {[{l:"Erkannt",v:parsed.songs.length,c:C.teal},{l:"Neu",v:newCnt,c:C.teal},{l:"Vorhanden",v:active.length-newCnt,c:C.gray}].map(({l,v,c})=>(
+            <div key={l} style={{ flex:1, background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:4, padding:"8px 10px", textAlign:"center" }}>
+              <div style={{ color:c, fontSize:18, fontWeight:800, fontFamily:"'Space Mono',monospace" }}>{v}</div>
+              <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase" }}>{l}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:14 }}>
+          <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>Was importieren?</div>
+          <div style={{ display:"flex", gap:6, marginBottom:12 }}>
+            {[{k:"both",l:"Songs + Playlist"},{k:"songs",l:"Nur Songs"},{k:"playlist",l:"Nur Playlist"}].map(({k,l})=>(
+              <button key={k} onClick={()=>setMode(k)} style={{ background:importMode===k?C.teal:"transparent", color:importMode===k?"#000":C.gray, border:`1px solid ${importMode===k?C.teal:"#333"}`, borderRadius:3, padding:"5px 11px", fontSize:11, fontWeight:700, textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
+            ))}
+          </div>
+          {importMode!=="songs"&&(
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              <Field value={plName} onChange={setPlName} placeholder="Playlist-Name"/>
+              {bandGigs.length>0&&<select value={gigId} onChange={e=>setGigId(e.target.value)} style={{ background:"#0a0a0a", border:"1px solid #222", color:C.white, borderRadius:4, padding:"8px 12px", fontSize:13, fontFamily:"inherit" }}><option value="">— Neuen Gig erstellen —</option>{bandGigs.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select>}
+              {!gigId&&<Field value={newGigName} onChange={setNewGig} placeholder="Neuer Gig-Name"/>}
+            </div>
+          )}
+        </div>
+        <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:12 }}>
+          <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>Songs prüfen</div>
+          <div style={{ display:"flex", flexDirection:"column", gap:4, maxHeight:320, overflowY:"auto" }}>
+            {parsed.songs.map((song,idx)=>{
+              const exists = existingSongs.find(e=>e.band_id===band.id&&e.title.toLowerCase()===song.title.toLowerCase());
+              return (
+                <div key={idx} style={{ display:"flex", alignItems:"center", gap:8, background:song._skip?"#0a0a0a":exists?"rgba(92,200,184,0.04)":"rgba(92,200,184,0.08)", border:`1px solid ${song._skip?"#1a1a1a":"#1e3030"}`, borderRadius:4, padding:"7px 10px", opacity:song._skip?.4:1 }}>
+                  <input type="checkbox" checked={!song._skip} onChange={()=>toggle(idx)} style={{ accentColor:C.teal, flexShrink:0 }}/>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <input value={song.title} onChange={e=>editSong(idx,"title",e.target.value)} style={{ background:"transparent", border:"none", color:C.white, fontWeight:600, fontSize:13, fontFamily:"inherit", width:"100%", outline:"none" }}/>
+                    <input value={song.artist||""} onChange={e=>editSong(idx,"artist",e.target.value)} style={{ background:"transparent", border:"none", color:C.gray, fontSize:11, fontFamily:"inherit", width:"100%", outline:"none" }}/>
+                  </div>
+                  <input value={song.bpm||""} onChange={e=>editSong(idx,"bpm",e.target.value)} style={{ background:"transparent", border:"none", color:C.grayDim, fontSize:11, fontFamily:"inherit", width:42, outline:"none", textAlign:"right" }} placeholder="BPM"/>
+                  <select value={song.drummer||""} onChange={e=>editSong(idx,"drummer",e.target.value)} style={{ background:"#111", border:"1px solid #222", color:song.drummer==="Ron"?C.red:C.teal, fontSize:10, fontFamily:"inherit", borderRadius:3, padding:"2px 6px" }}>
+                    <option value="">–</option>{band.drummers.map(d=><option key={d} value={d}>{d}</option>)}
+                  </select>
+                  {exists&&<span style={{ color:C.teal, fontSize:9, textTransform:"uppercase", border:`1px solid ${C.tealBorder}`, borderRadius:2, padding:"1px 5px" }}>vorhanden</span>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        {error&&<div style={{ color:C.red, fontSize:12, padding:"8px 12px", background:C.redDim, border:`1px solid ${C.redBorder}`, borderRadius:4 }}>{error}</div>}
+        <Btn full onClick={handleImport} disabled={!active.length||saving}>{saving?<Spinner/>:`${active.length} Songs importieren →`}</Btn>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Songs importieren</div>
+      <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Playlist / Songliste importieren</div>
       <SealLine/>
-      <div style={{ background:"#0a1f1a", border:"1px solid "+C.tealBorder, borderRadius:8, padding:22, textAlign:"center" }}>
-        <div style={{ fontSize:38, marginBottom:8 }}>🤖</div>
-        <div style={{ color:C.teal, fontWeight:600, marginBottom:6 }}>KI-Import kommt bald</div>
-        <p style={{ color:C.gray, fontSize:13, lineHeight:1.5, margin:0 }}>
-          Songs trägst du am besten direkt im Tab „🎵 Songs“ ein. Der automatische Import von PDFs oder Fotos folgt später.
-        </p>
+      <div onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f)handleFile(f);}} onClick={()=>document.getElementById("imp-inp").click()}
+        style={{ border:`2px dashed ${fileType?C.teal:"#2a2a2a"}`, borderRadius:8, padding:"32px 20px", textAlign:"center", background:fileType?C.tealDim:"transparent", cursor:"pointer", transition:"all .2s" }}>
+        <input id="imp-inp" type="file" accept="image/*,.pdf,.csv,.txt" style={{ display:"none" }} onChange={e=>{if(e.target.files[0])handleFile(e.target.files[0]);}}/>
+        {fileType?<div><div style={{ fontSize:30, marginBottom:6 }}>{fileType==="image"?"🖼️":fileType==="pdf"?"📄":"📝"}</div><div style={{ color:C.teal, fontWeight:700, fontSize:13 }}>Datei geladen ✓</div></div>
+        :<div><div style={{ fontSize:30, marginBottom:6 }}>📂</div><div style={{ color:C.gray, fontWeight:600, fontSize:13 }}>Datei ablegen oder klicken</div><div style={{ color:C.grayDim, fontSize:11, marginTop:4 }}>PDF · Foto · CSV · TXT</div></div>}
       </div>
+      <div style={{ position:"relative", textAlign:"center", margin:"4px 0" }}><SealLine/><span style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", background:C.bg, padding:"0 10px", color:C.grayDim, fontSize:11 }}>oder Text einfügen</span></div>
+      <Field value={rawText} onChange={v=>{setRawText(v);setFileType(v?"text":null);}} rows={6} placeholder={"Songliste hier einfügen…\n\nBeispiel:\nSet 1\n1. Highway to Hell – AC/DC (116 BPM, Tom)\n2. Wonderwall – Oasis"}/>
+      {error&&<div style={{ color:C.red, fontSize:12, padding:"8px 12px", background:C.redDim, border:`1px solid ${C.redBorder}`, borderRadius:4 }}>{error}</div>}
+      <Btn full disabled={loading||(!fileType&&!rawText)} onClick={runAnalysis}>{loading?"⏳ KI analysiert…":"✦ KI-Analyse starten →"}</Btn>
     </div>
   );
 }
-
 
 // ── Song Database ──────────────────────────────────────────────────────────
 function SongDatabase({ band, songs, onRefresh, show }) {
@@ -474,15 +656,10 @@ function SongDatabase({ band, songs, onRefresh, show }) {
 }
 
 // ── Gig Metronome (compact, for Gig Mode) ─────────────────────────────────────
-function GigMetronome({ bpm, autoStart }) {
-  const { active, beat, toggle, start, stop } = useMetronome(bpm);
-  // Auto-start/stop when parent activates this song
-  useEffect(()=>{
-    if (autoStart && !active) start();
-    else if (!autoStart && active) stop();
-  }, [autoStart]);
+function GigMetronome({ bpm }) {
+  const { active, beat, toggle } = useMetronome(bpm);
   const pulseColor = beat ? "#fff" : active ? C.teal : C.grayDim;
-  const glow = beat ? "0 0 14px 5px " + C.teal : active ? "0 0 5px 2px " + C.tealBorder : "none";
+  const glow = beat ? "0 0 12px 4px " + C.teal : active ? "0 0 5px 2px " + C.tealBorder : "none";
   return (
     <button onClick={toggle} title={(active?"Stop":"Start")+" ("+bpm+" BPM)"}
       style={{ background:"transparent", border:"1px solid "+(active?C.teal:"#333"), borderRadius:"50%", width:44, height:44, cursor:"pointer", padding:0, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:glow, transition:"all .1s" }}>
@@ -499,7 +676,6 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
   const [open, setOpen] = useState(false);
   const [newSet, setNewSet] = useState(song.set_name);
   const [newPos, setNewPos] = useState(String(song.position));
-  const [notes, setNotes] = useState(song.specialties||"");
 
   const apply = async () => {
     setOpen(false);
@@ -523,17 +699,13 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
       newOthers.splice(clamped-1, 0, { id: psId });
       for (let i=0;i<newOthers.length;i++) await sb.update("playlist_songs",{set_name:targetSet,position:i+1},"id=eq."+newOthers[i].id);
     }
-    // Save notes if changed
-    if (notes !== (song.specialties||"")) {
-      await sb.update("songs", { specialties: notes }, "id=eq."+song.id);
-    }
     await onRefresh(); setSaving(false);
   };
 
   return (
     <div style={{ position:"relative" }}>
       <SongRow song={song} pos={song.position} onDelete={onDelete}
-        onEdit={()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setNotes(song.specialties||""); setOpen(!open); }}/>
+        onEdit={()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setOpen(!open); }}/>
       {open&&(
         <div style={{ position:"absolute", right:0, top:"100%", zIndex:100, background:"#1a1a1a", border:"1px solid "+C.tealBorder, borderRadius:8, padding:14, minWidth:220, boxShadow:"0 8px 32px rgba(0,0,0,.8)" }}>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:10 }}>Verschieben nach</div>
@@ -550,16 +722,6 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
               <input type="number" min="1" value={newPos} onChange={e=>setNewPos(e.target.value)}
                 style={{ background:"#0a0a0a", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:13, fontFamily:"'Space Mono',monospace", width:"100%", textAlign:"center" }}/>
             </div>
-          </div>
-          <div style={{ marginBottom:10 }}>
-            <div style={{ color:C.grayDim, fontSize:10, marginBottom:4 }}>NOTIZEN</div>
-            <textarea
-              value={notes}
-              onChange={e=>setNotes(e.target.value)}
-              placeholder="z.B. Drums beginnt, Count-In…"
-              rows={2}
-              style={{ background:"#0a0a0a", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:12, fontFamily:"inherit", width:"100%", resize:"none", lineHeight:1.5 }}
-            />
           </div>
           <div style={{ display:"flex", gap:6 }}>
             <Btn variant="ghost" size="sm" onClick={()=>setOpen(false)}>Abbrechen</Btn>
@@ -579,7 +741,6 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const [showAdd, setShowAdd]     = useState(false);
   const [saving, setSaving]       = useState(false);
   const [gigMode, setGigMode]     = useState(false);
-  const [currentSongId, setCurrentSongId] = useState(null);
 
   const mySongs  = playlistSongs.filter(ps=>ps.playlist_id===playlist.id);
   const bandId   = useMemo(()=>allSongs.find(s=>mySongs.some(ps=>ps.song_id===s.id))?.band_id??null,[mySongs,allSongs]);
@@ -634,7 +795,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           <div style={{flex:1,color:C.white,fontWeight:800,fontSize:18,fontFamily:"'Space Mono',monospace"}}>{playlist.name}</div>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             {SETS.map(set=>(
-              <button key={set} onClick={()=>{setActiveSet(set); setCurrentSongId(null);}} style={{
+              <button key={set} onClick={()=>{setActiveSet(set);}} style={{
                 background:activeSet===set?C.teal:"transparent",
                 color:activeSet===set?"#000":C.gray,
                 border:"1px solid "+(activeSet===set?C.teal:"#333"),
@@ -647,37 +808,17 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         {/* Song list */}
         <div style={{flex:1,overflowY:"auto",padding:"16px 20px",display:"flex",flexDirection:"column",gap:8}}>
           {songsInSet.map((song,i)=>{
-            const st = dStyle(song.drummer);
-            const isCurrent = currentSongId === song.ps_id;
-            const currentIdx = songsInSet.findIndex(s=>s.ps_id===currentSongId);
-            const isNext = currentSongId && !isCurrent && i === currentIdx + 1;
-            const opacity = !currentSongId ? 1 : isCurrent ? 1 : isNext ? 0.75 : 0.35;
+            const st=dStyle(song.drummer);
             return (
-              <div key={song.id}
-                onClick={()=>setCurrentSongId(isCurrent ? null : song.ps_id)}
-                style={{
-                  background: isCurrent ? (song.drummer==="Ron"?C.redDim:C.tealDim) : isNext ? "#161616" : st.bg,
-                  border: "2px solid " + (isCurrent ? (song.drummer==="Ron"?C.red:C.teal) : isNext ? "#444" : st.border),
-                  borderRadius:8, padding:"14px 18px", display:"flex", alignItems:"center", gap:14,
-                  cursor:"pointer", opacity,
-                  transition:"all .2s",
-                  boxShadow: isCurrent ? "0 0 18px 2px " + (song.drummer==="Ron"?C.redBorder:C.tealBorder) : "none"
-                }}>
-                {/* Play indicator */}
-                <div style={{width:24,textAlign:"center",flexShrink:0}}>
-                  {isCurrent
-                    ? <div style={{color:song.drummer==="Ron"?C.red:C.teal,fontSize:18,lineHeight:1}}>▶</div>
-                    : isNext
-                      ? <div style={{color:"#666",fontSize:12,lineHeight:1}}>NEXT</div>
-                      : <div style={{color:C.grayDim,fontSize:15,fontFamily:"'Space Mono',monospace"}}>{song.position}</div>}
-                </div>
+              <div key={song.id} style={{background:st.bg,border:"1px solid "+st.border,borderRadius:8,padding:"14px 18px",display:"flex",alignItems:"center",gap:14}}>
+                <div style={{color:C.grayDim,fontSize:16,fontFamily:"'Space Mono',monospace",width:28,textAlign:"right",flexShrink:0}}>{song.position}</div>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{color:isCurrent?C.white:isNext?"#bbb":"#ccc",fontWeight:800,fontSize:isCurrent?24:isNext?19:21,lineHeight:1.2,transition:"font-size .2s"}}>{song.title}</div>
-                  <div style={{color:isCurrent?C.gray:"#666",fontSize:isNext?13:15,marginTop:2}}>{song.artist}</div>
-                  {song.specialties&&<div style={{color:"#bbb",fontSize:13,fontStyle:"italic",marginTop:2}}>{song.specialties}</div>}
+                  <div style={{color:C.white,fontWeight:800,fontSize:22,lineHeight:1.2}}>{song.title}</div>
+                  <div style={{color:C.gray,fontSize:15,marginTop:2}}>{song.artist}</div>
+                  {song.specialties&&<div style={{color:C.grayDim,fontSize:13,fontStyle:"italic",marginTop:2}}>{song.specialties}</div>}
                 </div>
                 <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6,flexShrink:0}}>
-                  {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent}/>}
+                  {song.bpm>0&&<GigMetronome bpm={song.bpm}/>}
                   {song.drummer&&<div style={{color:drummerColor(song.drummer),border:"1px solid "+drummerColor(song.drummer),borderRadius:3,padding:"3px 10px",fontSize:13,fontWeight:700,letterSpacing:"0.08em"}}>{song.drummer}</div>}
                 </div>
               </div>
@@ -697,12 +838,6 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           <div style={{ color:C.grayDim, fontSize:11 }}>{mySongs.length} Songs gesamt</div>
         </div>
         <Btn variant="outline" size="sm" onClick={()=>exportPDF(playlist,allSongs,playlistSongs,bandName)}>🖨 PDF</Btn>
-        <Btn variant="outline" size="sm" onClick={()=>{
-          const url = window.location.origin + "/?share=" + playlist.id;
-          if (navigator.clipboard&&navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).then(()=>show("Link kopiert! An Bandkollegen senden 🐟")).catch(()=>show(url,"success"));
-          } else { show(url,"success"); }
-        }}>🔗 Teilen</Btn>
         <Btn variant="primary" size="sm" onClick={()=>setGigMode(true)}>🎸 Gig</Btn>
         {saving&&<Spinner/>}
       </div>
@@ -913,120 +1048,6 @@ function Landing({ bands, songs, user, onSelect, onLogout }) {
 }
 
 // ── Root ───────────────────────────────────────────────────────────────────
-// ── Shared Read-Only View (für Bandkollegen) ─────────────────────────────────
-function SharedView({ playlistId }) {
-  const [data, setData]         = useState(null);
-  const [activeSet, setActiveSet] = useState("Set 1");
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(true);
-
-  useEffect(()=>{
-    (async()=>{
-      try {
-        const pls = await sb.query("playlists", { select:"*", filter:"id=eq."+playlistId });
-        const playlist = Array.isArray(pls)&&pls[0] ? pls[0] : null;
-        if (!playlist) { setError("Setlist nicht gefunden oder nicht freigegeben."); setLoading(false); return; }
-        const ps = await sb.query("playlist_songs", { select:"*", filter:"playlist_id=eq."+playlistId, order:"position.asc" });
-        const psArr = Array.isArray(ps) ? ps : [];
-        const ids = [...new Set(psArr.map(p=>p.song_id))];
-        let songs = [];
-        if (ids.length) {
-          const sres = await sb.query("songs", { select:"*", filter:"id=in.("+ids.join(",")+")" });
-          songs = Array.isArray(sres) ? sres : [];
-        }
-        let bandName = "";
-        const gres = await sb.query("gigs", { select:"*", filter:"id=eq."+playlist.gig_id });
-        const gig = Array.isArray(gres)&&gres[0] ? gres[0] : null;
-        if (gig) {
-          const bres = await sb.query("bands", { select:"*", filter:"id=eq."+gig.band_id });
-          if (Array.isArray(bres)&&bres[0]) bandName = bres[0].name;
-        }
-        // first non-empty set as default
-        const firstSet = SETS.find(s=>psArr.some(p=>p.set_name===s)) || "Set 1";
-        setActiveSet(firstSet);
-        setData({ playlist, ps:psArr, songs, bandName });
-      } catch(e) { setError("Fehler beim Laden."); }
-      setLoading(false);
-    })();
-  },[playlistId]);
-
-  const drummerColor = (d) => d==="Ron" ? C.red : d==="Tom" ? C.teal : C.gray;
-  const setCounts = SETS.reduce((a,s)=>{ a[s]=(data?.ps||[]).filter(p=>p.set_name===s).length; return a; },{});
-  const songsInSet = (data?.ps||[])
-    .filter(p=>p.set_name===activeSet)
-    .map(p=>({ ...(data.songs.find(s=>s.id===p.song_id)||{}), position:p.position }))
-    .sort((a,b)=>a.position-b.position);
-
-  const fontStyle = { fontFamily:"'Inter',sans-serif" };
-
-  if (loading) return (
-    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, ...fontStyle }}>
-      <SealIcon size={52}/><Spinner/>
-      <div style={{ color:C.grayDim, fontSize:11, letterSpacing:"0.15em" }}>SETLIST LÄDT…</div>
-    </div>
-  );
-
-  if (error) return (
-    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:14, padding:24, textAlign:"center", ...fontStyle }}>
-      <SealIcon size={48}/>
-      <div style={{ color:C.red, fontSize:14 }}>{error}</div>
-    </div>
-  );
-
-  return (
-    <div style={{ position:"fixed", inset:0, background:"#000", display:"flex", flexDirection:"column", overflow:"hidden", ...fontStyle }}>
-      <style>{"@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800;900&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#000}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}"}</style>
-      {/* Header */}
-      <div style={{ background:"#0a0a0a", borderBottom:"1px solid #1a1a1a", padding:"12px 18px", flexShrink:0 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
-          <SealIcon size={28}/>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ color:C.white, fontWeight:800, fontSize:16, fontFamily:"'Space Mono',monospace", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{data.playlist.name}</div>
-            <div style={{ color:C.grayDim, fontSize:11 }}>{data.bandName} · nur Ansicht</div>
-          </div>
-        </div>
-        <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-          {SETS.map(set=>(
-            <button key={set} onClick={()=>setActiveSet(set)} style={{
-              background:activeSet===set?C.teal:"transparent",
-              color:activeSet===set?"#000":C.gray,
-              border:"1px solid "+(activeSet===set?C.teal:"#333"),
-              borderRadius:4, padding:"6px 14px", fontSize:12, fontWeight:700,
-              letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit"
-            }}>{set} ({setCounts[set]})</button>
-          ))}
-        </div>
-      </div>
-      {/* Songs */}
-      <div style={{ flex:1, overflowY:"auto", padding:"16px 18px", display:"flex", flexDirection:"column", gap:8 }}>
-        {songsInSet.length===0
-          ? <div style={{ textAlign:"center", color:C.grayDim, padding:32, fontSize:14 }}>Keine Songs in diesem Set</div>
-          : songsInSet.map((song,i)=>{
-              const st = dStyle(song.drummer);
-              return (
-                <div key={i} style={{ background:st.bg, border:"1px solid "+st.border, borderRadius:8, padding:"14px 18px", display:"flex", alignItems:"center", gap:14 }}>
-                  <div style={{ color:C.grayDim, fontSize:16, fontFamily:"'Space Mono',monospace", width:28, textAlign:"right", flexShrink:0 }}>{song.position}</div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ color:C.white, fontWeight:800, fontSize:21, lineHeight:1.2 }}>{song.title}</div>
-                    <div style={{ color:C.gray, fontSize:15, marginTop:2 }}>{song.artist}</div>
-                    {song.specialties&&<div style={{ color:"#bbb", fontSize:13, fontStyle:"italic", marginTop:2 }}>{song.specialties}</div>}
-                  </div>
-                  <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6, flexShrink:0 }}>
-                    {song.bpm>0&&<GigMetronome bpm={song.bpm}/>}
-                    {song.drummer&&<div style={{ color:drummerColor(song.drummer), border:"1px solid "+drummerColor(song.drummer), borderRadius:3, padding:"3px 10px", fontSize:13, fontWeight:700, letterSpacing:"0.08em" }}>{song.drummer}</div>}
-                  </div>
-                </div>
-              );
-            })}
-      </div>
-      {/* Footer */}
-      <div style={{ padding:"10px 18px", textAlign:"center", borderTop:"1px solid #111", flexShrink:0 }}>
-        <div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em" }}>SPIELFERTIG<span style={{ color:C.teal }}>‽</span> · GETEILTE SETLIST</div>
-      </div>
-    </div>
-  );
-}
-
 export default function App() {
   const [user,          setUser]   = useState(null);
   const [bands,         setBands]  = useState([]);
@@ -1039,9 +1060,6 @@ export default function App() {
   const [toast,         setToast]  = useState(null);
 
   const show = (msg, type="success") => setToast({msg,type});
-
-  // Shared read-only view via ?share=<playlistId>
-  const shareId = typeof window!=="undefined" ? new URLSearchParams(window.location.search).get("share") : null;
 
   // Restore session
   useEffect(()=>{
@@ -1074,8 +1092,6 @@ export default function App() {
 
   const handleAuth = (u) => { setUser(u); };
   const handleLogout = async () => { await sb.auth.signOut(); setUser(null); setBands([]); setSongs([]); setGigs([]); setPls([]); setPS([]); };
-
-  if (shareId) return <SharedView playlistId={shareId}/>;
 
   if (loading) return (
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16 }}>
