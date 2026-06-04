@@ -1156,7 +1156,7 @@ function SharedView({ playlistId }) {
         {bandLogo&&(
           <div style={{ padding:"16px 18px 8px", textAlign:"center", borderBottom:"1px solid #111" }}>
             <img src={bandLogo} alt={data.bandName}
-              style={{ height:56, maxWidth:"70%", objectFit:"contain", filter:"invert(1)", opacity:.9 }}/>
+              style={{ height:112, maxWidth:"85%", objectFit:"contain", filter:"invert(1)", opacity:.9 }}/>
           </div>
         )}
         {/* Playlist name + set tabs */}
