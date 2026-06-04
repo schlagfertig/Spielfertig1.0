@@ -423,8 +423,14 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName, withNotes) {
     + pages
     + "</body></html>";
 
+  const closeBtn = "<div class='close-btn'>"
+    + "<button onclick='window.close()' style='position:fixed;top:16px;right:16px;background:#000;color:#5cc8b8;border:1px solid #5cc8b8;border-radius:4px;padding:8px 18px;font-family:Raleway,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;z-index:999'>← SCHLIESSEN</button>"
+    + "</div>";
+
+  const htmlWithBtn = html.replace("</body>", closeBtn + "<style>@media print{.close-btn{display:none}}</style></body>");
+
   const w = window.open("","_blank");
-  w.document.write(html);
+  w.document.write(htmlWithBtn);
   w.document.close();
   setTimeout(()=>w.print(), 600);
 }
@@ -841,6 +847,8 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, onRefr
   const [plName, setPlName]     = useState("");
   const [confirm, setConfirm]   = useState(null);
   const [saving, setSaving]     = useState(false);
+  const [renaming, setRenaming] = useState(null);
+  const [renameTxt, setRenameTxt] = useState("");
 
   const bandGigs   = gigs.filter(g=>g.band_id===band.id);
   const gigPls     = playlists.filter(p=>p.gig_id===selGig?.id);
@@ -869,14 +877,25 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, onRefr
               <div style={{ color:C.white, fontWeight:600, fontSize:14 }}>{p.name}</div>
               <div style={{ color:C.grayDim, fontSize:11 }}>{playlistSongs.filter(ps=>ps.playlist_id===p.id).length} Songs</div>
             </div>
-            <div style={{ display:"flex", gap:8 }}>
+            <div style={{ display:"flex", gap:6 }}>
               <Btn size="sm" onClick={()=>{setSelPl(p);setView("editor");}}>Öffnen →</Btn>
+              <Btn variant="outline" size="sm" onClick={()=>{setRenaming(p);setRenameTxt(p.name);}}>✎</Btn>
               <Btn variant="danger" size="sm" onClick={()=>setConfirm({type:"pl",item:p})}>✕</Btn>
             </div>
           </div>
         ))}
       </div>
-      {confirm&&<Confirm msg={`„${confirm.item.name}" löschen?`} onOk={async()=>{ await sb.delete("playlists","id=eq."+confirm.item.id); await onRefresh(); show("Playlist gelöscht."); setConfirm(null); }} onCancel={()=>setConfirm(null)}/>}
+      {renaming&&<Modal title="Playlist umbenennen" onClose={()=>setRenaming(null)}>
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          <Field value={renameTxt} onChange={setRenameTxt} placeholder="Neuer Name…"/>
+          <Btn full disabled={!renameTxt||saving} onClick={async()=>{
+            setSaving(true);
+            await sb.update("playlists",{name:renameTxt},"id=eq."+renaming.id);
+            await onRefresh(); show("Playlist umbenannt!"); setRenaming(null); setSaving(false);
+          }}>Umbenennen ✓</Btn>
+        </div>
+      </Modal>}
+      {confirm&&<Confirm msg={"\""+confirm.item.name+"\" löschen?"} onOk={async()=>{ await sb.delete("playlists","id=eq."+confirm.item.id); await onRefresh(); show("Playlist gelöscht."); setConfirm(null); }} onCancel={()=>setConfirm(null)}/>}
     </div>
   );
 
