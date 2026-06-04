@@ -1046,6 +1046,14 @@ export default function App() {
   // Shared read-only view via ?share=<playlistId>
   const shareId = typeof window!=="undefined" ? new URLSearchParams(window.location.search).get("share") : null;
 
+  // Register Service Worker (PWA)
+  useEffect(()=>{
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js")
+        .catch(()=>{}); // silent fail
+    }
+  }, []);
+
   // Restore session
   useEffect(()=>{
     const token = localStorage.getItem("sf_token");
