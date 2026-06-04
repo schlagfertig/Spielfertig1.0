@@ -265,12 +265,21 @@ function useMetronome(bpm) {
   const tick = useCallback(() => {
     try {
       if (!ctxRef.current) ctxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-      const ctx = ctxRef.current, osc = ctx.createOscillator(), gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.frequency.value = 1000;
-      gain.gain.setValueAtTime(0.35, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
-      osc.start(); osc.stop(ctx.currentTime + 0.05);
+      const ctx = ctxRef.current;
+      // High click – piercing, cuts through band noise
+      const osc1 = ctx.createOscillator(), g1 = ctx.createGain();
+      osc1.connect(g1); g1.connect(ctx.destination);
+      osc1.frequency.value = 2200;
+      g1.gain.setValueAtTime(0.9, ctx.currentTime);
+      g1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.022);
+      osc1.start(); osc1.stop(ctx.currentTime + 0.025);
+      // Mid body – adds fullness
+      const osc2 = ctx.createOscillator(), g2 = ctx.createGain();
+      osc2.connect(g2); g2.connect(ctx.destination);
+      osc2.frequency.value = 900;
+      g2.gain.setValueAtTime(0.5, ctx.currentTime);
+      g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+      osc2.start(); osc2.stop(ctx.currentTime + 0.045);
     } catch {}
     setBeat(true); setTimeout(()=>setBeat(false), 80);
   }, []);
