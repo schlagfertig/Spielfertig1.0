@@ -304,7 +304,7 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
           {song.artist}
           {song.bpm>0&&<span style={{ color:active?C.teal:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6, transition:"color .2s" }}>{song.bpm} BPM</span>}
         </div>
-        {song.specialties&&<div style={{ color:C.grayDim, fontSize:11, fontStyle:"italic" }}>{song.specialties}</div>}
+        {song.specialties&&<div style={{ color:C.grayDim, fontSize:11, fontStyle:"italic", whiteSpace:"pre-wrap" }}>{song.specialties}</div>}
       </div>
       {song.drummer&&<Badge color={st.badge}>{song.drummer}</Badge>}
       {onEdit&&<button onClick={e=>{e.stopPropagation();onEdit(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"6px 10px", fontSize:18 }} onMouseEnter={e=>e.currentTarget.style.color=C.teal} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✎</button>}
@@ -674,7 +674,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{color:isCurrent?C.white:isNext?"#bbb":"#ccc",fontWeight:800,fontSize:isCurrent?24:isNext?19:21,lineHeight:1.2,transition:"font-size .2s"}}>{song.title}</div>
                   <div style={{color:isCurrent?C.gray:"#666",fontSize:isNext?13:15,marginTop:2}}>{song.artist}</div>
-                  {song.specialties&&<div style={{color:"#bbb",fontSize:13,fontStyle:"italic",marginTop:2}}>{song.specialties}</div>}
+                  {song.specialties&&<div style={{color:"#bbb",fontSize:13,fontStyle:"italic",marginTop:2,whiteSpace:"pre-wrap"}}>{song.specialties}</div>}
                 </div>
                 <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6,flexShrink:0}}>
                   {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent}/>}
@@ -1009,7 +1009,7 @@ function SharedView({ playlistId }) {
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ color:C.white, fontWeight:800, fontSize:21, lineHeight:1.2 }}>{song.title}</div>
                     <div style={{ color:C.gray, fontSize:15, marginTop:2 }}>{song.artist}</div>
-                    {song.specialties&&<div style={{ color:"#bbb", fontSize:13, fontStyle:"italic", marginTop:2 }}>{song.specialties}</div>}
+                    {song.specialties&&<div style={{ color:"#bbb", fontSize:13, fontStyle:"italic", marginTop:2, whiteSpace:"pre-wrap" }}>{song.specialties}</div>}
                   </div>
                   <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6, flexShrink:0 }}>
                     {song.bpm>0&&<GigMetronome bpm={song.bpm}/>}
