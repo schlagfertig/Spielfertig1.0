@@ -1139,55 +1139,73 @@ function SharedView({ playlistId }) {
     </div>
   );
 
+  const bandLogo = getBandLogo(data.bandName);
+
   return (
-    <div style={{ position:"fixed", inset:0, background:"#000", display:"flex", flexDirection:"column", overflow:"hidden", ...fontStyle }}>
+    <div style={{ position:"fixed", inset:0, background:"#000", display:"flex", flexDirection:"column", overflow:"hidden", fontFamily:"'Raleway',sans-serif" }}>
       <style>{"@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#000}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}"}</style>
+
+      {/* SCHLAGFERTIG‽ watermark */}
+      <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <img src={LOGO} alt="" style={{ width:320, opacity:0.05, mixBlendMode:"screen" }}/>
+      </div>
+
       {/* Header */}
-      <div style={{ background:"#0a0a0a", borderBottom:"1px solid #1a1a1a", padding:"12px 18px", flexShrink:0 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
-          <SealIcon size={28}/>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ color:C.white, fontWeight:800, fontSize:16, fontFamily:"'Space Mono',monospace", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{data.playlist.name}</div>
-            <div style={{ color:C.grayDim, fontSize:11 }}>{data.bandName} · nur Ansicht</div>
+      <div style={{ background:"#0a0a0a", borderBottom:"1px solid #1a1a1a", flexShrink:0, position:"relative", zIndex:1 }}>
+        {/* Band logo */}
+        {bandLogo&&(
+          <div style={{ padding:"16px 18px 8px", textAlign:"center", borderBottom:"1px solid #111" }}>
+            <img src={bandLogo} alt={data.bandName}
+              style={{ height:56, maxWidth:"70%", objectFit:"contain", filter:"invert(1)", opacity:.9 }}/>
+          </div>
+        )}
+        {/* Playlist name + set tabs */}
+        <div style={{ padding:"10px 18px 12px" }}>
+          <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:10 }}>
+            <div style={{ color:C.white, fontWeight:700, fontSize:17, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.05em", flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{data.playlist.name}</div>
+            <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.1em", flexShrink:0 }}>NUR ANSICHT</div>
+          </div>
+          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+            {SETS.map(set=>(
+              <button key={set} onClick={()=>setActiveSet(set)} style={{
+                background:activeSet===set?C.teal:"transparent",
+                color:activeSet===set?"#000":C.gray,
+                border:"1px solid "+(activeSet===set?C.teal:"#333"),
+                borderRadius:4, padding:"6px 14px", fontSize:12, fontWeight:700,
+                letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit"
+              }}>{set} ({setCounts[set]})</button>
+            ))}
           </div>
         </div>
-        <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-          {SETS.map(set=>(
-            <button key={set} onClick={()=>setActiveSet(set)} style={{
-              background:activeSet===set?C.teal:"transparent",
-              color:activeSet===set?"#000":C.gray,
-              border:"1px solid "+(activeSet===set?C.teal:"#333"),
-              borderRadius:4, padding:"6px 14px", fontSize:12, fontWeight:700,
-              letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit"
-            }}>{set} ({setCounts[set]})</button>
-          ))}
-        </div>
       </div>
+
       {/* Songs */}
-      <div style={{ flex:1, overflowY:"auto", padding:"16px 18px", display:"flex", flexDirection:"column", gap:8 }}>
+      <div style={{ flex:1, overflowY:"auto", padding:"12px 14px", display:"flex", flexDirection:"column", gap:5, position:"relative", zIndex:1 }}>
         {songsInSet.length===0
           ? <div style={{ textAlign:"center", color:C.grayDim, padding:32, fontSize:14 }}>Keine Songs in diesem Set</div>
           : songsInSet.map((song,i)=>{
               const st = dStyle(song.drummer);
+              const dCol = drummerColor(song.drummer);
               return (
-                <div key={i} style={{ background:st.bg, border:"1px solid "+st.border, borderRadius:8, padding:"14px 18px", display:"flex", alignItems:"center", gap:14 }}>
-                  <div style={{ color:C.grayDim, fontSize:16, fontFamily:"'Space Mono',monospace", width:28, textAlign:"right", flexShrink:0 }}>{song.position}</div>
+                <div key={i} style={{ background:st.bg, border:"1px solid "+st.border, borderRadius:7, padding:"9px 13px", display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{ color:C.grayDim, fontSize:13, fontFamily:"'Space Mono',monospace", width:22, textAlign:"right", flexShrink:0 }}>{song.position}</div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ color:C.white, fontWeight:800, fontSize:21, lineHeight:1.2 }}>{song.title}</div>
-                    <div style={{ color:C.gray, fontSize:15, marginTop:2 }}>{song.artist}</div>
-                    {song.specialties&&<div style={{ color:"#bbb", fontSize:13, fontStyle:"italic", marginTop:2, whiteSpace:"pre-wrap" }}>{song.specialties}</div>}
+                    <div style={{ color:C.white, fontWeight:600, fontFamily:"'Raleway',sans-serif", fontSize:21, lineHeight:1.15, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{song.title}</div>
+                    <div style={{ color:"#888", fontSize:12, marginTop:1 }}>{song.artist}{song.bpm>0&&<span style={{ color:"#555", fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:8 }}>{song.bpm}</span>}</div>
+                    {song.specialties&&<div style={{ color:"#bbb", fontSize:12, fontStyle:"italic", marginTop:2, whiteSpace:"pre-wrap", lineHeight:1.4 }}>{song.specialties}</div>}
                   </div>
-                  <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6, flexShrink:0 }}>
-                    {song.bpm>0&&<GigMetronome bpm={song.bpm}/>}
-                    {song.drummer&&<div style={{ color:drummerColor(song.drummer), border:"1px solid "+drummerColor(song.drummer), borderRadius:3, padding:"3px 10px", fontSize:13, fontWeight:700, letterSpacing:"0.08em" }}>{song.drummer}</div>}
+                  <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+                    {song.bpm>0&&<GigMetronome bpm={song.bpm} size={50}/>}
+                    {song.drummer&&<div style={{ color:dCol, border:"1px solid "+dCol, borderRadius:4, padding:"4px 10px", fontSize:12, fontWeight:700, letterSpacing:"0.08em" }}>{song.drummer}</div>}
                   </div>
                 </div>
               );
             })}
       </div>
+
       {/* Footer */}
-      <div style={{ padding:"10px 18px", textAlign:"center", borderTop:"1px solid #111", flexShrink:0 }}>
-        <div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em" }}>SPIELFERTIG<span style={{ color:C.teal }}>‽</span> · GETEILTE SETLIST</div>
+      <div style={{ padding:"8px 18px", textAlign:"center", borderTop:"1px solid #111", flexShrink:0, position:"relative", zIndex:1 }}>
+        <div style={{ color:"#222", fontSize:10, letterSpacing:"0.15em" }}>SPIELFERTIG<span style={{ color:C.teal }}>‽</span> · SCHLAGFERTIG‽ · Thomas Schuster</div>
       </div>
     </div>
   );
