@@ -419,7 +419,7 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName, withNotes) {
     + ".num{width:20px;color:#ccc;font-size:10px;text-align:right;padding-right:8px;font-family:'Raleway';font-weight:600}"
     + ".tcol{padding:5px 6px;vertical-align:middle}"
     + ".acol{padding:5px 6px;vertical-align:middle}"
-    + ".stitle{font-family:'Bebas Neue',cursive;font-size:30px;letter-spacing:.04em;line-height:1;font-weight:900}"
+    + ".stitle{font-family:'Raleway',sans-serif;font-size:26px;letter-spacing:.01em;line-height:1.15;font-weight:500}"
     + ".sartist{font-family:'Raleway',sans-serif;font-weight:400;font-size:14px;letter-spacing:.01em;color:#444}"
     + ".sbpm{font-size:10px;color:#bbb;margin-top:2px}"
     + ".bpm{font-weight:700}"
