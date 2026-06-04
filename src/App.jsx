@@ -681,7 +681,7 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
 }
 
 // ── Playlist Editor ────────────────────────────────────────────────────────
-function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, show }) {
+function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, bandId, show }) {
   const [activeSet, setActiveSet] = useState("Set 1");
   const [search, setSearch]       = useState("");
   const [dragId, setDragId]       = useState(null);
@@ -692,7 +692,6 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const [currentSongId, setCurrentSongId] = useState(null);
 
   const mySongs  = playlistSongs.filter(ps=>ps.playlist_id===playlist.id);
-  const bandId   = useMemo(()=>allSongs.find(s=>mySongs.some(ps=>ps.song_id===s.id))?.band_id??null,[mySongs,allSongs]);
   const bandSongs= allSongs.filter(s=>s.band_id===bandId);
 
   const songsInSet = useMemo(()=>
@@ -891,7 +890,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, onRefr
   const bandGigs   = gigs.filter(g=>g.band_id===band.id);
   const gigPls     = playlists.filter(p=>p.gig_id===selGig?.id);
 
-  if (view==="editor"&&selPl) return <PlaylistEditor playlist={selPl} allSongs={allSongs} playlistSongs={playlistSongs} onBack={()=>setView("playlists")} onRefresh={onRefresh} bandName={band.name} show={show}/>;
+  if (view==="editor"&&selPl) return <PlaylistEditor playlist={selPl} allSongs={allSongs} playlistSongs={playlistSongs} onBack={()=>setView("playlists")} onRefresh={onRefresh} bandName={band.name} bandId={band.id} show={show}/>;
 
   if (view==="playlists"&&selGig) return (
     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
