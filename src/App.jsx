@@ -989,13 +989,19 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, onBack, onRef
   const [tab, setTab] = useState("songs");
   return (
     <div style={{ minHeight:"100vh", background:C.bg }}>
-      <header style={{ borderBottom:"1px solid #111", background:"rgba(0,0,0,.95)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:50 }}>
-        <div style={{ maxWidth:720, margin:"0 auto", padding:"0 16px", height:50, display:"flex", alignItems:"center", gap:10 }}>
+      <header style={{ borderBottom:"1px solid #111", background:"rgba(0,0,0,.97)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:50 }}>
+        {/* Back button row */}
+        <div style={{ maxWidth:720, margin:"0 auto", padding:"8px 16px 0", display:"flex", alignItems:"center" }}>
           <Btn variant="ghost" size="sm" onClick={onBack}>←</Btn>
-          {getBandLogo(band.name)
-            ? <img src={getBandLogo(band.name)} alt={band.name} style={{ height:32, maxWidth:160, objectFit:"contain", filter:"invert(1)", opacity:.85 }}/>
-            : <div style={{ color:C.white, fontWeight:400, fontSize:22, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{band.name}</div>}
         </div>
+        {/* Band logo – centered, large */}
+        <div style={{ maxWidth:720, margin:"0 auto", padding:"6px 16px 10px", textAlign:"center" }}>
+          {getBandLogo(band.name)
+            ? <img src={getBandLogo(band.name)} alt={band.name}
+                style={{ height:90, maxWidth:"80%", objectFit:"contain", filter:"invert(1)", opacity:.9 }}/>
+            : <div style={{ color:C.white, fontWeight:400, fontSize:26, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em" }}>{band.name}</div>}
+        </div>
+        {/* Tabs */}
         <div style={{ maxWidth:720, margin:"0 auto", padding:"0 16px 10px", display:"flex", gap:6 }}>
           {[{key:"songs",label:"🎵 Songs"},{key:"setlist",label:"📋 Setlist"}].map(({key,label})=>(
             <button key={key} onClick={()=>setTab(key)} style={{ flex:1, background:tab===key?C.teal:"transparent", color:tab===key?"#000":C.gray, border:`1px solid ${tab===key?C.teal:"#222"}`, borderRadius:4, padding:"8px 0", fontSize:12, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>{label}</button>
