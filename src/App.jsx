@@ -1031,18 +1031,21 @@ function Landing({ bands, songs, user, onSelect, onLogout }) {
               const count = songs.filter(s=>s.band_id===band.id).length;
               return (
                 <div key={band.id} onClick={()=>onSelect(band)}
-                  style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:8, padding:22, cursor:"pointer", position:"relative", overflow:"hidden", transition:"border-color .2s,transform .2s" }}
-                  onMouseEnter={e=>{e.currentTarget.style.borderColor=band.color+"55";e.currentTarget.style.transform="translateY(-1px)";}}
+                  style={{ background:"#111", border:"1px solid #1a1a1a", borderRadius:8, cursor:"pointer", position:"relative", overflow:"hidden", transition:"border-color .2s,transform .2s", display:"flex", flexDirection:"column" }}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor=band.color+"88";e.currentTarget.style.transform="translateY(-2px)";}}
                   onMouseLeave={e=>{e.currentTarget.style.borderColor="#1a1a1a";e.currentTarget.style.transform="none";}}>
-                  <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${band.color},transparent)` }}/>
-                  {getBandLogo(band.name)
-                    ? <img src={getBandLogo(band.name)} alt={band.name}
-                        style={{ height:64, maxWidth:"90%", objectFit:"contain", marginBottom:8, filter:"invert(1)", opacity:.9 }}/>
-                    : <div style={{ fontSize:26, marginBottom:8 }}>{band.emoji}</div>}
-                  <div style={{ color:C.white, fontWeight:800, fontSize:17, marginBottom:4, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.05em" }}>{band.name}</div>
-                  <SealLine color={band.color}/>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:8 }}>
-                    <span style={{ color:C.grayDim, fontSize:11, letterSpacing:"0.08em" }}>SONGS & SETLIST</span>
+                  {/* Top color line */}
+                  <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:"linear-gradient(90deg,transparent,"+band.color+",transparent)", zIndex:2 }}/>
+                  {/* Logo area – full width */}
+                  <div style={{ flex:1, minHeight:130, background:"#0d0d0d", display:"flex", alignItems:"center", justifyContent:"center", padding:"18px 16px" }}>
+                    {getBandLogo(band.name)
+                      ? <img src={getBandLogo(band.name)} alt={band.name}
+                          style={{ width:"100%", maxHeight:110, objectFit:"contain", filter:"invert(1)", opacity:.92 }}/>
+                      : <div style={{ fontSize:42 }}>{band.emoji}</div>}
+                  </div>
+                  {/* Bottom info strip */}
+                  <div style={{ borderTop:"1px solid #1a1a1a", padding:"10px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", background:C.bgCard }}>
+                    <span style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase" }}>Songs &amp; Setlist</span>
                     <Badge color={band.color}>{count} Songs</Badge>
                   </div>
                 </div>
