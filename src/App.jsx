@@ -222,7 +222,7 @@ function AuthScreen({ onAuth }) {
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24 }}>
       <div style={{ marginBottom:32, textAlign:"center" }}>
         <SealIcon size={56}/>
-        <div style={{ color:C.white, fontWeight:900, fontSize:24, fontFamily:"'Space Mono',monospace", marginTop:12 }}>SPIELFERTIG<span style={{ color:C.teal }}>‽</span></div>
+        <div style={{ color:C.white, fontWeight:400, fontSize:34, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em", marginTop:12 }}>SPIELFERTIG<span style={{ color:C.teal }}>‽</span></div>
         <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.2em", marginTop:4 }}>ZEIT FÜR GUTEN SOUND</div>
       </div>
       <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:10, padding:28, width:"100%", maxWidth:380 }}>
@@ -634,7 +634,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         {/* Gig header */}
         <div style={{background:"#0a0a0a",borderBottom:"1px solid #1a1a1a",padding:"12px 20px",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
           <button onClick={()=>setGigMode(false)} style={{background:"transparent",border:"none",color:C.teal,cursor:"pointer",fontSize:20,padding:"4px 8px"}}>✕</button>
-          <div style={{flex:1,color:C.white,fontWeight:800,fontSize:18,fontFamily:"'Space Mono',monospace"}}>{playlist.name}</div>
+          <div style={{flex:1,color:C.white,fontWeight:400,fontSize:24,fontFamily:"'Bebas Neue',cursive",letterSpacing:"0.05em"}}>{playlist.name}</div>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             {SETS.map(set=>(
               <button key={set} onClick={()=>{setActiveSet(set); setCurrentSongId(null);}} style={{
@@ -675,7 +675,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                       : <div style={{color:C.grayDim,fontSize:15,fontFamily:"'Space Mono',monospace"}}>{song.position}</div>}
                 </div>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{color:isCurrent?C.white:isNext?"#bbb":"#ccc",fontWeight:800,fontSize:isCurrent?24:isNext?19:21,lineHeight:1.2,transition:"font-size .2s"}}>{song.title}</div>
+                  <div style={{color:isCurrent?C.white:isNext?"#bbb":"#ccc",fontWeight:400,fontFamily:"'Bebas Neue',cursive",letterSpacing:"0.04em",fontSize:isCurrent?30:isNext?23:25,lineHeight:1.1,transition:"font-size .2s"}}>{song.title}</div>
                   <div style={{color:isCurrent?C.gray:"#666",fontSize:isNext?13:15,marginTop:2}}>{song.artist}</div>
                   {song.specialties&&<div style={{color:"#bbb",fontSize:13,fontStyle:"italic",marginTop:2,whiteSpace:"pre-wrap"}}>{song.specialties}</div>}
                 </div>
@@ -837,7 +837,7 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, onBack, onRef
       <header style={{ borderBottom:"1px solid #111", background:"rgba(0,0,0,.95)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:50 }}>
         <div style={{ maxWidth:720, margin:"0 auto", padding:"0 16px", height:50, display:"flex", alignItems:"center", gap:10 }}>
           <Btn variant="ghost" size="sm" onClick={onBack}>←</Btn>
-          <div style={{ color:C.white, fontWeight:800, fontSize:16, fontFamily:"'Space Mono',monospace", flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{band.name}</div>
+          <div style={{ color:C.white, fontWeight:400, fontSize:22, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em", flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{band.name}</div>
         </div>
         <div style={{ maxWidth:720, margin:"0 auto", padding:"0 16px 10px", display:"flex", gap:6 }}>
           {[{key:"songs",label:"🎵 Songs"},{key:"setlist",label:"📋 Setlist"}].map(({key,label})=>(
@@ -864,7 +864,7 @@ function Landing({ bands, songs, user, onSelect, onLogout }) {
         <div style={{ maxWidth:720, margin:"0 auto", display:"flex", alignItems:"center", gap:14 }}>
           <SealIcon size={40}/>
           <div style={{ flex:1 }}>
-            <div style={{ color:C.white, fontWeight:900, fontSize:20, fontFamily:"'Space Mono',monospace" }}>SPIELFERTIG<span style={{ color:C.teal }}>‽</span></div>
+            <div style={{ color:C.white, fontWeight:400, fontSize:26, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em" }}>SPIELFERTIG<span style={{ color:C.teal }}>‽</span></div>
             <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.2em" }}>ZEIT FÜR GUTEN SOUND</div>
           </div>
           <div style={{ textAlign:"right" }}>
@@ -895,7 +895,7 @@ function Landing({ bands, songs, user, onSelect, onLogout }) {
                   onMouseLeave={e=>{e.currentTarget.style.borderColor="#1a1a1a";e.currentTarget.style.transform="none";}}>
                   <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${band.color},transparent)` }}/>
                   <div style={{ fontSize:26, marginBottom:8 }}>{band.emoji}</div>
-                  <div style={{ color:C.white, fontWeight:800, fontSize:17, marginBottom:4, fontFamily:"'Space Mono',monospace" }}>{band.name}</div>
+                  <div style={{ color:C.white, fontWeight:800, fontSize:17, marginBottom:4, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.05em" }}>{band.name}</div>
                   <SealLine color={band.color}/>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:8 }}>
                     <span style={{ color:C.grayDim, fontSize:11, letterSpacing:"0.08em" }}>SONGS & SETLIST</span>
@@ -960,7 +960,7 @@ function SharedView({ playlistId }) {
     .map(p=>({ ...(data.songs.find(s=>s.id===p.song_id)||{}), position:p.position }))
     .sort((a,b)=>a.position-b.position);
 
-  const fontStyle = { fontFamily:"'Inter',sans-serif" };
+  const fontStyle = { fontFamily:"'Raleway',sans-serif" };
 
   if (loading) return (
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, ...fontStyle }}>
@@ -978,7 +978,7 @@ function SharedView({ playlistId }) {
 
   return (
     <div style={{ position:"fixed", inset:0, background:"#000", display:"flex", flexDirection:"column", overflow:"hidden", ...fontStyle }}>
-      <style>{"@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800;900&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#000}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}"}</style>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#000}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}"}</style>
       {/* Header */}
       <div style={{ background:"#0a0a0a", borderBottom:"1px solid #1a1a1a", padding:"12px 18px", flexShrink:0 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
@@ -1092,9 +1092,9 @@ export default function App() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        body{font-family:'Inter',sans-serif;background:#000;color:#e2e8f0;-webkit-font-smoothing:antialiased;}
+        body{font-family:'Raleway',sans-serif;background:#000;color:#e2e8f0;-webkit-font-smoothing:antialiased;}
         input::placeholder,textarea::placeholder{color:#333;}
         @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
         @keyframes spin{to{transform:rotate(360deg)}}
