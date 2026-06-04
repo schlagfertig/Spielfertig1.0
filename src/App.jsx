@@ -376,7 +376,7 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName, withNotes) {
       + "<div class='hdr'>"
       +   "<div class='hbrand'>SPIELFERTIG<span style='color:" + teal + "'>&#8253;</span></div>"
       +   "<div class='hright'>"
-      +   (getBandLogo(bandName) ? "<img src='" + getBandLogo(bandName) + "' style='height:72px;max-width:280px;object-fit:contain;display:block;margin-left:auto;margin-bottom:4px'>" : "<div class='hband'>" + bandName + "</div>")
+      +   (getBandLogo(bandName) ? "<img src='" + getBandLogo(bandName) + "' style='height:46px;max-width:220px;object-fit:contain;display:block;margin-left:auto;margin-bottom:2px'>" : "<div class='hband'>" + bandName + "</div>")
       +   "<div class='hinfo'>" + playlist.name + " &nbsp;·&nbsp; " + date + "</div></div>"
       + "</div>"
       + "<div class='seal'></div>"
@@ -392,42 +392,42 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName, withNotes) {
   });
 
   const notesColCss = withNotes
-    ? ".ncol{width:32%;padding:6px 8px;font-size:10px;color:#666;font-style:italic;vertical-align:top;line-height:1.5;white-space:pre-wrap}"
+    ? ".ncol{width:32%;padding:3px 6px;font-size:9px;color:#666;font-style:italic;vertical-align:top;line-height:1.4;white-space:pre-wrap}"
     : "";
 
   const html = "<!DOCTYPE html><html><head><meta charset='utf-8'>"
     + "<title>" + playlist.name + "</title>"
     + "<link href='https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;600;700;800;900&display=swap' rel='stylesheet'>"
     + "<style>"
-    + "@page{size:A4;margin:10mm 22mm}"
+    + "@page{size:A4;margin:8mm 18mm}"
     + "*{box-sizing:border-box;margin:0;padding:0}"
     + "body{font-family:'Raleway',sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#111}"
     + ".page{position:relative;min-height:277mm;display:flex;flex-direction:column}"
     + ".brk{page-break-after:always}"
     + ".wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:240px;opacity:.04;pointer-events:none}"
-    + ".hdr{display:flex;align-items:center;gap:14px;padding-bottom:7px;position:relative;z-index:1}"
-    + ".hbrand{font-family:'Bebas Neue',cursive;font-size:32px;letter-spacing:.06em;flex-shrink:0}"
+    + ".hdr{display:flex;align-items:center;gap:10px;padding-bottom:4px;position:relative;z-index:1}"
+    + ".hbrand{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:.06em;flex-shrink:0}"
     + ".hright{flex:1;text-align:right}"
     + ".hband{font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:.05em;color:#444}"
     + ".hinfo{font-size:9px;color:#999;margin-top:1px}"
-    + ".seal{height:2px;background:linear-gradient(90deg,transparent," + teal + "," + teal + ",transparent);margin:5px 0 8px;position:relative;z-index:1}"
-    + ".settitle{font-family:'Bebas Neue',cursive;font-size:26px;letter-spacing:.12em;color:" + teal + ";margin-bottom:6px;position:relative;z-index:1}"
+    + ".seal{height:2px;background:linear-gradient(90deg,transparent," + teal + "," + teal + ",transparent);margin:3px 0 5px;position:relative;z-index:1}"
+    + ".settitle{font-family:'Bebas Neue',cursive;font-size:17px;letter-spacing:.12em;color:" + teal + ";margin-bottom:3px;position:relative;z-index:1}"
     + ".setcount{font-size:13px;color:#bbb;letter-spacing:0}"
     + "table{width:100%;border-collapse:collapse;position:relative;z-index:1}"
     + "tr{border-bottom:1px solid #ebebeb}"
-    + "td{vertical-align:middle;padding:7px 5px}"
-    + ".num{width:24px;color:#aaa;font-size:18px;text-align:right;padding-right:8px;font-family:'Raleway';font-weight:800}"
-    + ".tcol{padding:5px 6px;vertical-align:middle}"
-    + ".acol{padding:5px 6px;vertical-align:middle}"
-    + ".stitle{font-family:'Raleway',sans-serif;font-size:18px;letter-spacing:.01em;line-height:1.2;font-weight:800}"
-    + ".sartist{font-family:'Raleway',sans-serif;font-weight:400;font-size:14px;letter-spacing:.01em;color:#444}"
-    + ".sbpm{font-size:10px;color:#bbb;margin-top:2px}"
+    + "td{vertical-align:middle;padding:4px 4px}"
+    + ".num{width:22px;color:#aaa;font-size:14px;text-align:right;padding-right:6px;font-family:'Raleway';font-weight:800}"
+    + ".tcol{padding:3px 5px;vertical-align:middle}"
+    + ".acol{padding:3px 5px;vertical-align:middle}"
+    + ".stitle{font-family:'Raleway',sans-serif;font-size:14px;letter-spacing:.01em;line-height:1.2;font-weight:800}"
+    + ".sartist{font-family:'Raleway',sans-serif;font-weight:400;font-size:11px;letter-spacing:.01em;color:#444}"
+    + ".sbpm{font-size:9px;color:#bbb;margin-top:1px}"
     + ".bpm{font-weight:700}"
     + notesColCss
     + ".dcol{width:42px;text-align:right;padding:5px 4px}"
     + ".dcol span{font-size:8px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 5px;border-radius:2px}"
-    + ".zusep{padding:8px 5px 4px;font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:.15em;color:#bbb;border-bottom:1px solid #e0e0e0}"
-    + ".footer{margin-top:auto;padding-top:7px;font-size:8px;color:#ccc;text-align:center;border-top:1px solid #f0f0f0;letter-spacing:.1em;text-transform:uppercase}"
+    + ".zusep{padding:5px 5px 3px;font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:.15em;color:#bbb;border-bottom:1px solid #e0e0e0}"
+    + ".footer{margin-top:auto;padding-top:4px;font-size:8px;color:#ccc;text-align:center;border-top:1px solid #f0f0f0;letter-spacing:.1em;text-transform:uppercase}"
     + "</style></head><body>"
     + pages
     + "</body></html>";
@@ -441,7 +441,7 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName, withNotes) {
   const w = window.open("","_blank");
   w.document.write(htmlWithBtn);
   w.document.close();
-  setTimeout(()=>w.print(), 600);
+  w.document.fonts.ready.then(()=>w.print());
 }
 
 // ── KI-Analyse (Platzhalter) ─────────────────────────────────────────────────
