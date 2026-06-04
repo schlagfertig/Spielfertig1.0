@@ -317,35 +317,93 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
 }
 
 // ── PDF Export ─────────────────────────────────────────────────────────────
-function exportPDF(playlist, allSongs, playlistSongs, bandName) {
+function exportPDF(playlist, allSongs, playlistSongs, bandName, withNotes) {
   const ps = playlistSongs.filter(p=>p.playlist_id===playlist.id);
-  let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${playlist.name}</title>
-  <style>body{font-family:'Courier New',monospace;background:#fff;color:#000;padding:32px;max-width:800px;margin:0 auto}
-  h1{font-size:20px;margin:0 0 2px}h2{font-size:12px;font-weight:normal;color:#555;margin:0 0 16px}
-  .seal{border-top:2px solid #5cc8b8;border-bottom:2px solid #5cc8b8;padding:5px 0;margin:14px 0}
-  .set{font-size:13px;font-weight:bold;margin:18px 0 5px;text-transform:uppercase;letter-spacing:.1em}
-  table{width:100%;border-collapse:collapse;margin-bottom:6px}
-  td{padding:5px 6px;font-size:12px;border-bottom:1px solid #eee}td:first-child{width:24px;color:#999}
-  .tom{background:#e0f7f5}.ron{background:#fde8e8}
-  .footer{margin-top:28px;font-size:10px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:10px}
-  @media print{body{padding:16px}}</style></head><body>
-  <h1>SPIELFERTIG‽ — ${bandName}</h1>
-  <h2>${playlist.name} · ${new Date().toLocaleDateString("de-DE")}</h2><div class="seal"></div>`;
-  SETS.forEach(set => {
+  const activeSets = SETS.filter(set=>ps.some(p=>p.set_name===set));
+  const tomColor = "#0a7a6e";
+  const ronColor = "#a83030";
+  const teal     = "#5cc8b8";
+  const date     = new Date().toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"});
+
+  let pages = "";
+  activeSets.forEach((set, si) => {
     const items = ps.filter(p=>p.set_name===set).sort((a,b)=>a.position-b.position);
-    if (!items.length) return;
-    html += `<div class="set">▶ ${set} <small style="font-weight:normal;color:#888">(${items.length})</small></div><table>`;
-    items.forEach((p,i)=>{
+    const isLast = si === activeSets.length - 1;
+
+    let rows = "";
+    items.forEach((p,i) => {
       const s = allSongs.find(x=>x.id===p.song_id);
       if (!s) return;
-      html += `<tr class="${s.drummer==="Ron"?"ron":s.drummer==="Tom"?"tom":""}"><td>${i+1}.</td><td><strong>${s.title}</strong></td><td>${s.artist||""}</td><td style="color:#666;font-size:11px">${s.bpm||""} BPM</td><td><strong>${s.drummer||""}</strong></td><td style="color:#888;font-style:italic;font-size:11px">${s.specialties||""}</td></tr>`;
+      const isTom = s.drummer==="Tom";
+      const isRon = s.drummer==="Ron";
+      const dColor = isTom ? tomColor : isRon ? ronColor : "#555";
+      const rowBg  = isTom ? "#f0faf8" : isRon ? "#fdf2f2" : "#fafafa";
+      const notesHtml = withNotes
+        ? "<div class='notes'>" + (s.specialties ? s.specialties.replace(/\n/g,"<br>") : "&nbsp;") + "</div>"
+        : "";
+      rows += "<tr style='background:" + rowBg + "'>"
+        + "<td class='num'>" + (i+1) + "</td>"
+        + "<td class='main'>"
+        +   "<div class='title'>" + s.title + "</div>"
+        +   "<div class='sub'>" + (s.artist||"") + (s.bpm ? " &nbsp;·&nbsp; <span class='bpm'>" + s.bpm + " BPM</span>" : "") + "</div>"
+        +   notesHtml
+        + "</td>"
+        + "<td class='drummer'><span style='color:" + dColor + ";border:1px solid " + dColor + "'>" + (s.drummer||"") + "</span></td>"
+        + "</tr>";
     });
-    html += `</table>`;
+
+    pages += "<div class='page" + (isLast ? "" : " break") + "'>"
+      + "<img class='wm' src='" + LOGO + "' alt=''/>"
+      + "<div class='hd'>"
+      +   "<div class='hd-brand'>SPIELFERTIG<span style='color:" + teal + "'>&#8253;</span></div>"
+      +   "<div class='hd-right'><div class='hd-band'>" + bandName + "</div><div class='hd-info'>" + playlist.name + " &nbsp;·&nbsp; " + date + "</div></div>"
+      + "</div>"
+      + "<div class='seal'></div>"
+      + "<div class='set-title'>" + set + " <span class='set-count'>(" + items.length + " Songs)</span></div>"
+      + "<table><tbody>" + rows + "</tbody></table>"
+      + "<div class='footer'>SCHLAGFERTIG&#8253; &nbsp;·&nbsp; Thomas Schuster &nbsp;·&nbsp; ZEIT FÜR GUTEN SOUND</div>"
+      + "</div>";
   });
-  html += `<div class="footer">SCHLAGFERTIG‽ · Thomas Schuster · ZEIT FÜR GUTEN SOUND</div></body></html>`;
+
+  const html = "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+    + "<title>" + playlist.name + "</title>"
+    + "<link rel='preconnect' href='https://fonts.googleapis.com'>"
+    + "<link href='https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;600;700&display=swap' rel='stylesheet'>"
+    + "<style>"
+    + "@page{size:A4;margin:12mm 16mm}"
+    + "*{box-sizing:border-box;margin:0;padding:0}"
+    + "body{font-family:'Raleway',sans-serif;background:#fff;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+    + ".page{position:relative;min-height:267mm;display:flex;flex-direction:column;overflow:hidden}"
+    + ".break{page-break-after:always}"
+    + ".wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:260px;opacity:.04;z-index:0;pointer-events:none}"
+    + ".hd{display:flex;align-items:center;gap:14px;padding-bottom:8px;position:relative;z-index:1}"
+    + ".hd-brand{font-family:'Bebas Neue',cursive;font-size:28px;letter-spacing:.06em;color:#111;flex-shrink:0}"
+    + ".hd-right{flex:1;text-align:right}"
+    + ".hd-band{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:.05em;color:#333}"
+    + ".hd-info{font-size:10px;color:#888;margin-top:1px}"
+    + ".seal{height:2px;background:linear-gradient(90deg,transparent," + teal + "," + teal + ",transparent);margin:6px 0 10px;position:relative;z-index:1}"
+    + ".set-title{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:.12em;color:" + teal + ";margin-bottom:6px;position:relative;z-index:1}"
+    + ".set-count{font-size:14px;color:#aaa;letter-spacing:0}"
+    + "table{width:100%;border-collapse:collapse;position:relative;z-index:1;flex:1}"
+    + "tr{border-bottom:1px solid #ebebeb}"
+    + "td{vertical-align:top;padding:5px 6px}"
+    + ".num{width:22px;color:#bbb;font-size:11px;padding-top:8px;font-family:'Raleway'}"
+    + ".main{padding:4px 8px}"
+    + ".title{font-family:'Bebas Neue',cursive;font-size:24px;letter-spacing:.04em;line-height:1;color:#111}"
+    + ".sub{font-size:10px;color:#888;margin-top:1px}"
+    + ".bpm{font-weight:700;color:#aaa}"
+    + ".notes{font-size:10px;color:#666;font-style:italic;margin-top:3px;min-height:28px;line-height:1.5;white-space:pre-wrap}"
+    + ".drummer{width:44px;text-align:right;padding-top:7px}"
+    + ".drummer span{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 5px;border-radius:2px}"
+    + ".footer{margin-top:auto;padding-top:8px;font-size:9px;color:#bbb;text-align:center;border-top:1px solid #eee;letter-spacing:.1em;text-transform:uppercase}"
+    + "</style></head><body>"
+    + pages
+    + "</body></html>";
+
   const w = window.open("","_blank");
-  w.document.write(html); w.document.close();
-  setTimeout(()=>w.print(), 400);
+  w.document.write(html);
+  w.document.close();
+  setTimeout(()=>w.print(), 600);
 }
 
 // ── KI-Analyse (Platzhalter) ─────────────────────────────────────────────────
@@ -582,6 +640,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const [showAdd, setShowAdd]     = useState(false);
   const [saving, setSaving]       = useState(false);
   const [gigMode, setGigMode]     = useState(false);
+  const [printNotes, setPrintNotes] = useState(true);
   const [currentSongId, setCurrentSongId] = useState(null);
 
   const mySongs  = playlistSongs.filter(ps=>ps.playlist_id===playlist.id);
@@ -699,7 +758,10 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>{playlist.name}</div>
           <div style={{ color:C.grayDim, fontSize:11 }}>{mySongs.length} Songs gesamt</div>
         </div>
-        <Btn variant="outline" size="sm" onClick={()=>exportPDF(playlist,allSongs,playlistSongs,bandName)}>🖨 PDF</Btn>
+        <div style={{display:"flex",gap:3,alignItems:"center"}}>
+          <Btn variant="outline" size="sm" onClick={()=>exportPDF(playlist,allSongs,playlistSongs,bandName,printNotes)}>🖨 PDF</Btn>
+          <button onClick={()=>setPrintNotes(!printNotes)} title={printNotes?"Notizen werden gedruckt":"Notizen nicht drucken"} style={{background:printNotes?C.tealDim:"transparent",border:"1px solid "+(printNotes?C.tealBorder:"#333"),color:printNotes?C.teal:C.grayDim,borderRadius:4,padding:"5px 8px",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:700,transition:"all .15s"}}>📝</button>
+        </div>
         <Btn variant="outline" size="sm" onClick={()=>{
           const url = window.location.origin + "/?share=" + playlist.id;
           if (navigator.clipboard&&navigator.clipboard.writeText) {
