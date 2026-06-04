@@ -573,21 +573,22 @@ function SongDatabase({ band, songs, onRefresh, show }) {
 }
 
 // ── Gig Metronome (compact, for Gig Mode) ─────────────────────────────────────
-function GigMetronome({ bpm, autoStart }) {
+function GigMetronome({ bpm, autoStart, size=44 }) {
   const { active, beat, toggle, start, stop } = useMetronome(bpm);
-  // Auto-start/stop when parent activates this song
   useEffect(()=>{
     if (autoStart && !active) start();
     else if (!autoStart && active) stop();
   }, [autoStart]);
   const pulseColor = beat ? "#fff" : active ? C.teal : C.grayDim;
   const glow = beat ? "0 0 14px 5px " + C.teal : active ? "0 0 5px 2px " + C.tealBorder : "none";
+  const dot = Math.round(size * 0.33);
+  const bpmSize = Math.round(size * 0.22);
   return (
     <button onClick={toggle} title={(active?"Stop":"Start")+" ("+bpm+" BPM)"}
-      style={{ background:"transparent", border:"1px solid "+(active?C.teal:"#333"), borderRadius:"50%", width:44, height:44, cursor:"pointer", padding:0, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:glow, transition:"all .1s" }}>
+      style={{ background:"transparent", border:"1px solid "+(active?C.teal:"#333"), borderRadius:"50%", width:size, height:size, cursor:"pointer", padding:0, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:glow, transition:"all .1s", flexShrink:0 }}>
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:1 }}>
-        <div style={{ width:16, height:16, borderRadius:"50%", background:pulseColor, transition:"background .05s" }}/>
-        <div style={{ color:active?C.teal:C.grayDim, fontSize:10, fontFamily:"'Space Mono',monospace", lineHeight:1 }}>{bpm}</div>
+        <div style={{ width:dot, height:dot, borderRadius:"50%", background:pulseColor, transition:"background .05s" }}/>
+        <div style={{ color:active?C.teal:C.grayDim, fontSize:bpmSize, fontFamily:"'Space Mono',monospace", lineHeight:1 }}>{bpm}</div>
       </div>
     </button>
   );
@@ -745,40 +746,55 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           </div>
         </div>
         {/* Song list */}
-        <div style={{flex:1,overflowY:"auto",padding:"16px 20px",display:"flex",flexDirection:"column",gap:8}}>
+        <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:5}}>
           {songsInSet.map((song,i)=>{
             const st = dStyle(song.drummer);
             const isCurrent = currentSongId === song.ps_id;
             const currentIdx = songsInSet.findIndex(s=>s.ps_id===currentSongId);
             const isNext = currentSongId && !isCurrent && i === currentIdx + 1;
             const opacity = !currentSongId ? 1 : isCurrent ? 1 : isNext ? 0.75 : 0.35;
+            const dCol = drummerColor(song.drummer);
             return (
               <div key={song.id}
                 onClick={()=>setCurrentSongId(isCurrent ? null : song.ps_id)}
                 style={{
                   background: isCurrent ? (song.drummer==="Ron"?C.redDim:C.tealDim) : isNext ? "#161616" : st.bg,
                   border: "2px solid " + (isCurrent ? (song.drummer==="Ron"?C.red:C.teal) : isNext ? "#444" : st.border),
-                  borderRadius:8, padding:"14px 18px", display:"flex", alignItems:"center", gap:14,
-                  cursor:"pointer", opacity,
-                  transition:"all .2s",
-                  boxShadow: isCurrent ? "0 0 18px 2px " + (song.drummer==="Ron"?C.redBorder:C.tealBorder) : "none"
+                  borderRadius:7, padding:"9px 13px", display:"flex", alignItems:"center", gap:10,
+                  cursor:"pointer", opacity, transition:"all .2s",
+                  boxShadow: isCurrent ? "0 0 16px 2px " + (song.drummer==="Ron"?C.redBorder:C.tealBorder) : "none"
                 }}>
-                {/* Play indicator */}
-                <div style={{width:24,textAlign:"center",flexShrink:0}}>
+                {/* Position / play indicator */}
+                <div style={{width:22,textAlign:"center",flexShrink:0}}>
                   {isCurrent
-                    ? <div style={{color:song.drummer==="Ron"?C.red:C.teal,fontSize:18,lineHeight:1}}>▶</div>
+                    ? <div style={{color:song.drummer==="Ron"?C.red:C.teal,fontSize:16}}>▶</div>
                     : isNext
-                      ? <div style={{color:"#666",fontSize:12,lineHeight:1}}>NEXT</div>
-                      : <div style={{color:C.grayDim,fontSize:15,fontFamily:"'Space Mono',monospace"}}>{song.position}</div>}
+                      ? <div style={{color:"#555",fontSize:10,letterSpacing:".04em"}}>NEXT</div>
+                      : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{song.position}</div>}
                 </div>
+                {/* Title + artist + notes */}
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{color:isCurrent?C.white:isNext?"#bbb":"#ccc",fontWeight:400,fontFamily:"'Bebas Neue',cursive",letterSpacing:"0.04em",fontSize:isCurrent?30:isNext?23:25,lineHeight:1.1,transition:"font-size .2s"}}>{song.title}</div>
-                  <div style={{color:isCurrent?C.gray:"#666",fontSize:isNext?13:15,marginTop:2}}>{song.artist}</div>
-                  {song.specialties&&<div style={{color:"#bbb",fontSize:13,fontStyle:"italic",marginTop:2,whiteSpace:"pre-wrap"}}>{song.specialties}</div>}
+                  <div style={{
+                    color: isCurrent?C.white:isNext?"#ccc":"#bbb",
+                    fontFamily:"'Raleway',sans-serif", fontWeight:600,
+                    fontSize: isCurrent?24:isNext?19:21,
+                    lineHeight:1.15, transition:"font-size .2s",
+                    whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"
+                  }}>{song.title}</div>
+                  <div style={{color:isCurrent?"#999":"#555",fontSize:12,marginTop:1}}>
+                    {song.artist}
+                    {song.bpm>0&&<span style={{color:isCurrent?C.grayDim:"#444",fontFamily:"'Space Mono',monospace",fontSize:11,marginLeft:8}}>{song.bpm}</span>}
+                  </div>
+                  {song.specialties&&<div style={{color:"#bbb",fontSize:12,fontStyle:"italic",marginTop:2,whiteSpace:"pre-wrap",lineHeight:1.4}}>{song.specialties}</div>}
                 </div>
-                <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6,flexShrink:0}}>
-                  {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent}/>}
-                  {song.drummer&&<div style={{color:drummerColor(song.drummer),border:"1px solid "+drummerColor(song.drummer),borderRadius:3,padding:"3px 10px",fontSize:13,fontWeight:700,letterSpacing:"0.08em"}}>{song.drummer}</div>}
+                {/* Metronome LEFT of drummer, same row */}
+                <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+                  {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
+                  {song.drummer&&<div style={{
+                    color:dCol, border:"1px solid "+dCol, borderRadius:4,
+                    padding:"5px 12px", fontSize:13, fontWeight:700,
+                    letterSpacing:"0.08em", minWidth:44, textAlign:"center"
+                  }}>{song.drummer}</div>}
                 </div>
               </div>
             );
