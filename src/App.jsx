@@ -304,7 +304,7 @@ function useMetronome(bpm) {
 }
 
 // ── Song Row ───────────────────────────────────────────────────────────────
-function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, isDragging }) {
+function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, isDragging, extra }) {
   const st = dStyle(song.drummer);
   const { active, beat, toggle } = useMetronome(song.bpm);
   const pulseColor  = beat?"#fff":active?C.teal:C.grayDim;
@@ -332,6 +332,7 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
       {song.drummer&&<Badge color={st.badge}>{song.drummer}</Badge>}
       {onEdit&&<button onClick={e=>{e.stopPropagation();onEdit(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"6px 10px", fontSize:18 }} onMouseEnter={e=>e.currentTarget.style.color=C.teal} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✎</button>}
       {onDelete&&<button onClick={e=>{e.stopPropagation();onDelete(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"6px 10px", fontSize:18 }} onMouseEnter={e=>e.currentTarget.style.color=C.red} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✕</button>}
+      {extra&&extra}
     </div>
   );
 }
@@ -489,12 +490,17 @@ function ImportWizard({ band, existingSongs, gigs, onImportDone, show }) {
 
 
 // ── Song Database ──────────────────────────────────────────────────────────
-function SongDatabase({ band, songs, onRefresh, show }) {
+function SongDatabase({ band, songs, gigs, playlists, playlistSongs, onRefresh, show }) {
   const [search, setSearch]   = useState("");
   const [form, setForm]       = useState({ title:"", artist:"", bpm:"", drummer:band.drummers[0]||"Tom", specialties:"" });
   const [editSong, setEdit]   = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [saving, setSaving]   = useState(false);
+  const [addTarget, setAddTarget] = useState(null); // song being added to setlist
+  const [atGig,    setAtGig]    = useState("");
+  const [atPl,     setAtPl]     = useState("");
+  const [atSet,    setAtSet]    = useState("Set 1");
+  const [atSaving, setAtSaving] = useState(false);
 
   const [sortBy, setSortBy] = useState("none");
   const bandSongs = songs.filter(s=>s.band_id===band.id);
@@ -564,7 +570,52 @@ function SongDatabase({ band, songs, onRefresh, show }) {
       </div>
       <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
         {filtered.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:32, fontSize:13 }}>Keine Songs</div>
-        :filtered.map(song=><SongRow key={song.id} song={song} onDelete={s=>setConfirm(s)} onEdit={s=>setEdit({...s,bpm:String(s.bpm)})}/>)}
+        :filtered.map(song=>(
+          <div key={song.id} style={{position:"relative"}}>
+            <SongRow song={song}
+              onDelete={s=>setConfirm(s)}
+              onEdit={s=>setEdit({...s,bpm:String(s.bpm)})}
+              extra={<button onClick={e=>{e.stopPropagation();setAddTarget(song);setAtGig("");setAtPl("");setAtSet("Set 1");}}
+                style={{background:"transparent",border:"none",color:C.grayDim,cursor:"pointer",padding:"6px 10px",fontSize:16}}
+                title="Zur Setlist hinzufügen"
+                onMouseEnter={e=>e.currentTarget.style.color=C.teal}
+                onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>📋</button>}/>
+            {addTarget?.id===song.id&&(
+              <div style={{background:"#1a1a1a",border:"1px solid "+C.tealBorder,borderRadius:8,padding:14,marginTop:4,display:"flex",flexDirection:"column",gap:8,zIndex:10}}>
+                <div style={{color:C.teal,fontSize:11,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Zur Setlist hinzufügen</div>
+                <select value={atGig} onChange={e=>{setAtGig(e.target.value);setAtPl("");}}
+                  style={{background:"#0a0a0a",border:"1px solid #333",color:C.white,borderRadius:4,padding:"7px 8px",fontSize:12,fontFamily:"inherit"}}>
+                  <option value="">— Gig wählen —</option>
+                  {(gigs||[]).filter(g=>g.band_id===band.id).map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
+                </select>
+                {atGig&&<select value={atPl} onChange={e=>setAtPl(e.target.value)}
+                  style={{background:"#0a0a0a",border:"1px solid #333",color:C.white,borderRadius:4,padding:"7px 8px",fontSize:12,fontFamily:"inherit"}}>
+                  <option value="">— Playlist wählen —</option>
+                  {(playlists||[]).filter(p=>p.gig_id===parseInt(atGig)).map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>}
+                {atPl&&<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                  {SETS.map(s=><button key={s} onClick={()=>setAtSet(s)} style={{
+                    background:atSet===s?C.teal:"transparent",color:atSet===s?"#000":C.gray,
+                    border:"1px solid "+(atSet===s?C.teal:"#333"),borderRadius:4,
+                    padding:"5px 10px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"
+                  }}>{s}</button>)}
+                </div>}
+                <div style={{display:"flex",gap:6}}>
+                  <Btn variant="ghost" size="sm" onClick={()=>setAddTarget(null)}>Abbrechen</Btn>
+                  {atPl&&<Btn size="sm" disabled={atSaving} onClick={async()=>{
+                    setAtSaving(true);
+                    const plId=parseInt(atPl);
+                    const already=(playlistSongs||[]).some(ps=>ps.playlist_id===plId&&ps.song_id===song.id);
+                    if(already){ show("Song ist bereits in dieser Playlist!","error"); setAtSaving(false); return; }
+                    const pos=(playlistSongs||[]).filter(ps=>ps.playlist_id===plId&&ps.set_name===atSet).length+1;
+                    await sb.insert("playlist_songs",{playlist_id:plId,song_id:song.id,set_name:atSet,position:pos});
+                    await onRefresh(); show("Song hinzugefügt ✓"); setAddTarget(null); setAtSaving(false);
+                  }}>Hinzufügen ✓</Btn>}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
       {editSong&&<Modal title="Song bearbeiten" onClose={()=>setEdit(null)}>
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
@@ -1019,7 +1070,7 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, onBack, onRef
         <SealLine color={band.color}/>
       </header>
       <main style={{ maxWidth:720, margin:"0 auto", padding:"20px 16px" }}>
-        {tab==="songs"   &&<SongDatabase band={band} songs={songs} onRefresh={onRefresh} show={show}/>}
+        {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} onRefresh={onRefresh} show={show}/>}
         {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} onRefresh={onRefresh} show={show}/>}
         {tab==="import"  &&<ImportWizard band={band} existingSongs={songs} gigs={gigs} onImportDone={onRefresh} show={show}/>}
       </main>
