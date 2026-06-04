@@ -383,7 +383,7 @@ function ImportWizard({ band, existingSongs, gigs, onImportDone, show }) {
 // ── Song Database ──────────────────────────────────────────────────────────
 function SongDatabase({ band, songs, onRefresh, show }) {
   const [search, setSearch]   = useState("");
-  const [form, setForm]       = useState({ title:"", artist:"", bpm:"", drummer:band.drummers[0]||"Tom", specialties:"" });
+  const [form, setForm]       = useState({ title:"", artist:"", bpm:"", drummer:"Tom", specialties:"" });
   const [editSong, setEdit]   = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [saving, setSaving]   = useState(false);
