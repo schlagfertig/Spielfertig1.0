@@ -318,84 +318,107 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
 
 // ── PDF Export ─────────────────────────────────────────────────────────────
 function exportPDF(playlist, allSongs, playlistSongs, bandName, withNotes) {
-  const ps = playlistSongs.filter(p=>p.playlist_id===playlist.id);
-  const activeSets = SETS.filter(set=>ps.some(p=>p.set_name===set));
-  const tomColor = "#0a7a6e";
-  const ronColor = "#a83030";
-  const teal     = "#5cc8b8";
-  const date     = new Date().toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"});
+  const ps          = playlistSongs.filter(p=>p.playlist_id===playlist.id);
+  const regularSets = ["Set 1","Set 2","Set 3"].filter(s=>ps.some(p=>p.set_name===s));
+  const zugaben     = ps.filter(p=>p.set_name==="Zugaben").sort((a,b)=>a.position-b.position);
+  const teal        = "#5cc8b8";
+  const tomCol      = "#0a7a6e";
+  const ronCol      = "#a83030";
+  const date        = new Date().toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"});
+
+  function songRows(items, startIdx) {
+    return items.map((p,i) => {
+      const s = allSongs.find(x=>x.id===p.song_id);
+      if (!s) return "";
+      const isTom  = s.drummer==="Tom";
+      const isRon  = s.drummer==="Ron";
+      const dCol   = isTom ? tomCol : isRon ? ronCol : "#777";
+      const rowBg  = isTom ? "#f0faf8" : isRon ? "#fdf2f2" : "#fafafa";
+      const bpmStr = s.bpm ? "<span class='bpm'>" + s.bpm + " BPM</span>" : "";
+      const notesCell = withNotes
+        ? "<td class='ncol'>" + (s.specialties ? s.specialties.replace(/\n/g,"<br>") : "") + "</td>"
+        : "";
+      return "<tr style='background:" + rowBg + "'>"
+        + "<td class='num'>" + (startIdx+i+1) + "</td>"
+        + "<td class='scol'>"
+        +   "<span class='stitle'>" + s.title + "</span>"
+        +   "<span class='sdiv'> · </span>"
+        +   "<span class='sartist'>" + (s.artist||"") + "</span>"
+        +   (bpmStr ? "<div class='sbpm'>" + bpmStr + "</div>" : "")
+        + "</td>"
+        + notesCell
+        + "<td class='dcol'><span style='color:" + dCol + ";border:1px solid " + dCol + "'>" + (s.drummer||"") + "</span></td>"
+        + "</tr>";
+    }).join("");
+  }
 
   let pages = "";
-  activeSets.forEach((set, si) => {
-    const items = ps.filter(p=>p.set_name===set).sort((a,b)=>a.position-b.position);
-    const isLast = si === activeSets.length - 1;
+  regularSets.forEach((set, si) => {
+    const items  = ps.filter(p=>p.set_name===set).sort((a,b)=>a.position-b.position);
+    const isLast = si === regularSets.length - 1;
 
-    let rows = "";
-    items.forEach((p,i) => {
-      const s = allSongs.find(x=>x.id===p.song_id);
-      if (!s) return;
-      const isTom = s.drummer==="Tom";
-      const isRon = s.drummer==="Ron";
-      const dColor = isTom ? tomColor : isRon ? ronColor : "#555";
-      const rowBg  = isTom ? "#f0faf8" : isRon ? "#fdf2f2" : "#fafafa";
-      const notesHtml = withNotes
-        ? "<div class='notes'>" + (s.specialties ? s.specialties.replace(/\n/g,"<br>") : "&nbsp;") + "</div>"
-        : "";
-      rows += "<tr style='background:" + rowBg + "'>"
-        + "<td class='num'>" + (i+1) + "</td>"
-        + "<td class='main'>"
-        +   "<div class='title'>" + s.title + "</div>"
-        +   "<div class='sub'>" + (s.artist||"") + (s.bpm ? " &nbsp;·&nbsp; <span class='bpm'>" + s.bpm + " BPM</span>" : "") + "</div>"
-        +   notesHtml
-        + "</td>"
-        + "<td class='drummer'><span style='color:" + dColor + ";border:1px solid " + dColor + "'>" + (s.drummer||"") + "</span></td>"
-        + "</tr>";
-    });
+    let zuSection = "";
+    if (isLast && zugaben.length) {
+      zuSection = "<tr><td colspan='4' class='zusep'>&#9679; ZUGABEN &#9679;</td></tr>"
+        + songRows(zugaben, 0);
+    }
 
-    pages += "<div class='page" + (isLast ? "" : " break") + "'>"
+    pages += "<div class='page" + (isLast ? "" : " brk") + "'>"
       + "<img class='wm' src='" + LOGO + "' alt=''/>"
-      + "<div class='hd'>"
-      +   "<div class='hd-brand'>SPIELFERTIG<span style='color:" + teal + "'>&#8253;</span></div>"
-      +   "<div class='hd-right'><div class='hd-band'>" + bandName + "</div><div class='hd-info'>" + playlist.name + " &nbsp;·&nbsp; " + date + "</div></div>"
+      // Header
+      + "<div class='hdr'>"
+      +   "<div class='hbrand'>SPIELFERTIG<span style='color:" + teal + "'>&#8253;</span></div>"
+      +   "<div class='hright'><div class='hband'>" + bandName + "</div><div class='hinfo'>" + playlist.name + " &nbsp;·&nbsp; " + date + "</div></div>"
       + "</div>"
       + "<div class='seal'></div>"
-      + "<div class='set-title'>" + set + " <span class='set-count'>(" + items.length + " Songs)</span></div>"
-      + "<table><tbody>" + rows + "</tbody></table>"
+      // Set title
+      + "<div class='settitle'>" + set + " <span class='setcount'>(" + items.length + " Songs)</span></div>"
+      // Table
+      + "<table><tbody>"
+      + songRows(items, 0)
+      + zuSection
+      + "</tbody></table>"
       + "<div class='footer'>SCHLAGFERTIG&#8253; &nbsp;·&nbsp; Thomas Schuster &nbsp;·&nbsp; ZEIT FÜR GUTEN SOUND</div>"
       + "</div>";
   });
 
+  const notesColCss = withNotes
+    ? ".ncol{width:32%;padding:6px 8px;font-size:10px;color:#666;font-style:italic;vertical-align:top;line-height:1.5;white-space:pre-wrap}"
+    : "";
+
   const html = "<!DOCTYPE html><html><head><meta charset='utf-8'>"
     + "<title>" + playlist.name + "</title>"
-    + "<link rel='preconnect' href='https://fonts.googleapis.com'>"
-    + "<link href='https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;600;700&display=swap' rel='stylesheet'>"
+    + "<link href='https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;600;700;800;900&display=swap' rel='stylesheet'>"
     + "<style>"
-    + "@page{size:A4;margin:12mm 16mm}"
+    + "@page{size:A4;margin:10mm 22mm}"
     + "*{box-sizing:border-box;margin:0;padding:0}"
-    + "body{font-family:'Raleway',sans-serif;background:#fff;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
-    + ".page{position:relative;min-height:267mm;display:flex;flex-direction:column;overflow:hidden}"
-    + ".break{page-break-after:always}"
-    + ".wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:260px;opacity:.04;z-index:0;pointer-events:none}"
-    + ".hd{display:flex;align-items:center;gap:14px;padding-bottom:8px;position:relative;z-index:1}"
-    + ".hd-brand{font-family:'Bebas Neue',cursive;font-size:28px;letter-spacing:.06em;color:#111;flex-shrink:0}"
-    + ".hd-right{flex:1;text-align:right}"
-    + ".hd-band{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:.05em;color:#333}"
-    + ".hd-info{font-size:10px;color:#888;margin-top:1px}"
-    + ".seal{height:2px;background:linear-gradient(90deg,transparent," + teal + "," + teal + ",transparent);margin:6px 0 10px;position:relative;z-index:1}"
-    + ".set-title{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:.12em;color:" + teal + ";margin-bottom:6px;position:relative;z-index:1}"
-    + ".set-count{font-size:14px;color:#aaa;letter-spacing:0}"
-    + "table{width:100%;border-collapse:collapse;position:relative;z-index:1;flex:1}"
+    + "body{font-family:'Raleway',sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#111}"
+    + ".page{position:relative;min-height:277mm;display:flex;flex-direction:column}"
+    + ".brk{page-break-after:always}"
+    + ".wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:240px;opacity:.04;pointer-events:none}"
+    + ".hdr{display:flex;align-items:center;gap:14px;padding-bottom:7px;position:relative;z-index:1}"
+    + ".hbrand{font-family:'Bebas Neue',cursive;font-size:26px;letter-spacing:.06em;flex-shrink:0}"
+    + ".hright{flex:1;text-align:right}"
+    + ".hband{font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:.05em;color:#444}"
+    + ".hinfo{font-size:9px;color:#999;margin-top:1px}"
+    + ".seal{height:2px;background:linear-gradient(90deg,transparent," + teal + "," + teal + ",transparent);margin:5px 0 8px;position:relative;z-index:1}"
+    + ".settitle{font-family:'Bebas Neue',cursive;font-size:20px;letter-spacing:.12em;color:" + teal + ";margin-bottom:5px;position:relative;z-index:1}"
+    + ".setcount{font-size:13px;color:#bbb;letter-spacing:0}"
+    + "table{width:100%;border-collapse:collapse;position:relative;z-index:1}"
     + "tr{border-bottom:1px solid #ebebeb}"
-    + "td{vertical-align:top;padding:5px 6px}"
-    + ".num{width:22px;color:#bbb;font-size:11px;padding-top:8px;font-family:'Raleway'}"
-    + ".main{padding:4px 8px}"
-    + ".title{font-family:'Bebas Neue',cursive;font-size:24px;letter-spacing:.04em;line-height:1;color:#111}"
-    + ".sub{font-size:10px;color:#888;margin-top:1px}"
-    + ".bpm{font-weight:700;color:#aaa}"
-    + ".notes{font-size:10px;color:#666;font-style:italic;margin-top:3px;min-height:28px;line-height:1.5;white-space:pre-wrap}"
-    + ".drummer{width:44px;text-align:right;padding-top:7px}"
-    + ".drummer span{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 5px;border-radius:2px}"
-    + ".footer{margin-top:auto;padding-top:8px;font-size:9px;color:#bbb;text-align:center;border-top:1px solid #eee;letter-spacing:.1em;text-transform:uppercase}"
+    + "td{vertical-align:middle;padding:5px 5px}"
+    + ".num{width:20px;color:#ccc;font-size:10px;text-align:right;padding-right:8px;font-family:'Raleway';font-weight:600}"
+    + ".scol{padding:5px 8px}" + (withNotes ? "width:50%" : "")
+    + ".stitle{font-family:'Bebas Neue',cursive;font-size:21px;letter-spacing:.04em;line-height:1}"
+    + ".sdiv{color:#ddd;font-size:16px;margin:0 3px}"
+    + ".sartist{font-family:'Raleway',sans-serif;font-weight:800;font-size:13px;letter-spacing:.02em}"
+    + ".sbpm{font-size:9px;color:#aaa;margin-top:1px}"
+    + ".bpm{font-weight:700}"
+    + notesColCss
+    + ".dcol{width:42px;text-align:right;padding:5px 4px}"
+    + ".dcol span{font-size:8px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 5px;border-radius:2px}"
+    + ".zusep{padding:8px 5px 4px;font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:.15em;color:#bbb;border-bottom:1px solid #e0e0e0}"
+    + ".footer{margin-top:auto;padding-top:7px;font-size:8px;color:#ccc;text-align:center;border-top:1px solid #f0f0f0;letter-spacing:.1em;text-transform:uppercase}"
     + "</style></head><body>"
     + pages
     + "</body></html>";
