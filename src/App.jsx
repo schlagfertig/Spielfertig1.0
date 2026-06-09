@@ -26,8 +26,15 @@ let activeMetronomeStop = null;
 
 // Fetch with timeout
 const fetchWithTimeout = async (url, options, ms=8000) => {
-  return fetch(url, options);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
 };
+
 // Minimal Supabase REST helper
 const sb = {
   headers: () => {
@@ -225,7 +232,10 @@ function AuthScreen({ onAuth }) {
       } else if (mode === "register") {
         setError("Bestätigungs-E-Mail gesendet! Bitte bestätigen, dann einloggen.");
       }
-    } catch(e) { setError("Fehler: " + e.message + " | URL: " + SUPABASE_URL.substring(0,30)); }
+    } catch(e) {
+      if (e.name === "AbortError") setError("Zeitüberschreitung – bitte Internetverbindung prüfen und erneut versuchen.");
+      else setError("Fehler: " + e.message);
+    }
     setLoading(false);
   };
 
@@ -875,10 +885,11 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           <Btn variant="outline" size="sm" onClick={()=>exportPDF(playlist,allSongs,playlistSongs,bandName,printNotes)}>🖨 PDF</Btn>
           <button onClick={()=>setPrintNotes(!printNotes)} title={printNotes?"Notizen werden gedruckt":"Notizen nicht drucken"} style={{background:printNotes?C.tealDim:"transparent",border:"1px solid "+(printNotes?C.tealBorder:"#333"),color:printNotes?C.teal:C.grayDim,borderRadius:4,padding:"5px 8px",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:700,transition:"all .15s"}}>📝</button>
         </div>
-        <Btn variant="outline" size="sm" onClick={()=>{
+          <Btn variant="outline" size="sm" onClick={async()=>{
+          await sb.update("playlists", { is_shared: true }, "id=eq." + playlist.id);
           const url = window.location.origin + "/?share=" + playlist.id;
           if (navigator.clipboard&&navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).then(()=>show("Link kopiert! An Bandkollegen senden 🐟")).catch(()=>show(url,"success"));
+            navigator.clipboard.writeText(url).then(()=>show("Link kopiert! An Putzerfische senden 🐟")).catch(()=>show(url,"success"));
           } else { show(url,"success"); }
         }}>🔗 Teilen</Btn>
         <Btn variant="primary" size="sm" onClick={()=>setGigMode(true)}>🎸 Gig</Btn>
