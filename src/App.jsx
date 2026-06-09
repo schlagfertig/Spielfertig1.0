@@ -120,10 +120,25 @@ const C = {
 };
 
 const SETS = ["Set 1", "Set 2", "Set 3", "Zugaben"];
+// Feste Farben für bekannte Drummer
+const DRUMMER_COLORS = {
+  Tom: { bg: C.tealDim, border: C.tealBorder, badge: C.teal },
+  Ron: { bg: C.redDim,  border: C.redBorder,  badge: C.red  },
+};
+// Palette für alle weiteren – stabil per Namen zugewiesen
+const EXTRA_DRUMMER_PALETTE = [
+  { bg:"rgba(212,168,67,0.12)",  border:"rgba(212,168,67,0.32)",  badge:"#d4a843" },
+  { bg:"rgba(155,126,222,0.12)", border:"rgba(155,126,222,0.32)", badge:"#9b7ede" },
+  { bg:"rgba(91,155,213,0.12)",  border:"rgba(91,155,213,0.32)",  badge:"#5b9bd5" },
+  { bg:"rgba(107,191,107,0.12)", border:"rgba(107,191,107,0.32)", badge:"#6bbf6b" },
+];
 const dStyle = d => {
-  if (d === "Ron") return { bg: C.redDim,  border: C.redBorder,  badge: C.red  };
-  if (d === "Tom") return { bg: C.tealDim, border: C.tealBorder, badge: C.teal };
-  return { bg: "#111", border: "#333", badge: C.gray };
+  if (!d) return { bg:"#111", border:"#333", badge:C.gray };
+  if (DRUMMER_COLORS[d]) return DRUMMER_COLORS[d];
+  // Stabiler Hash: gleicher Name → gleiche Farbe
+  let h = 0;
+  for (let i=0; i<d.length; i++) h = (h*31 + d.charCodeAt(i)) >>> 0;
+  return EXTRA_DRUMMER_PALETTE[h % EXTRA_DRUMMER_PALETTE.length];
 };
 
 // ── Primitive UI ───────────────────────────────────────────────────────────
@@ -1105,17 +1120,20 @@ function AddBandModal({ user, onClose, onRefresh, show }) {
   const [name, setName]     = useState("");
   const [color, setColor]   = useState(BAND_COLORS[0].val);
   const [emoji, setEmoji]   = useState(BAND_EMOJIS[0]);
+  const [drummers, setDrummers] = useState("Tom");
   const [saving, setSaving] = useState(false);
+
 
   const handleSave = async () => {
     if (!name.trim()) return;
     setSaving(true);
     try {
+      const drummerList = drummers.split(",").map(d=>d.trim()).filter(Boolean);
       await sb.insert("bands", {
         name: name.trim(),
         color,
         emoji,
-        drummers: ["Tom"],
+        drummers: drummerList.length ? drummerList : ["Tom"],
         user_id: user.id,
       });
       await onRefresh();
@@ -1155,6 +1173,11 @@ function AddBandModal({ user, onClose, onRefresh, show }) {
           </div>
         </div>
 
+        <div>
+          <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:8 }}>Drummer</div>
+          <Field value={drummers} onChange={setDrummers} placeholder="z.B. Tom, Tobi"/>
+          <div style={{ color:C.grayDim, fontSize:10, marginTop:4 }}>Mehrere mit Komma trennen</div>
+        </div>
         <div style={{ background:"#0a0a0a", border:"1px solid #1a1a1a", borderRadius:6, padding:"12px 14px", display:"flex", alignItems:"center", gap:12 }}>
           <div style={{ fontSize:26 }}>{emoji}</div>
           <div style={{ flex:1, color:C.white, fontFamily:"'Bebas Neue',cursive", fontSize:20, letterSpacing:"0.05em" }}>{name || "Vorschau"}</div>
