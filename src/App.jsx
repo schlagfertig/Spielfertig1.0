@@ -1090,8 +1090,86 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, onBack, onRef
   );
 }
 
+// ── Band hinzufügen ───────────────────────────────────────────────────────
+const BAND_COLORS = [
+  { name:"Teal",   val:"#5cc8b8" },
+  { name:"Rot",    val:"#e05555" },
+  { name:"Gold",   val:"#d4a843" },
+  { name:"Violett",val:"#9b7ede" },
+  { name:"Blau",   val:"#5b9bd5" },
+  { name:"Grün",   val:"#6bbf6b" },
+];
+const BAND_EMOJIS = ["🎸","🥁","🎤","🎹","🎺","🎻","🎷","🎵","🎶","⭐","🔥","🌊"];
+
+function AddBandModal({ user, onClose, onRefresh, show }) {
+  const [name, setName]     = useState("");
+  const [color, setColor]   = useState(BAND_COLORS[0].val);
+  const [emoji, setEmoji]   = useState(BAND_EMOJIS[0]);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!name.trim()) return;
+    setSaving(true);
+    try {
+      await sb.insert("bands", {
+        name: name.trim(),
+        color,
+        emoji,
+        drummers: ["Tom"],
+        user_id: user.id,
+      });
+      await onRefresh();
+      show("Band erstellt!");
+      onClose();
+    } catch(e) {
+      show("Fehler: " + e.message, "error");
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal title="Neue Band" onClose={onClose}>
+      <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+        <Field value={name} onChange={setName} placeholder="Band-Name"/>
+
+        <div>
+          <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:8 }}>Farbe</div>
+          <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+            {BAND_COLORS.map(c=>(
+              <button key={c.val} onClick={(e)=>{e.stopPropagation();setColor(c.val);}} title={c.name}
+                style={{ width:34, height:34, borderRadius:"50%", background:c.val, cursor:"pointer",
+                  border: color===c.val ? "2px solid #fff" : "2px solid transparent",
+                  boxShadow: color===c.val ? "0 0 8px 2px "+c.val : "none", transition:"all .15s" }}/>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:8 }}>Emoji</div>
+          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+            {BAND_EMOJIS.map(e=>(
+              <button key={e} onClick={(ev)=>{ev.stopPropagation();setEmoji(e);}}
+                style={{ width:38, height:38, borderRadius:6, fontSize:20, cursor:"pointer", background: emoji===e ? C.tealDim : "#0a0a0a",
+                  border: emoji===e ? "1px solid "+C.tealBorder : "1px solid #222", transition:"all .15s" }}>{e}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ background:"#0a0a0a", border:"1px solid #1a1a1a", borderRadius:6, padding:"12px 14px", display:"flex", alignItems:"center", gap:12 }}>
+          <div style={{ fontSize:26 }}>{emoji}</div>
+          <div style={{ flex:1, color:C.white, fontFamily:"'Bebas Neue',cursive", fontSize:20, letterSpacing:"0.05em" }}>{name || "Vorschau"}</div>
+          <Badge color={color}>0 Songs</Badge>
+        </div>
+
+        <Btn full disabled={!name.trim()||saving} onClick={handleSave}>{saving ? <Spinner/> : "Band erstellen"}</Btn>
+      </div>
+    </Modal>
+  );
+}
+
 // ── Landing ────────────────────────────────────────────────────────────────
-function Landing({ bands, songs, user, onSelect, onLogout }) {
+function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
+  const [showAddBand, setShowAddBand] = useState(false);
   return (
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column" }}>
       <header style={{ borderBottom:"1px solid #111", padding:"16px 24px" }}>
@@ -1103,7 +1181,10 @@ function Landing({ bands, songs, user, onSelect, onLogout }) {
           </div>
           <div style={{ textAlign:"right" }}>
             <div style={{ color:C.gray, fontSize:11, marginBottom:4 }}>{user.email}</div>
-            <Btn variant="ghost" size="sm" onClick={onLogout}>Abmelden</Btn>
+            <div style={{ display:"flex", gap:6, justifyContent:"flex-end" }}>
+              <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}>+ Band</Btn>
+              <Btn variant="ghost" size="sm" onClick={onLogout}>Abmelden</Btn>
+            </div>
           </div>
         </div>
       </header>
@@ -1151,6 +1232,7 @@ function Landing({ bands, songs, user, onSelect, onLogout }) {
       <footer style={{ padding:"12px 24px", textAlign:"center" }}>
         <div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em" }}>THOMAS SCHUSTER · <span style={{ color:C.teal }}>SCHLAGFERTIG‽</span></div>
       </footer>
+      {showAddBand && <AddBandModal user={user} onClose={()=>setShowAddBand(false)} onRefresh={onRefresh} show={show}/>}
     </div>
   );
 }
@@ -1381,7 +1463,7 @@ export default function App() {
         <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs}
           onBack={()=>setSelBand(null)} onRefresh={loadAll} show={show}/>
       ) : (
-        <Landing bands={bands} songs={songs} user={user} onSelect={setSelBand} onLogout={handleLogout}/>
+       <Landing bands={bands} songs={songs} user={user} onSelect={setSelBand} onLogout={handleLogout} onRefresh={loadAll} show={show}/>
       )}
 
       {toast&&<Toast msg={toast.msg} type={toast.type} onClose={()=>setToast(null)}/>}
