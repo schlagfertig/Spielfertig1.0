@@ -885,7 +885,8 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           <Btn variant="outline" size="sm" onClick={()=>exportPDF(playlist,allSongs,playlistSongs,bandName,printNotes)}>🖨 PDF</Btn>
           <button onClick={()=>setPrintNotes(!printNotes)} title={printNotes?"Notizen werden gedruckt":"Notizen nicht drucken"} style={{background:printNotes?C.tealDim:"transparent",border:"1px solid "+(printNotes?C.tealBorder:"#333"),color:printNotes?C.teal:C.grayDim,borderRadius:4,padding:"5px 8px",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:700,transition:"all .15s"}}>📝</button>
         </div>
-          <Btn variant="outline" size="sm" onClick={async()=>{
+        <Btn variant="outline" size="sm" onClick={async(e)=>{
+          if (e) { e.stopPropagation(); e.preventDefault(); }
           await sb.update("playlists", { is_shared: true }, "id=eq." + playlist.id);
           const url = window.location.origin + "/?share=" + playlist.id;
           if (navigator.clipboard&&navigator.clipboard.writeText) {
