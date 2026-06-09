@@ -521,6 +521,11 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, onRefresh, 
   const [editSong, setEdit]   = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [saving, setSaving]   = useState(false);
+    const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected]     = useState([]);
+  const [bulkConfirm, setBulkConfirm] = useState(false);
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const toggleSel = (id) => setSelected(s => s.includes(id) ? s.filter(x=>x!==id) : [...s, id]);
   const [addTarget, setAddTarget] = useState(null); // song being added to setlist
   const [atGig,    setAtGig]    = useState("");
   const [atPl,     setAtPl]     = useState("");
@@ -554,6 +559,17 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, onRefresh, 
     await sb.update("songs", { title:editSong.title, artist:editSong.artist, bpm:parseInt(editSong.bpm), drummer:editSong.drummer, specialties:editSong.specialties }, "id=eq."+editSong.id);
     await onRefresh(); show("Song gespeichert!"); setEdit(null);
   };
+  
+  const handleBulkDelete = async () => {
+    setBulkSaving(true);
+    for (const id of selected) {
+      await sb.delete("songs", "id=eq." + id);
+    }
+    await onRefresh();
+    show(selected.length + " Songs gelöscht.");
+    setSelected([]); setSelectMode(false); setBulkConfirm(false); setBulkSaving(false);
+  };
+
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:13 }}>
@@ -569,6 +585,20 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, onRefresh, 
           <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase" }}>Songs</div>
         </div>
       </div>
+      <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+        <Btn variant={selectMode?"primary":"outline"} size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setSelectMode(m=>!m);setSelected([]);}}>
+          {selectMode ? "✕ Auswahl beenden" : "☑ Auswählen"}
+        </Btn>
+        {selectMode && (
+          <>
+            <Btn variant="ghost" size="sm" onClick={(e)=>{if(e){e.stopPropagation();}setSelected(filtered.map(s=>s.id));}}>Alle</Btn>
+            <Btn variant="ghost" size="sm" onClick={(e)=>{if(e){e.stopPropagation();}setSelected([]);}}>Keine</Btn>
+            <span style={{ color:C.gray, fontSize:12, marginLeft:"auto" }}>{selected.length} gewählt</span>
+            <Btn variant="danger" size="sm" disabled={!selected.length} onClick={(e)=>{if(e){e.stopPropagation();}setBulkConfirm(true);}}>🗑 Löschen</Btn>
+          </>
+        )}
+      </div>
+
       <Field value={search} onChange={setSearch} placeholder="Suchen…"/>
       <div style={{display:"flex",gap:6}}>
         {[{k:"none",l:"Standard"},{k:"title",l:"A–Z Titel"},{k:"artist",l:"A–Z Interpret"}].map(({k,l})=>(
@@ -596,7 +626,17 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, onRefresh, 
       <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
         {filtered.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:32, fontSize:13 }}>Keine Songs</div>
         :filtered.map(song=>(
-          <div key={song.id} style={{position:"relative"}}>
+          <div key={song.id} style={{position:"relative", display:"flex", alignItems:"stretch", gap:8}}>
+            {selectMode && (
+              <button onClick={(e)=>{e.stopPropagation();toggleSel(song.id);}}
+                style={{ flexShrink:0, width:38, borderRadius:4, cursor:"pointer",
+                  background: selected.includes(song.id) ? C.tealDim : "#0a0a0a",
+                  border: "1px solid " + (selected.includes(song.id) ? C.tealBorder : "#222"),
+                  color: selected.includes(song.id) ? C.teal : C.grayDim, fontSize:18 }}>
+                {selected.includes(song.id) ? "✓" : ""}
+              </button>
+            )}
+            <div style={{flex:1, minWidth:0}}>
             <SongRow song={song}
               onDelete={s=>setConfirm(s)}
               onEdit={s=>setEdit({...s,bpm:String(s.bpm)})}
@@ -639,6 +679,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, onRefresh, 
                 </div>
               </div>
             )}
+            </div>
           </div>
         ))}
       </div>
@@ -653,6 +694,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, onRefresh, 
         </div>
       </Modal>}
       {confirm&&<Confirm msg={`„${confirm.title}" wirklich löschen?`} onOk={()=>handleDelete(confirm)} onCancel={()=>setConfirm(null)}/>}
+      {bulkConfirm&&<Confirm msg={selected.length+" Songs wirklich löschen? Das kann nicht rückgängig gemacht werden."} onOk={handleBulkDelete} onCancel={()=>setBulkConfirm(false)}/>}
     </div>
   );
 }
