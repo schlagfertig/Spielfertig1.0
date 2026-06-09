@@ -515,7 +515,7 @@ function ImportWizard({ band, existingSongs, gigs, onImportDone, show }) {
 
 
 // ── Song Database ──────────────────────────────────────────────────────────
-function SongDatabase({ band, songs, gigs, playlists, playlistSongs, onRefresh, show }) {
+function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, onRefresh, show }) {
   const [search, setSearch]   = useState("");
   const [form, setForm]       = useState({ title:"", artist:"", bpm:"", drummer:band.drummers[0]||"Tom", specialties:"" });
   const [editSong, setEdit]   = useState(null);
@@ -525,6 +525,8 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, onRefresh, 
   const [selected, setSelected]     = useState([]);
   const [bulkConfirm, setBulkConfirm] = useState(false);
   const [bulkSaving, setBulkSaving] = useState(false);
+  const [copyTarget, setCopyTarget] = useState("");
+  const [showCopy, setShowCopy]     = useState(false);
   const toggleSel = (id) => setSelected(s => s.includes(id) ? s.filter(x=>x!==id) : [...s, id]);
   const [addTarget, setAddTarget] = useState(null); // song being added to setlist
   const [atGig,    setAtGig]    = useState("");
@@ -569,6 +571,25 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, onRefresh, 
     show(selected.length + " Songs gelöscht.");
     setSelected([]); setSelectMode(false); setBulkConfirm(false); setBulkSaving(false);
   };
+  const handleBulkCopy = async () => {
+    if (!copyTarget) return;
+    setBulkSaving(true);
+    const targetId = parseInt(copyTarget);
+    const toCopy = bandSongs.filter(s=>selected.includes(s.id));
+    for (const s of toCopy) {
+      await sb.insert("songs", {
+        band_id: targetId,
+        title: s.title,
+        artist: s.artist,
+        bpm: s.bpm,
+        drummer: s.drummer,
+        specialties: s.specialties || null,
+      });
+    }
+    await onRefresh();
+    show(toCopy.length + " Songs kopiert.");
+    setSelected([]); setSelectMode(false); setShowCopy(false); setCopyTarget(""); setBulkSaving(false);
+  };
 
 
   return (
@@ -594,6 +615,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, onRefresh, 
             <Btn variant="ghost" size="sm" onClick={(e)=>{if(e){e.stopPropagation();}setSelected(filtered.map(s=>s.id));}}>Alle</Btn>
             <Btn variant="ghost" size="sm" onClick={(e)=>{if(e){e.stopPropagation();}setSelected([]);}}>Keine</Btn>
             <span style={{ color:C.gray, fontSize:12, marginLeft:"auto" }}>{selected.length} gewählt</span>
+            <Btn variant="outline" size="sm" disabled={!selected.length} onClick={(e)=>{if(e){e.stopPropagation();}setShowCopy(true);}}>⎘ In Band</Btn>
             <Btn variant="danger" size="sm" disabled={!selected.length} onClick={(e)=>{if(e){e.stopPropagation();}setBulkConfirm(true);}}>🗑 Löschen</Btn>
           </>
         )}
@@ -695,6 +717,18 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, onRefresh, 
       </Modal>}
       {confirm&&<Confirm msg={`„${confirm.title}" wirklich löschen?`} onOk={()=>handleDelete(confirm)} onCancel={()=>setConfirm(null)}/>}
       {bulkConfirm&&<Confirm msg={selected.length+" Songs wirklich löschen? Das kann nicht rückgängig gemacht werden."} onOk={handleBulkDelete} onCancel={()=>setBulkConfirm(false)}/>}
+      {showCopy&&<Modal title={selected.length+" Songs in andere Band kopieren"} onClose={()=>{setShowCopy(false);setCopyTarget("");}}>
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          <div style={{ color:C.grayDim, fontSize:12 }}>Die markierten Songs werden als Kopie in der Ziel-Band angelegt. Das Original bleibt erhalten.</div>
+          <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase" }}>Ziel-Band</div>
+          <select value={copyTarget} onChange={e=>setCopyTarget(e.target.value)}
+            style={{ background:"#0a0a0a", border:"1px solid #222", color:C.white, borderRadius:4, padding:"9px 12px", fontSize:13, fontFamily:"inherit" }}>
+            <option value="">— Band wählen —</option>
+            {(allBands||[]).filter(b=>b.id!==band.id).map(b=><option key={b.id} value={b.id}>{b.emoji} {b.name}</option>)}
+          </select>
+          <Btn full disabled={!copyTarget||bulkSaving} onClick={handleBulkCopy}>{bulkSaving?<Spinner/>:"Kopieren ✓"}</Btn>
+        </div>
+      </Modal>}
     </div>
   );
 }
@@ -1113,7 +1147,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, onRefr
 }
 
 // ── Band Detail ────────────────────────────────────────────────────────────
-function BandDetail({ band, songs, gigs, playlists, playlistSongs, onBack, onRefresh, show }) {
+function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, onBack, onRefresh, show }) {
   const [tab, setTab] = useState("songs");
   return (
     <div style={{ minHeight:"100vh", background:C.bg }}>
@@ -1139,7 +1173,7 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, onBack, onRef
         <SealLine color={band.color}/>
       </header>
       <main style={{ maxWidth:720, margin:"0 auto", padding:"20px 16px" }}>
-        {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} onRefresh={onRefresh} show={show}/>}
+        {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={allBands} onRefresh={onRefresh} show={show}/>}
         {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} onRefresh={onRefresh} show={show}/>}
         {tab==="import"  &&<ImportWizard band={band} existingSongs={songs} gigs={gigs} onImportDone={onRefresh} show={show}/>}
       </main>
@@ -1525,7 +1559,7 @@ export default function App() {
       </div>
 
       {selBand ? (
-        <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs}
+        <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={bands}
           onBack={()=>setSelBand(null)} onRefresh={loadAll} show={show}/>
       ) : (
        <Landing bands={bands} songs={songs} user={user} onSelect={setSelBand} onLogout={handleLogout} onRefresh={loadAll} show={show}/>
