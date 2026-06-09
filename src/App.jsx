@@ -1269,6 +1269,15 @@ function AddBandModal({ user, onClose, onRefresh, show }) {
 // ── Landing ────────────────────────────────────────────────────────────────
 function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
   const [showAddBand, setShowAddBand] = useState(false);
+  const [delBand, setDelBand] = useState(null);
+  const [delSaving, setDelSaving] = useState(false);
+  const handleDeleteBand = async () => {
+    setDelSaving(true);
+    await sb.delete("bands", "id=eq." + delBand.id);
+    await onRefresh();
+    show("Band „" + delBand.name + "\" gelöscht.");
+    setDelBand(null); setDelSaving(false);
+  };
   return (
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column" }}>
       <header style={{ borderBottom:"1px solid #111", padding:"16px 24px" }}>
@@ -1319,7 +1328,14 @@ function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
                   {/* Bottom info strip */}
                   <div style={{ borderTop:"1px solid #1a1a1a", padding:"10px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", background:C.bgCard }}>
                     <span style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase" }}>Songs &amp; Setlist</span>
-                    <Badge color={band.color}>{count} Songs</Badge>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }} onClick={e=>e.stopPropagation()}>
+                      <Badge color={band.color}>{count} Songs</Badge>
+                      <button onClick={(e)=>{e.stopPropagation();e.preventDefault();setDelBand(band);}}
+                        title="Band löschen"
+                        style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", fontSize:16, padding:"2px 4px" }}
+                        onMouseEnter={e=>e.currentTarget.style.color=C.red}
+                        onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>🗑</button>
+                    </div>
                   </div>
                 </div>
               );
@@ -1332,6 +1348,22 @@ function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
         <div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em" }}>THOMAS SCHUSTER · <span style={{ color:C.teal }}>SCHLAGFERTIG‽</span></div>
       </footer>
       {showAddBand && <AddBandModal user={user} onClose={()=>setShowAddBand(false)} onRefresh={onRefresh} show={show}/>}
+      {delBand && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div style={{ background:C.bgCard, border:"1px solid "+C.redBorder, borderRadius:8, padding:28, maxWidth:360, width:"90%" }}>
+            <p style={{ color:C.red, fontSize:14, fontWeight:700, marginBottom:8, letterSpacing:"0.04em" }}>⚠ Band wirklich löschen?</p>
+            <p style={{ color:C.gray, fontSize:13, marginBottom:6, lineHeight:1.5 }}>
+              „{delBand.name}" wird mit <strong style={{color:C.white}}>allen Songs, Gigs und Setlists</strong> unwiderruflich gelöscht.
+            </p>
+            <p style={{ color:C.grayDim, fontSize:12, marginBottom:18 }}>Diese Aktion kann nicht rückgängig gemacht werden.</p>
+            <SealLine color={C.red}/>
+            <div style={{ display:"flex", gap:8, justifyContent:"flex-end", marginTop:14 }}>
+              <Btn variant="ghost" onClick={()=>setDelBand(null)}>Abbrechen</Btn>
+              <Btn variant="danger" disabled={delSaving} onClick={handleDeleteBand}>{delSaving?<Spinner/>:"Endgültig löschen"}</Btn>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
