@@ -479,41 +479,6 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName, withNotes) {
   w.document.fonts.ready.then(()=>w.print());
 }
 
-// ── KI-Analyse (Platzhalter) ─────────────────────────────────────────────────
-function AISetNotes({ setName, songs }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div>
-      <button onClick={()=>setOpen(!open)} style={{ background:"transparent", border:"1px solid #1e1e1e", color:open?C.teal:C.grayDim, borderRadius:4, padding:"5px 13px", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>✦ KI-Analyse {open?"▲":"▼"}</button>
-      {open&&(
-        <div style={{ marginTop:8, background:"#080808", border:"1px solid #1e1e1e", borderRadius:4, padding:14 }}>
-          <p style={{ color:"#888", fontSize:13, lineHeight:1.6, margin:0 }}>
-            Die KI-Analyse ist derzeit deaktiviert. Sobald sie aktiv ist, bekommst du hier eine Set-Auswertung: Energie-Kurve, BPM-Übergänge, Drummer-Wechsel und Tipps.
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Import (Platzhalter) ──────────────────────────────────────────────────────
-function ImportWizard({ band, existingSongs, gigs, onImportDone, show }) {
-  return (
-    <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Songs importieren</div>
-      <SealLine/>
-      <div style={{ background:"#0a1f1a", border:"1px solid "+C.tealBorder, borderRadius:8, padding:22, textAlign:"center" }}>
-        <div style={{ fontSize:38, marginBottom:8 }}>🤖</div>
-        <div style={{ color:C.teal, fontWeight:600, marginBottom:6 }}>KI-Import kommt bald</div>
-        <p style={{ color:C.gray, fontSize:13, lineHeight:1.5, margin:0 }}>
-          Songs trägst du am besten direkt im Tab „🎵 Songs“ ein. Der automatische Import von PDFs oder Fotos folgt später.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-
 // ── Song Database ──────────────────────────────────────────────────────────
 function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, onRefresh, show }) {
   const [search, setSearch]   = useState("");
@@ -1166,16 +1131,13 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, onB
         {/* Tabs */}
         <div style={{ maxWidth:720, margin:"0 auto", padding:"0 16px 10px", display:"flex", gap:6 }}>
           {[{key:"songs",label:"🎵 Songs"},{key:"setlist",label:"📋 Setlist"}].map(({key,label})=>(
-            <button key={key} onClick={()=>setTab(key)} style={{ flex:1, background:tab===key?C.teal:"transparent", color:tab===key?"#000":C.gray, border:`1px solid ${tab===key?C.teal:"#222"}`, borderRadius:4, padding:"8px 0", fontSize:12, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>{label}</button>
           ))}
-          <button onClick={()=>setTab("import")} style={{ flex:1, background:tab==="import"?C.teal:"rgba(92,200,184,0.08)", color:tab==="import"?"#000":C.teal, border:`1px solid ${tab==="import"?C.teal:C.tealBorder}`, borderRadius:4, padding:"8px 0", fontSize:12, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>↑ Import</button>
         </div>
         <SealLine color={band.color}/>
       </header>
       <main style={{ maxWidth:720, margin:"0 auto", padding:"20px 16px" }}>
         {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={allBands} onRefresh={onRefresh} show={show}/>}
         {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} onRefresh={onRefresh} show={show}/>}
-        {tab==="import"  &&<ImportWizard band={band} existingSongs={songs} gigs={gigs} onImportDone={onRefresh} show={show}/>}
       </main>
     </div>
   );
