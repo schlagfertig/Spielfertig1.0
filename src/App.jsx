@@ -523,7 +523,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, o
   };
 
   const handleUpdate = async () => {
-    await sb.update("songs", { title:editSong.title, artist:editSong.artist, bpm:parseInt(editSong.bpm), drummer:editSong.drummer, specialties:editSong.specialties }, "id=eq."+editSong.id);
+    await sb.update("songs", { title:editSong.title, artist:editSong.artist, bpm:parseInt(editSong.bpm), drummer:editSong.drummer, specialties:editSong.specialties, lyrics:editSong.lyrics||null }, "id=eq."+editSong.id);
     await onRefresh(); show("Song gespeichert!"); setEdit(null);
   };
   
@@ -677,6 +677,10 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, o
           <Field value={editSong.bpm}         onChange={v=>setEdit(s=>({...s,bpm:v}))}         placeholder="BPM" type="number"/>
           <Sel   value={editSong.drummer}     onChange={v=>setEdit(s=>({...s,drummer:v}))}     options={band.drummers}/>
           <Field value={editSong.specialties||""} onChange={v=>setEdit(s=>({...s,specialties:v}))} placeholder="Besonderheiten"/>
+          <div>
+            <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Lyrics</div>
+            <Field value={editSong.lyrics||""} onChange={v=>setEdit(s=>({...s,lyrics:v}))} placeholder="Songtext hier einfügen…" rows={8}/>
+          </div>
           <Btn full onClick={handleUpdate}>Speichern</Btn>
         </div>
       </Modal>}
