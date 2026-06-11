@@ -486,7 +486,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, o
   const [editSong, setEdit]   = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [saving, setSaving]   = useState(false);
-    const [selectMode, setSelectMode] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected]     = useState([]);
   const [bulkConfirm, setBulkConfirm] = useState(false);
   const [bulkSaving, setBulkSaving] = useState(false);
