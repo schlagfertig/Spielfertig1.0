@@ -965,7 +965,6 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         ))}
       </div>
       <Field value={search} onChange={setSearch} placeholder="Im Set suchen…"/>
-      <AISetNotes setName={activeSet} songs={songsInSet}/>
       <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:12 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase" }}>{activeSet} · {songsInSet.length} Songs</div>
