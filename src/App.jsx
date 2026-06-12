@@ -356,7 +356,7 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
         </div>
         {song.specialties&&<div style={{ color:C.grayDim, fontSize:11, fontStyle:"italic", whiteSpace:"pre-wrap" }}>{song.specialties}</div>}
       </div>
-      {song.lyrics&&<button onClick={e=>{e.stopPropagation();setShowLyrics(v=>!v);}} title="Lyrics" style={{ background:"transparent", border:"none", color:showLyrics?C.teal:C.grayDim, cursor:"pointer", padding:"6px 8px", fontSize:16 }}>📄</button>}
+      {song.lyrics&&<button onClick={e=>{e.stopPropagation();setShowLyrics(v=>!v);}} title="Lyrics" style={{ background:"transparent", border:"none", color:showLyrics?C.teal:C.grayDim, cursor:"pointer", padding:"6px 8px", fontSize:16 }}>📓</button>}
       {song.drummer&&<Badge color={st.badge}>{song.drummer}</Badge>}
       {onEdit&&<button onClick={e=>{e.stopPropagation();onEdit(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"6px 10px", fontSize:18 }} onMouseEnter={e=>e.currentTarget.style.color=C.teal} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✎</button>}
       {onDelete&&<button onClick={e=>{e.stopPropagation();onDelete(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"6px 10px", fontSize:18 }} onMouseEnter={e=>e.currentTarget.style.color=C.red} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✕</button>}
@@ -640,7 +640,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, o
                 style={{background:"transparent",border:"none",color:C.grayDim,cursor:"pointer",padding:"6px 10px",fontSize:16}}
                 title="Zur Setlist hinzufügen"
                 onMouseEnter={e=>e.currentTarget.style.color=C.teal}
-                onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>📋</button>}/>
+                onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>➡️</button>}/>
             {addTarget?.id===song.id&&(
               <div style={{background:"#1a1a1a",border:"1px solid "+C.tealBorder,borderRadius:8,padding:14,marginTop:4,display:"flex",flexDirection:"column",gap:8,zIndex:10}}>
                 <div style={{color:C.teal,fontSize:11,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Zur Setlist hinzufügen</div>
