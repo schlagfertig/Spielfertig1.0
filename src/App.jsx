@@ -931,7 +931,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                       {song.artist}
                       {song.bpm>0&&<span style={{color:isCurrent?C.grayDim:"#444",fontFamily:"'Space Mono',monospace",fontSize:11,marginLeft:6}}>{song.bpm} BPM</span>}
                     </div>
-                    {song.specialties&&<div style={{color:"#bbb",fontSize:12,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5,marginTop:3}}>{song.specialties}</div>}
+                    {song.specialties&&<div style={{color:"#bbb",fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5,marginTop:3}}>{song.specialties}</div>}
                   </div>
                   {/* Metronome LEFT of drummer, same row */}
                   <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
@@ -948,7 +948,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                 </div>
                 {gigLyricsId===song.ps_id&&song.lyrics&&(
                   <div onClick={(e)=>e.stopPropagation()}
-                    style={{background:"#070707",border:"2px solid "+st.border,borderTop:"none",borderRadius:"0 0 7px 7px",padding:"14px 18px",color:"#d8d8d8",fontSize:18,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
+                    style={{background:"#070707",border:"2px solid "+st.border,borderTop:"none",borderRadius:"0 0 7px 7px",padding:"14px 16px",color:"#d8d8d8",fontSize:18,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
                     {song.lyrics}
                   </div>
                 )}
