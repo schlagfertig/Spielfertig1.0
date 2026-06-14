@@ -1258,6 +1258,39 @@ function AddBandModal({ user, onClose, onRefresh, show }) {
     </Modal>
   );
 }
+    
+// ── Daten-Export (Backup) ─────────────────────────────────────────────────
+function downloadJSON(filename, dataObj) {
+  const blob = new Blob([JSON.stringify(dataObj, null, 2)], { type:"application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function buildBandExport(band, songs, gigs, playlists, playlistSongs) {
+  const bandGigs = (gigs||[]).filter(g=>g.band_id===band.id);
+  const gigIds = bandGigs.map(g=>g.id);
+  const bandPlaylists = (playlists||[]).filter(p=>gigIds.includes(p.gig_id));
+  const plIds = bandPlaylists.map(p=>p.id);
+  return {
+    band,
+    songs: (songs||[]).filter(s=>s.band_id===band.id),
+    gigs: bandGigs,
+    playlists: bandPlaylists,
+    playlist_songs: (playlistSongs||[]).filter(ps=>plIds.includes(ps.playlist_id)),
+  };
+}
+
+function todayStamp() {
+  const d = new Date();
+  const p = n => String(n).padStart(2,"0");
+  return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate());
+}
 
 // ── Landing ────────────────────────────────────────────────────────────────
 function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
