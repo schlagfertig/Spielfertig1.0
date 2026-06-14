@@ -1375,22 +1375,6 @@ function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
                     <span style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase" }}>Songs &amp; Setlist</span>
                     <div style={{ display:"flex", alignItems:"center", gap:8 }} onClick={e=>e.stopPropagation()}>
                       <Badge color={band.color}>{count} Songs</Badge>
-                      <button onClick={(e)=>{e.stopPropagation();e.preventDefault();
-                        downloadJSON("spielfertig-"+band.name.replace(/[^a-z0-9]/gi,"_")+"-"+todayStamp()+".json", {
-                          exported_at: new Date().toISOString(), version: 1,
-                          bands: [buildBandExport(band, songs, gigs, playlists, playlistSongs)]
-                        });
-                        show("Backup geöffnet: "+band.name+" 📋");
-                      }}
-                        title="Diese Band exportieren"
-                        style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", fontSize:16, padding:"2px 4px" }}
-                        onMouseEnter={e=>e.currentTarget.style.color=C.teal}
-                        onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>⬇</button>
-                      <button onClick={(e)=>{e.stopPropagation();e.preventDefault();setDelBand(band);}}
-                        title="Band löschen"
-                        style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", fontSize:16, padding:"2px 4px" }}
-                        onMouseEnter={e=>e.currentTarget.style.color=C.red}
-                        onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>🗑</button>
                     </div>
                   </div>
                 </div>
