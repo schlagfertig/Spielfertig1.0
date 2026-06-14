@@ -918,35 +918,56 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                       : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{song.position}</div>}
                 </div>
                 {/* Title + artist + notes */}
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{
-                    color: isCurrent?C.white:isNext?"#ccc":"#bbb",
-                    fontFamily:"'Raleway',sans-serif", fontWeight:600,
-                    fontSize: isCurrent?24:isNext?19:21,
-                    lineHeight:1.15, transition:"font-size .2s",
-                    whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"
-                  }}>{song.title}</div>
-                  <div style={{color:isCurrent?"#999":"#555",fontSize:12,marginTop:1}}>
-                    {song.artist}
-                    {song.bpm>0&&<span style={{color:isCurrent?C.grayDim:"#444",fontFamily:"'Space Mono',monospace",fontSize:11,marginLeft:8}}>{song.bpm}</span>}
+            return (
+              <div key={song.id} style={{ display:"flex", flexDirection:"column" }}>
+                <div onClick={()=>setCurrentSongId(isCurrent ? null : song.ps_id)}
+                  style={{
+                    background: isCurrent ? (song.drummer==="Ron"?C.redDim:C.tealDim) : isNext ? "#0d0d0d" : "transparent",
+                    border: "2px solid " + (isCurrent ? (song.drummer==="Ron"?C.red:C.teal) : isNext ? "#2a2a2a" : "#1a1a1a"),
+                    borderRadius: (gigLyricsId===song.ps_id&&song.lyrics) ? "7px 7px 0 0" : 7,
+                    padding:"9px 13px", display:"flex", alignItems:"center", gap:10,
+                    cursor:"pointer", opacity, transition:"all .2s",
+                    boxShadow: isCurrent ? "0 0 16px 2px " + (song.drummer==="Ron"?C.redBorder:C.tealBorder) : "none"
+                  }}>
+                  {/* Position / play indicator */}
+                  <div style={{width:22,textAlign:"center",flexShrink:0}}>
+                    {isCurrent
+                      ? <div style={{color:song.drummer==="Ron"?C.red:C.teal,fontSize:16}}>▶</div>
+                      : isNext
+                        ? <div style={{color:"#555",fontSize:10,letterSpacing:".04em"}}>NEXT</div>
+                        : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{i+1}</div>}
                   </div>
-                  {song.specialties&&<div style={{color:"#bbb",fontSize:12,fontStyle:"italic",marginTop:2,whiteSpace:"pre-wrap",lineHeight:1.4}}>{song.specialties}</div>}
-                </div>
-                {/* Metronome LEFT of drummer, same row */}
-                <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-                  {song.lyrics&&<button onClick={(e)=>{e.stopPropagation();setGigLyricsId(id=>id===song.ps_id?null:song.ps_id);}}
-                    title="Lyrics"
-                    style={{background:"transparent",border:"none",color:gigLyricsId===song.ps_id?C.teal:C.grayDim,cursor:"pointer",fontSize:22,padding:"2px 4px"}}>📓</button>}
-                  {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
-                {song.drummer&&<div style={{
-                    color:dCol, border:"1px solid "+dCol, borderRadius:4,
-                    padding:"5px 12px", fontSize:13, fontWeight:700,
-                    letterSpacing:"0.08em", minWidth:44, textAlign:"center"
-                  }}>{song.drummer}</div>}
+                  {/* Title + artist + notes */}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{
+                      color: isCurrent?C.white:isNext?"#ccc":"#bbb",
+                      fontFamily:"'Raleway',sans-serif", fontWeight:600,
+                      fontSize: isCurrent?24:isNext?19:21,
+                      lineHeight:1.15, transition:"font-size .2s",
+                      whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"
+                    }}>{song.title}</div>
+                    <div style={{color:isCurrent?"#999":"#555",fontSize:12,marginTop:1}}>
+                      {song.artist}
+                      {song.bpm>0&&<span style={{color:isCurrent?C.grayDim:"#444",fontFamily:"'Space Mono',monospace",fontSize:11,marginLeft:6}}>{song.bpm} BPM</span>}
+                    </div>
+                    {song.specialties&&<div style={{color:"#bbb",fontSize:12,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5,marginTop:3}}>{song.specialties}</div>}
+                  </div>
+                  {/* Metronome LEFT of drummer, same row */}
+                  <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+                    {song.lyrics&&<button onClick={(e)=>{e.stopPropagation();setGigLyricsId(id=>id===song.ps_id?null:song.ps_id);}}
+                      title="Lyrics"
+                      style={{background:"transparent",border:"none",color:gigLyricsId===song.ps_id?C.teal:C.grayDim,cursor:"pointer",fontSize:22,padding:"2px 4px"}}>📓</button>}
+                    {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
+                    {song.drummer&&<div style={{
+                      color:dCol, border:"1px solid "+dCol, borderRadius:4,
+                      padding:"5px 12px", fontSize:13, fontWeight:700,
+                      letterSpacing:"0.08em", minWidth:44, textAlign:"center"
+                    }}>{song.drummer}</div>}
+                  </div>
                 </div>
                 {gigLyricsId===song.ps_id&&song.lyrics&&(
                   <div onClick={(e)=>e.stopPropagation()}
-                    style={{background:"#070707",border:"2px solid "+st.border,borderTop:"none",borderRadius:"0 0 7px 7px",margin:"-5px 0 0",padding:"14px 18px",color:"#d8d8d8",fontSize:18,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
+                    style={{background:"#070707",border:"2px solid "+st.border,borderTop:"none",borderRadius:"0 0 7px 7px",padding:"14px 18px",color:"#d8d8d8",fontSize:18,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
                     {song.lyrics}
                   </div>
                 )}
