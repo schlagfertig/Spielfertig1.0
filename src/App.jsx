@@ -1329,12 +1329,12 @@ function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
             <div style={{ color:C.gray, fontSize:11, marginBottom:4 }}>{user.email}</div>
             <div style={{ display:"flex", gap:6, justifyContent:"flex-end" }}>
               <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}
-                downloadJSON("spielfertig-backup-"+todayStamp()+".json", {
+                const json = JSON.stringify({
                   exported_at: new Date().toISOString(),
                   version: 1,
                   bands: (bands||[]).map(b=>buildBandExport(b, songs, gigs, playlists, playlistSongs))
-                });
-                show("Backup in neuem Tab geöffnet 📋");
+                }, null, 2);
+                setBackupText(json);
               }}>⬇ Backup</Btn>
               <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}>+ Band</Btn>
               <Btn variant="ghost" size="sm" onClick={onLogout}>Abmelden</Btn>
@@ -1389,6 +1389,22 @@ function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
         <div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em" }}>THOMAS SCHUSTER · <span style={{ color:C.teal }}>SCHLAGFERTIG‽</span></div>
       </footer>
       {showAddBand && <AddBandModal user={user} onClose={()=>setShowAddBand(false)} onRefresh={onRefresh} show={show}/>}
+            {backupText!==null && (
+        <Modal title="Backup – Daten sichern" onClose={()=>setBackupText(null)}>
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            <div style={{ color:C.grayDim, fontSize:12, lineHeight:1.5 }}>
+              Markiere den Text und kopiere ihn, oder nutze „Kopieren". Sichere ihn z.B. in einer Notiz oder Mail. So hast du ein Backup all deiner Bands, Songs und Setlists.
+            </div>
+            <textarea readOnly value={backupText} onFocus={e=>e.target.select()}
+              style={{ width:"100%", height:240, background:"#0a0a0a", border:"1px solid #222", borderRadius:4, color:"#cfcfcf", fontFamily:"monospace", fontSize:11, padding:10, whiteSpace:"pre", boxSizing:"border-box" }}/>
+            <Btn full onClick={()=>{
+              if (navigator.clipboard&&navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(backupText).then(()=>show("Backup kopiert! 📋")).catch(()=>show("Bitte manuell markieren & kopieren"));
+              } else { show("Bitte manuell markieren & kopieren"); }
+            }}>📋 Kopieren</Btn>
+          </div>
+        </Modal>
+      )}
       {delBand && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }}>
           <div style={{ background:C.bgCard, border:"1px solid "+C.redBorder, borderRadius:8, padding:28, maxWidth:360, width:"90%" }}>
