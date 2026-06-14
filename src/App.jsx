@@ -1316,6 +1316,14 @@ function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
           <div style={{ textAlign:"right" }}>
             <div style={{ color:C.gray, fontSize:11, marginBottom:4 }}>{user.email}</div>
             <div style={{ display:"flex", gap:6, justifyContent:"flex-end" }}>
+              <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}
+                downloadJSON("spielfertig-backup-"+todayStamp()+".json", {
+                  exported_at: new Date().toISOString(),
+                  version: 1,
+                  bands: (bands||[]).map(b=>buildBandExport(b, songs, gigs, playlists, playlistSongs))
+                });
+                show("Backup heruntergeladen ⬇");
+              }}>⬇ Backup</Btn>
               <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}>+ Band</Btn>
               <Btn variant="ghost" size="sm" onClick={onLogout}>Abmelden</Btn>
             </div>
