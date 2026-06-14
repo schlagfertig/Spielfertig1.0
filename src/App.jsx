@@ -336,37 +336,50 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
   const pulseColor  = beat?"#fff":active?C.teal:C.grayDim;
   const pulseGlow   = beat?`0 0 10px 4px ${C.teal}`:active?`0 0 4px 1px ${C.tealBorder}`:"none";
   const pulseBorder = active?`1px solid ${beat?"#fff":C.teal}`:"1px solid #2a2a2a";
+  const hasActions  = onEdit||onDelete||extra;
   return (
-  <div style={{ display:"flex", flexDirection:"column" }}>
-    <div draggable={draggable} onDragStart={onDragStart} onDragOver={e=>e.preventDefault()} onDrop={onDrop}
-      style={{ background:isDragging?"#0a0a0a":st.bg, border:`1px solid ${isDragging?C.teal:st.border}`, borderRadius:4, padding:"9px 13px", display:"flex", alignItems:"center", gap:9, opacity:isDragging?.4:1, transition:"background .1s", cursor:draggable?"grab":"default" }}>
-      {pos!==undefined&&<div style={{ color:C.grayDim, fontSize:11, width:18, textAlign:"right", flexShrink:0, fontFamily:"'Space Mono',monospace" }}>{pos}</div>}
-      {draggable&&<div style={{ color:C.grayDim, fontSize:13, flexShrink:0 }}>⠿</div>}
-      {song.bpm>0&&(
-        <button onClick={toggle} title={`${active?"Stop":"Start"} (${song.bpm} BPM)`}
-          style={{ background:"transparent", border:pulseBorder, borderRadius:"50%", width:32, height:32, flexShrink:0, cursor:"pointer", padding:0, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:pulseGlow, transition:"border-color .05s,box-shadow .05s" }}>
-          <div style={{ width:14, height:14, borderRadius:"50%", background:pulseColor, transition:"background .05s", boxShadow:beat?`0 0 6px 3px ${C.teal}`:"none" }}/>
-        </button>
-      )}
-      <div style={{ flex:1, minWidth:0 }}>
-        <div style={{ fontWeight:600, color:C.white, fontSize:14, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{song.title}</div>
-        <div style={{ color:C.gray, fontSize:12 }}>
-          {song.artist}
-          {song.bpm>0&&<span style={{ color:active?C.teal:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6, transition:"color .2s" }}>{song.bpm} BPM</span>}
+    <div style={{ display:"flex", flexDirection:"column" }}>
+      <div draggable={draggable} onDragStart={onDragStart} onDragOver={e=>e.preventDefault()} onDrop={onDrop}
+        style={{ background:isDragging?"#0a0a0a":st.bg, border:`1px solid ${isDragging?C.teal:st.border}`, borderRadius: showLyrics?"6px 6px 0 0":6, padding:"10px 13px", display:"flex", flexDirection:"column", gap:8, opacity:isDragging?.4:1, transition:"background .1s", cursor:draggable?"grab":"default" }}>
+
+        {/* Reihe 1: Metronom + Titel + Drummer */}
+        <div style={{ display:"flex", alignItems:"center", gap:9 }}>
+          {pos!==undefined&&<div style={{ color:C.grayDim, fontSize:11, width:18, textAlign:"right", flexShrink:0, fontFamily:"'Space Mono',monospace" }}>{pos}</div>}
+          {draggable&&<div style={{ color:C.grayDim, fontSize:13, flexShrink:0 }}>⠿</div>}
+          {song.bpm>0&&(
+            <button onClick={toggle} title={`${active?"Stop":"Start"} (${song.bpm} BPM)`}
+              style={{ background:"transparent", border:pulseBorder, borderRadius:"50%", width:32, height:32, flexShrink:0, cursor:"pointer", padding:0, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:pulseGlow, transition:"border-color .05s,box-shadow .05s" }}>
+              <div style={{ width:14, height:14, borderRadius:"50%", background:pulseColor, transition:"background .05s", boxShadow:beat?`0 0 6px 3px ${C.teal}`:"none" }}/>
+            </button>
+          )}
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontWeight:600, color:C.white, fontSize:15, lineHeight:1.25 }}>{song.title}</div>
+            <div style={{ color:C.gray, fontSize:12 }}>
+              {song.artist}
+              {song.bpm>0&&<span style={{ color:active?C.teal:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6, transition:"color .2s" }}>{song.bpm} BPM</span>}
+            </div>
+          </div>
+          {song.drummer&&<Badge color={st.badge}>{song.drummer}</Badge>}
         </div>
-        {song.specialties&&<div style={{ color:C.grayDim, fontSize:11, fontStyle:"italic", whiteSpace:"pre-wrap" }}>{song.specialties}</div>}
+
+        {/* Besonderheiten: volle Breite */}
+        {song.specialties&&<div style={{ color:C.grayDim, fontSize:12, fontStyle:"italic", whiteSpace:"pre-wrap", lineHeight:1.5, paddingLeft: song.bpm>0?41:0 }}>{song.specialties}</div>}
+
+        {/* Reihe 2: Aktions-Icons rechtsbündig */}
+        {hasActions&&(
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"flex-end", gap:4, borderTop:"1px solid #1a1a1a", paddingTop:7, marginTop:1 }}>
+            {song.lyrics&&<button onClick={e=>{e.stopPropagation();setShowLyrics(v=>!v);}} title="Lyrics" style={{ background:"transparent", border:"none", color:showLyrics?C.teal:C.grayDim, cursor:"pointer", padding:"4px 10px", fontSize:18 }}>📓</button>}
+            {onEdit&&<button onClick={e=>{e.stopPropagation();onEdit(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"4px 10px", fontSize:18 }} onMouseEnter={e=>e.currentTarget.style.color=C.teal} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✎</button>}
+            {onDelete&&<button onClick={e=>{e.stopPropagation();onDelete(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"4px 10px", fontSize:18 }} onMouseEnter={e=>e.currentTarget.style.color=C.red} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✕</button>}
+            {extra&&extra}
+          </div>
+        )}
       </div>
-      {song.lyrics&&<button onClick={e=>{e.stopPropagation();setShowLyrics(v=>!v);}} title="Lyrics" style={{ background:"transparent", border:"none", color:showLyrics?C.teal:C.grayDim, cursor:"pointer", padding:"6px 8px", fontSize:16 }}>📓</button>}
-      {song.drummer&&<Badge color={st.badge}>{song.drummer}</Badge>}
-      {onEdit&&<button onClick={e=>{e.stopPropagation();onEdit(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"6px 10px", fontSize:18 }} onMouseEnter={e=>e.currentTarget.style.color=C.teal} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✎</button>}
-      {onDelete&&<button onClick={e=>{e.stopPropagation();onDelete(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"6px 10px", fontSize:18 }} onMouseEnter={e=>e.currentTarget.style.color=C.red} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✕</button>}
-      {extra&&extra}
-    </div>
-    {showLyrics&&song.lyrics&&(
-      <div style={{ background:"#080808", border:`1px solid ${st.border}`, borderTop:"none", borderRadius:"0 0 4px 4px", padding:"12px 15px", color:"#cfcfcf", fontSize:14, lineHeight:1.7, whiteSpace:"pre-wrap" }}>
-        {song.lyrics}
-      </div>
-    )}
+      {showLyrics&&song.lyrics&&(
+        <div style={{ background:"#080808", border:`1px solid ${st.border}`, borderTop:"none", borderRadius:"0 0 6px 6px", padding:"12px 15px", color:"#cfcfcf", fontSize:14, lineHeight:1.7, whiteSpace:"pre-wrap" }}>
+          {song.lyrics}
+        </div>
+      )}
     </div>
   );
 }
