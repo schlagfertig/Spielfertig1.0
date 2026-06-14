@@ -820,6 +820,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const [gigMode, setGigMode]     = useState(false);
   const [printNotes, setPrintNotes] = useState(true);
   const [currentSongId, setCurrentSongId] = useState(null);
+  const [gigLyricsId, setGigLyricsId] = useState(null);
 
   const mySongs  = playlistSongs.filter(ps=>ps.playlist_id===playlist.id);
   const bandSongs= allSongs.filter(s=>s.band_id===bandId);
@@ -927,13 +928,22 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                 </div>
                 {/* Metronome LEFT of drummer, same row */}
                 <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+                  {song.lyrics&&<button onClick={(e)=>{e.stopPropagation();setGigLyricsId(id=>id===song.ps_id?null:song.ps_id);}}
+                    title="Lyrics"
+                    style={{background:"transparent",border:"none",color:gigLyricsId===song.ps_id?C.teal:C.grayDim,cursor:"pointer",fontSize:22,padding:"2px 4px"}}>📓</button>}
                   {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
-                  {song.drummer&&<div style={{
+                {song.drummer&&<div style={{
                     color:dCol, border:"1px solid "+dCol, borderRadius:4,
                     padding:"5px 12px", fontSize:13, fontWeight:700,
                     letterSpacing:"0.08em", minWidth:44, textAlign:"center"
                   }}>{song.drummer}</div>}
                 </div>
+                {gigLyricsId===song.ps_id&&song.lyrics&&(
+                  <div onClick={(e)=>e.stopPropagation()}
+                    style={{background:"#070707",border:"2px solid "+st.border,borderTop:"none",borderRadius:"0 0 7px 7px",margin:"-5px 0 0",padding:"14px 18px",color:"#d8d8d8",fontSize:18,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
+                    {song.lyrics}
+                  </div>
+                )}
               </div>
             );
           })}
