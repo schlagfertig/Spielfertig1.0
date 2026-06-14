@@ -1261,15 +1261,22 @@ function AddBandModal({ user, onClose, onRefresh, show }) {
     
 // ── Daten-Export (Backup) ─────────────────────────────────────────────────
 function downloadJSON(filename, dataObj) {
-  const blob = new Blob([JSON.stringify(dataObj, null, 2)], { type:"application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  try {
+    const json = JSON.stringify(dataObj, null, 2);
+    const blob = new Blob([json], { type:"application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.target = "_blank";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+    return true;
+  } catch(e) {
+    return false;
+  }
 }
 
 function buildBandExport(band, songs, gigs, playlists, playlistSongs) {
