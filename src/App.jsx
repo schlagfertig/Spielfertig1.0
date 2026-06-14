@@ -1334,7 +1334,7 @@ function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
                   version: 1,
                   bands: (bands||[]).map(b=>buildBandExport(b, songs, gigs, playlists, playlistSongs))
                 }, null, 2);
-                show("Klick erkannt!");                                                            
+show("Klick erkannt!");                                                            
                 setBackupText(json);
               }}>⬇ Backup</Btn>
               <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}>+ Band</Btn>
