@@ -1263,16 +1263,20 @@ function AddBandModal({ user, onClose, onRefresh, show }) {
 function downloadJSON(filename, dataObj) {
   try {
     const json = JSON.stringify(dataObj, null, 2);
-    const blob = new Blob([json], { type:"application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.target = "_blank";
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+    const w = window.open("", "_blank");
+    if (!w) return false;
+    w.document.open();
+    w.document.write(
+      "<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>" +
+      "<title>" + filename + "</title></head>" +
+      "<body style='margin:0;background:#0a0a0a;color:#cfcfcf;font-family:monospace;'>" +
+      "<div style='position:sticky;top:0;background:#111;padding:12px 16px;border-bottom:1px solid #333;color:#5cc8b8;font-family:sans-serif;'>" +
+      "📋 Alles markieren und kopieren, oder über Teilen ⬆ in Dateien sichern.<br><b>" + filename + "</b></div>" +
+      "<pre style='padding:16px;white-space:pre-wrap;word-break:break-word;font-size:12px;'>" +
+      json.replace(/</g,"&lt;").replace(/>/g,"&gt;") +
+      "</pre></body></html>"
+    );
+    w.document.close();
     return true;
   } catch(e) {
     return false;
@@ -1329,7 +1333,7 @@ function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
                   version: 1,
                   bands: (bands||[]).map(b=>buildBandExport(b, songs, gigs, playlists, playlistSongs))
                 });
-                show("Backup heruntergeladen ⬇");
+                show("Backup in neuem Tab geöffnet 📋");
               }}>⬇ Backup</Btn>
               <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}>+ Band</Btn>
               <Btn variant="ghost" size="sm" onClick={onLogout}>Abmelden</Btn>
@@ -1376,7 +1380,7 @@ function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
                           exported_at: new Date().toISOString(), version: 1,
                           bands: [buildBandExport(band, songs, gigs, playlists, playlistSongs)]
                         });
-                        show("Backup: "+band.name+" ⬇");
+                        show("Backup geöffnet: "+band.name+" 📋");
                       }}
                         title="Diese Band exportieren"
                         style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", fontSize:16, padding:"2px 4px" }}
