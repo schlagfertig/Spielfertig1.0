@@ -900,25 +900,6 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
             const opacity = !currentSongId ? 1 : isCurrent ? 1 : isNext ? 0.75 : 0.35;
             const dCol = drummerColor(song.drummer);
             return (
-              <div key={song.id}
-                onClick={()=>setCurrentSongId(isCurrent ? null : song.ps_id)}
-                style={{
-                  background: isCurrent ? (song.drummer==="Ron"?C.redDim:C.tealDim) : isNext ? "#161616" : st.bg,
-                  border: "2px solid " + (isCurrent ? (song.drummer==="Ron"?C.red:C.teal) : isNext ? "#444" : st.border),
-                  borderRadius:7, padding:"9px 13px", display:"flex", alignItems:"center", gap:10,
-                  cursor:"pointer", opacity, transition:"all .2s",
-                  boxShadow: isCurrent ? "0 0 16px 2px " + (song.drummer==="Ron"?C.redBorder:C.tealBorder) : "none"
-                }}>
-                {/* Position / play indicator */}
-                <div style={{width:22,textAlign:"center",flexShrink:0}}>
-                  {isCurrent
-                    ? <div style={{color:song.drummer==="Ron"?C.red:C.teal,fontSize:16}}>▶</div>
-                    : isNext
-                      ? <div style={{color:"#555",fontSize:10,letterSpacing:".04em"}}>NEXT</div>
-                      : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{song.position}</div>}
-                </div>
-                {/* Title + artist + notes */}
-            return (
               <div key={song.id} style={{ display:"flex", flexDirection:"column" }}>
                 <div onClick={()=>setCurrentSongId(isCurrent ? null : song.ps_id)}
                   style={{
