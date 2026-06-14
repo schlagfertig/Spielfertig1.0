@@ -1329,8 +1329,17 @@ function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
             <div style={{ color:C.gray, fontSize:11, marginBottom:4 }}>{user.email}</div>
             <div style={{ display:"flex", gap:6, justifyContent:"flex-end" }}>
             <Btn variant="outline" size="sm" onClick={()=>{
-              const json = JSON.stringify({ exported_at:new Date().toISOString(), version:1, bands:(bands||[]).map(b=>buildBandExport(b, songs, gigs, playlists, playlistSongs)) }, null, 2);
-              setBackupText(json);
+              try {
+                const payload = {
+                  exported_at: new Date().toISOString(),
+                  version: 1,
+                  bands: (bands||[]).map(b=>buildBandExport(b, songs, gigs, playlists, playlistSongs))
+                };
+                const json = JSON.stringify(payload, null, 2);
+                setBackupText(json);
+              } catch(err) {
+                show("Export-Fehler: " + (err&&err.message ? err.message : "unbekannt"));
+              }
             }}>⬇ Backup</Btn>
               <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}>+ Band</Btn>
               <Btn variant="ghost" size="sm" onClick={onLogout}>Abmelden</Btn>
