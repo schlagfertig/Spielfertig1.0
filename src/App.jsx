@@ -1308,6 +1308,7 @@ function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
   const [showAddBand, setShowAddBand] = useState(false);
   const [delBand, setDelBand] = useState(null);
   const [delSaving, setDelSaving] = useState(false);
+  const [backupText, setBackupText] = useState(null);
   const handleDeleteBand = async () => {
     setDelSaving(true);
     await sb.delete("bands", "id=eq." + delBand.id);
