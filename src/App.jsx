@@ -1304,7 +1304,7 @@ function todayStamp() {
 }
 
 // ── Landing ────────────────────────────────────────────────────────────────
-function Landing({ bands, songs, user, onSelect, onLogout, onRefresh, show }) {
+function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect, onLogout, onRefresh, show }) {
   const [showAddBand, setShowAddBand] = useState(false);
   const [delBand, setDelBand] = useState(null);
   const [delSaving, setDelSaving] = useState(false);
@@ -1666,7 +1666,7 @@ export default function App() {
         <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={bands}
           onBack={()=>setSelBand(null)} onRefresh={loadAll} show={show}/>
       ) : (
-       <Landing bands={bands} songs={songs} user={user} onSelect={setSelBand} onLogout={handleLogout} onRefresh={loadAll} show={show}/>
+        <Landing bands={bands} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} user={user} onSelect={setSelBand} onLogout={handleLogout} onRefresh={loadAll} show={show}/>
       )}
 
       {toast&&<Toast msg={toast.msg} type={toast.type} onClose={()=>setToast(null)}/>}
