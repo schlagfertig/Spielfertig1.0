@@ -329,7 +329,7 @@ function useMetronome(bpm) {
 }
 
 // ── Song Row ───────────────────────────────────────────────────────────────
-function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, isDragging, extra }) {
+function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, isDragging, extra, showDrummer=true }) {
   const st = dStyle(song.drummer);
   const { active, beat, toggle } = useMetronome(song.bpm);
   const [showLyrics, setShowLyrics] = useState(false);
@@ -358,7 +358,7 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
               {song.bpm>0&&<span style={{ color:active?C.teal:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6, transition:"color .2s" }}>{song.bpm} BPM</span>}
             </div>
           </div>
-          {song.drummer&&<Badge color={st.badge}>{song.drummer}</Badge>}
+          {song.drummer&&showDrummer&&<Badge color={st.badge}>{song.drummer}</Badge>}
           {song.lyrics&&<button onClick={e=>{e.stopPropagation();setShowLyrics(v=>!v);}} title="Lyrics" style={{ background:"transparent", border:"none", color:showLyrics?C.teal:C.grayDim, cursor:"pointer", padding:"4px 6px", fontSize:17, flexShrink:0 }}>📓</button>}
           {onEdit&&<button onClick={e=>{e.stopPropagation();onEdit(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"4px 6px", fontSize:17, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.color=C.teal} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✎</button>}
           {onDelete&&<button onClick={e=>{e.stopPropagation();onDelete(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"4px 6px", fontSize:17, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.color=C.red} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✕</button>}
@@ -639,7 +639,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, o
               </button>
             )}
             <div style={{flex:1, minWidth:0}}>
-            <SongRow song={song}
+            <SongRow song={song} showDrummer={(band.drummers||[]).length>1}
               onDelete={s=>setConfirm(s)}
               onEdit={s=>setEdit({...s,bpm:String(s.bpm)})}
               extra={<button onClick={e=>{e.stopPropagation();setAddTarget(song);setAtGig("");setAtPl("");setAtSet("Set 1");}}
@@ -740,7 +740,8 @@ function GigMetronome({ bpm, autoStart, size=44 }) {
 }
 
 // ── Song Row with Move popup ─────────────────────────────────────────────────
-function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, saving }) {
+function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, saving, showDrummer=true }) {
+
   const [open, setOpen] = useState(false);
   const [newSet, setNewSet] = useState(song.set_name);
   const [newPos, setNewPos] = useState(String(song.position));
@@ -777,7 +778,7 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
 
   return (
     <div style={{ position:"relative" }}>
-      <SongRow song={song} pos={song.position} onDelete={onDelete}
+      <SongRow song={song} pos={song.position} showDrummer={showDrummer} onDelete={onDelete}
         onEdit={()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setNotes(song.specialties||""); setOpen(!open); }}/>
       {open&&(
         <div style={{ position:"absolute", right:0, top:"100%", zIndex:100, background:"#1a1a1a", border:"1px solid "+C.tealBorder, borderRadius:8, padding:14, minWidth:220, boxShadow:"0 8px 32px rgba(0,0,0,.8)" }}>
@@ -1011,7 +1012,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         {songsInSet.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:24, fontSize:13 }}>Keine Songs in diesem Set</div>
         :<div style={{ display:"flex", flexDirection:"column", gap:5 }}>
           {songsInSet.map(song=>(
-            <SongRowMove key={song.id} song={song} mySongs={mySongs} playlist={playlist}
+            <SongRowMove key={song.id} song={song} mySongs={mySongs} playlist={playlist} showDrummer={(band.drummers||[]).length>1}
               onDelete={()=>removeFromSet(song)} onRefresh={onRefresh} setSaving={setSaving} saving={saving}/>
           ))}
         </div>}
