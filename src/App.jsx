@@ -1012,7 +1012,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         {songsInSet.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:24, fontSize:13 }}>Keine Songs in diesem Set</div>
         :<div style={{ display:"flex", flexDirection:"column", gap:5 }}>
           {songsInSet.map(song=>(
-            <SongRowMove key={song.id} song={song} mySongs={mySongs} playlist={playlist} showDrummer={(band.drummers||[]).length>1}
+            <SongRowMove key={song.id} song={song} mySongs={mySongs} playlist={playlist} showDrummer={new Set(mySongs.map(s=>s.drummer).filter(Boolean)).size>1}
               onDelete={()=>removeFromSet(song)} onRefresh={onRefresh} setSaving={setSaving} saving={saving}/>
           ))}
         </div>}
