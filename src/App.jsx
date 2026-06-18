@@ -495,7 +495,7 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName, withNotes) {
 }
 
 // ── Song Database ──────────────────────────────────────────────────────────
-function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, onRefresh, show }) {
+function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, canEdit, onRefresh, show }) {
   const [search, setSearch]   = useState("");
   const [form, setForm]       = useState({ title:"", artist:"", bpm:"", drummer:band.drummers[0]||"Tom", specialties:"" });
   const [editSong, setEdit]   = useState(null);
@@ -640,8 +640,8 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, o
             )}
             <div style={{flex:1, minWidth:0}}>
             <SongRow song={song} showDrummer={(band.drummers||[]).length>1}
-              onDelete={s=>setConfirm(s)}
-              onEdit={s=>setEdit({...s,bpm:String(s.bpm)})}
+              onDelete={canEdit?(s=>setConfirm(s)):undefined}
+              onEdit={canEdit?(s=>setEdit({...s,bpm:String(s.bpm)})):undefined}
               extra={<button onClick={e=>{e.stopPropagation();setAddTarget(song);setAtGig("");setAtPl("");setAtSet("Set 1");}}
                 style={{background:"transparent",border:"none",color:C.grayDim,cursor:"pointer",padding:"6px 10px",fontSize:16}}
                 title="Zur Setlist hinzufügen"
@@ -1143,8 +1143,9 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, onRefr
 }
 
 // ── Band Detail ────────────────────────────────────────────────────────────
-function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, onBack, onRefresh, show }) {
+function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, user, onBack, onRefresh, show }) {
   const [tab, setTab] = useState("songs");
+  const canEdit = band.user_id === user.id;
   return (
     <div style={{ minHeight:"100vh", background:C.bg }}>
       <header style={{ borderBottom:"1px solid #111", background:"rgba(0,0,0,.97)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:50 }}>
@@ -1168,7 +1169,7 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, onB
         <SealLine color={band.color}/>
       </header>
       <main style={{ maxWidth:720, margin:"0 auto", padding:"20px 16px" }}>
-        {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={allBands} onRefresh={onRefresh} show={show}/>}
+        {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={allBands} canEdit={canEdit} onRefresh={onRefresh} show={show}/>}
         {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} onRefresh={onRefresh} show={show}/>}
       </main>
     </div>
@@ -1664,7 +1665,7 @@ export default function App() {
       </div>
 
       {selBand ? (
-        <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={bands}
+        <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={bands} user={user}
           onBack={()=>setSelBand(null)} onRefresh={loadAll} show={show}/>
       ) : (
         <Landing bands={bands} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} user={user} onSelect={setSelBand} onLogout={handleLogout} onRefresh={loadAll} show={show}/>
