@@ -818,7 +818,7 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
 }
 
 // ── Playlist Editor ────────────────────────────────────────────────────────
-function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, bandId, show }) {
+function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, bandId, canEdit, show }) {
   const [activeSet, setActiveSet] = useState("Set 1");
   const [search, setSearch]       = useState("");
   const [dragId, setDragId]       = useState(null);
@@ -1022,7 +1022,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
 }
 
 // ── Setlist Manager ────────────────────────────────────────────────────────
-function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, onRefresh, show }) {
+function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdit, onRefresh, show }) {
   const [view, setView]         = useState("gigs");
   const [selGig, setSelGig]     = useState(null);
   const [selPl, setSelPl]       = useState(null);
@@ -1170,7 +1170,7 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
       </header>
       <main style={{ maxWidth:720, margin:"0 auto", padding:"20px 16px" }}>
         {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={allBands} canEdit={canEdit} onRefresh={onRefresh} show={show}/>}
-        {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} onRefresh={onRefresh} show={show}/>}
+        {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} canEdit={canEdit} onRefresh={onRefresh} show={show}/>}
       </main>
     </div>
   );
