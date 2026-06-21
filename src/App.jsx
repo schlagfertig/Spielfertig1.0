@@ -1,4 +1,4 @@
-pimport { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 
 // ── Supabase Client (inline, no npm needed via CDN) ────────────────────────
 const SUPABASE_URL = "https://hstwhmqwxmvlobvygsty.supabase.co";
