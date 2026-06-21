@@ -642,11 +642,11 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
             <SongRow song={song} showDrummer={(band.drummers||[]).length>1}
               onDelete={canEdit?(s=>setConfirm(s)):undefined}
               onEdit={canEdit?(s=>setEdit({...s,bpm:String(s.bpm)})):undefined}
-              extra={canEdit?(<button onClick={e=>{e.stopPropagation();setAddTarget(song);setAtGig("");setAtPl("");setAtSet("Set 1");}}
+              extra={<button onClick={e=>{e.stopPropagation();setAddTarget(song);setAtGig("");setAtPl("");setAtSet("Set 1");}}
                 style={{background:"transparent",border:"none",color:C.grayDim,cursor:"pointer",padding:"6px 10px",fontSize:16}}
                 title="Zur Setlist hinzufügen"
                 onMouseEnter={e=>e.currentTarget.style.color=C.teal}
-                onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>➡️</button>):undefined}
+                onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>➡️</button>}/>
             {addTarget?.id===song.id&&(
               <div style={{background:"#1a1a1a",border:"1px solid "+C.tealBorder,borderRadius:8,padding:14,marginTop:4,display:"flex",flexDirection:"column",gap:8,zIndex:10}}>
                 <div style={{color:C.teal,fontSize:11,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Zur Setlist hinzufügen</div>
