@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+pimport { useState, useMemo, useEffect, useCallback, useRef } from "react";
 
 // ── Supabase Client (inline, no npm needed via CDN) ────────────────────────
 const SUPABASE_URL = "https://hstwhmqwxmvlobvygsty.supabase.co";
@@ -778,7 +778,7 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
   return (
     <div style={{ position:"relative" }}>
       <SongRow song={song} pos={song.position} showDrummer={showDrummer} onDelete={onDelete}
-        onEdit={()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setNotes(song.specialties||""); setOpen(!open); }}/>
+        onEdit={canEdit?(()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setNotes(song.specialties||""); setOpen(!open); }):undefined}/>
       {open&&(
         <div style={{ position:"absolute", right:0, top:"100%", zIndex:100, background:"#1a1a1a", border:"1px solid "+C.tealBorder, borderRadius:8, padding:14, minWidth:220, boxShadow:"0 8px 32px rgba(0,0,0,.8)" }}>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:10 }}>Verschieben nach</div>
