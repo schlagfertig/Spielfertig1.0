@@ -113,6 +113,7 @@ const sb = {
 
 // ── Brand ──────────────────────────────────────────────────────────────────
 // ── Brand ──────────────────────────────────────────────────────────────────
+// ── Brand ──────────────────────────────────────────────────────────────────
 const THEMES = {
   dark: {
     bg: "#000", bgCard: "#0d0d0d",
@@ -127,6 +128,12 @@ const THEMES = {
     red: "#c0392b", redDim: "rgba(192,57,43,0.1)", redBorder: "rgba(192,57,43,0.4)",
   },
 };
+
+const C = { ...THEMES.dark };
+
+function applyTheme(t) {
+  Object.assign(C, THEMES[t]);
+}
 
 const SETS = ["Set 1", "Set 2", "Set 3", "Zugaben"];
 // Feste Farben für bekannte Drummer
