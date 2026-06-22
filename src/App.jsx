@@ -112,11 +112,20 @@ const sb = {
 };
 
 // ── Brand ──────────────────────────────────────────────────────────────────
-const C = {
-  bg: "#000", bgCard: "#0d0d0d",
-  teal: "#5cc8b8", tealDim: "rgba(92,200,184,0.12)", tealBorder: "rgba(92,200,184,0.32)",
-  white: "#fff", gray: "#888", grayDim: "#444",
-  red: "#e05555", redDim: "rgba(224,85,85,0.12)", redBorder: "rgba(224,85,85,0.32)",
+// ── Brand ──────────────────────────────────────────────────────────────────
+const THEMES = {
+  dark: {
+    bg: "#000", bgCard: "#0d0d0d",
+    teal: "#5cc8b8", tealDim: "rgba(92,200,184,0.12)", tealBorder: "rgba(92,200,184,0.32)",
+    white: "#fff", gray: "#888", grayDim: "#444",
+    red: "#e05555", redDim: "rgba(224,85,85,0.12)", redBorder: "rgba(224,85,85,0.32)",
+  },
+  light: {
+    bg: "#f4f4f2", bgCard: "#fff",
+    teal: "#2a9d8c", tealDim: "rgba(42,157,140,0.12)", tealBorder: "rgba(42,157,140,0.4)",
+    white: "#111", gray: "#666", grayDim: "#aaa",
+    red: "#c0392b", redDim: "rgba(192,57,43,0.1)", redBorder: "rgba(192,57,43,0.4)",
+  },
 };
 
 const SETS = ["Set 1", "Set 2", "Set 3", "Zugaben"];
