@@ -1600,7 +1600,9 @@ export default function App() {
   const [selBand,       setSelBand]= useState(null);
   const [loading,       setLoading]= useState(true);
   const [toast,         setToast]  = useState(null);
-
+  const [theme, setTheme] = useState(localStorage.getItem("sf_theme") || "dark");
+  applyTheme(theme);
+  const toggleTheme = () => { const t = theme==="dark"?"light":"dark"; localStorage.setItem("sf_theme",t); setTheme(t); };
   const show = (msg, type="success") => setToast({msg,type});
 
   // Shared read-only view via ?share=<playlistId>
