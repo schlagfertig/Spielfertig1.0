@@ -170,17 +170,17 @@ function Btn({ children, onClick, variant="primary", size="md", disabled, full, 
   const sz = { sm:{padding:"5px 11px",fontSize:11}, md:{padding:"8px 18px",fontSize:12}, lg:{padding:"12px 28px",fontSize:13} };
   const vr = {
     primary: { background:C.teal, color:"#000", border:"none" },
-    outline: { background:"transparent", color:C.teal, border:`1px solid ${C.tealBorder}` },
-    danger:  { background:C.redDim, color:C.red, border:`1px solid ${C.redBorder}` },
+    outline: { background:"transparent", color:C.teal, border:"1px solid "+C.tealBorder },
+    danger:  { background:C.redDim, color:C.red, border:"1px solid "+C.redBorder },
     ghost:   { background:"transparent", color:C.gray, border:"none" },
   };
   return <button onClick={disabled?undefined:onClick} style={{ ...sz[size],...vr[variant], borderRadius:4, fontWeight:700, fontFamily:"inherit", letterSpacing:"0.06em", textTransform:"uppercase", cursor:disabled?"not-allowed":"pointer", opacity:disabled?.4:1, display:"inline-flex", alignItems:"center", gap:6, transition:"opacity .15s", width:full?"100%":undefined, justifyContent:full?"center":undefined, ...s }}>{children}</button>;
 }
 
 function Field({ value, onChange, placeholder, type="text", rows, style:s={} }) {
-  const base = { background:"#0a0a0a", border:"1px solid #222", color:C.white, borderRadius:4, padding:"9px 12px", fontSize:13, fontFamily:"inherit", outline:"none", width:"100%", boxSizing:"border-box", ...s };
+  const base = { background:C.bgCard, border:"1px solid "+C.grayDim, color:C.white, borderRadius:4, padding:"9px 12px", fontSize:13, fontFamily:"inherit", outline:"none", width:"100%", boxSizing:"border-box", ...s };
   if (rows) return <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows} onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor="#222"} style={{...base,resize:"vertical",lineHeight:1.6}}/>;
-  return <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor="#222"} style={base}/>;
+  return <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor=C.grayDim} style={base}/>;
 }
 
 function Sel({ value, onChange, options, style:s={} }) {
