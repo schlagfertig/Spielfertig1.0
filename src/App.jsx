@@ -179,7 +179,7 @@ function Btn({ children, onClick, variant="primary", size="md", disabled, full, 
 
 function Field({ value, onChange, placeholder, type="text", rows, style:s={} }) {
   const base = { background:C.bgCard, border:"1px solid "+C.grayDim, color:C.white, borderRadius:4, padding:"9px 12px", fontSize:13, fontFamily:"inherit", outline:"none", width:"100%", boxSizing:"border-box", ...s };
-  if (rows) return <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows} onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor="#222"} style={{...base,resize:"vertical",lineHeight:1.6}}/>;
+  if (rows) return <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows} onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor=C.grayDim} style={{...base,resize:"vertical",lineHeight:1.6}}/>;
   return <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor=C.grayDim} style={base}/>;
 }
 
