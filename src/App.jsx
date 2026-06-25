@@ -1664,8 +1664,8 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        body{font-family:'Raleway',sans-serif;background:#000;color:#e2e8f0;-webkit-font-smoothing:antialiased;}
-        input::placeholder,textarea::placeholder{color:#333;}
+        body{font-family:'Raleway',sans-serif;background:${C.bg};color:${C.white};-webkit-font-smoothing:antialiased;}
+        input::placeholder,textarea::placeholder{color:${C.grayDim};}
         @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
         @keyframes spin{to{transform:rotate(360deg)}}
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0a0a0a}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
@@ -1680,6 +1680,11 @@ export default function App() {
       <div style={{ position:"fixed", bottom:12, right:12, zIndex:5, pointerEvents:"none" }}>
         <img src={LOGO} alt="" style={{ width:56, height:56, objectFit:"cover", borderRadius:"50%", mixBlendMode:"screen", opacity:0.85, userSelect:"none", border:"1px solid "+C.tealBorder }}/>
       </div>
+      {/* Theme toggle */}
+      <button onClick={toggleTheme} title="Hell/Dunkel umschalten"
+        style={{ position:"fixed", top:12, right:12, zIndex:10, width:40, height:40, borderRadius:"50%", background:C.bgCard, border:"1px solid "+C.tealBorder, color:C.teal, fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        {theme==="dark" ? "☀️" : "🌙"}
+      </button>
 
       {selBand ? (
         <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={bands} user={user}
