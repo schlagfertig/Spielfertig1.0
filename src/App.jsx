@@ -939,32 +939,24 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                         ? <div style={{color:C.textMute,fontSize:10,letterSpacing:".04em"}}>NEXT</div>
                         : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{i+1}</div>}
                   </div>
-                  {/* Title + artist + notes */}
-                    <div style={{
-                      color: isCurrent?C.white:C.textDim,
-                      fontFamily:"'Raleway',sans-serif", fontWeight:600,
-                      fontSize: isCurrent?24:isNext?19:21,
-                      lineHeight:1.15, transition:"font-size .2s",
-                      whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"
-                    }}>{song.title}</div>
-                    <div style={{color:isCurrent?C.gray:C.textMute,fontSize:12,marginTop:1}}>
-                      {song.artist}
-                      {song.bpm>0&&<span style={{color:C.grayDim,fontFamily:"'Space Mono',monospace",fontSize:11,marginLeft:6}}>{song.bpm} BPM</span>}
+                  {/* Title + artist | notes — 50/50 */}
+                    <div style={{display:"flex",alignItems:"center",gap:14}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{
+                          color: isCurrent?C.white:C.textDim,
+                          fontFamily:"'Raleway',sans-serif", fontWeight:600,
+                          fontSize: isCurrent?24:isNext?19:21,
+                          lineHeight:1.15, transition:"font-size .2s",
+                          whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"
+                        }}>{song.title}</div>
+                        <div style={{color:isCurrent?C.gray:C.textMute,fontSize:12,marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                          {song.artist}
+                        </div>
+                      </div>
+                      <div style={{flex:1,minWidth:0}}>
+                        {song.specialties&&<div style={{color:C.textDim,fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5}}>{song.specialties}</div>}
+                      </div>
                     </div>
-                    {song.specialties&&<div style={{color:C.textDim,fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5,marginTop:3}}>{song.specialties}</div>}
-                  {/* CI: Metronom · 📓 · Drummer */}
-                  <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0,marginLeft:"auto"}}>
-                    {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
-                    {song.lyrics&&<button onClick={(e)=>{e.stopPropagation();setGigLyricsId(id=>id===song.ps_id?null:song.ps_id);}}
-                      title="Lyrics"
-                      style={{background:"transparent",border:"none",color:gigLyricsId===song.ps_id?C.teal:C.grayDim,cursor:"pointer",fontSize:22,padding:"2px 4px"}}>📓</button>}
-                    {song.drummer&&<div style={{
-                      color:dCol, border:"1px solid "+dCol, borderRadius:4,
-                      padding:"5px 12px", fontSize:13, fontWeight:700,
-                      letterSpacing:"0.08em", minWidth:44, textAlign:"center"
-                    }}>{song.drummer}</div>}
-                  </div>
-                </div>
                 {gigLyricsId===song.ps_id&&song.lyrics&&(
                   <div onClick={(e)=>e.stopPropagation()}
                     style={{background:C.lyricsBg,border:"2px solid "+st.border,borderTop:"none",borderRadius:"0 0 7px 7px",padding:"14px 16px",color:C.lyricsText,fontSize:18,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
