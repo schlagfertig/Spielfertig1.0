@@ -967,7 +967,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                 </div>
                 {gigLyricsId===song.ps_id&&song.lyrics&&(
                   <div onClick={(e)=>e.stopPropagation()}
-                    style={{background:"#070707",border:"2px solid "+st.border,borderTop:"none",borderRadius:"0 0 7px 7px",padding:"14px 16px",color:"#d8d8d8",fontSize:18,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
+                    style={{background:C.lyricsBg,border:"2px solid "+st.border,borderTop:"none",borderRadius:"0 0 7px 7px",padding:"14px 16px",color:C.lyricsText,fontSize:18,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
                     {song.lyrics}
                   </div>
                 )}
