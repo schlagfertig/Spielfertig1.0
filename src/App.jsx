@@ -333,9 +333,9 @@ function useMetronome(bpm) {
     if (!bpm || bpm <= 0) return;
     if (activeMetronomeStop) activeMetronomeStop();
     setActive(true); tick();
-    iRef.current = setInterval(tick, (60/bpm)*1000);
     activeMetronomeStop = () => { clearInterval(iRef.current); setActive(false); setBeat(false); };
   }, [bpm, tick]);
+    iRef.current = setInterval(tick, (60/bpm)*1000);
   const toggle = useCallback((e) => {
     e.stopPropagation();
     if (active) stop(); else start();
@@ -1679,7 +1679,7 @@ export default function App() {
       </div>
       {/* Corner logo */}
       <div style={{ position:"fixed", bottom:12, right:12, zIndex:5, pointerEvents:"none" }}>
-        <img src={LOGO} alt="" style={{ width:56, height:56, objectFit:"cover", borderRadius:"50%", mixBlendMode:"screen", opacity:0.85, userSelect:"none", border:"1px solid "+C.tealBorder }}/>
+        <img src={getLogo()} alt="" style={{ width:56, height:56, objectFit:"cover", borderRadius:"50%", opacity:0.85, userSelect:"none", border:"1px solid "+C.tealBorder }}/>
       </div>
       {/* Theme toggle */}
       <button onClick={toggleTheme} title="Hell/Dunkel umschalten"
