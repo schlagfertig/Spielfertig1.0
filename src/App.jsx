@@ -939,7 +939,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                         ? <div style={{color:C.textMute,fontSize:10,letterSpacing:".04em"}}>NEXT</div>
                         : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{i+1}</div>}
                   </div>
-                  {/* Title + artist | notes — 50/50 */}           
+                  {/* Title + artist | notes — 30/70 */}           
                   <div style={{flex:1,minWidth:0,overflow:"hidden",display:"flex",alignItems:"center",gap:14}}>
                     <div style={{flex:3,minWidth:0}}>
                       <div style={{
