@@ -952,7 +952,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                       {song.bpm>0&&<span style={{color:C.grayDim,fontFamily:"'Space Mono',monospace",fontSize:11,marginLeft:6}}>{song.bpm} BPM</span>}
                     </div>
                     {song.specialties&&<div style={{color:C.textDim,fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5,marginTop:3}}>{song.specialties}</div>}
-                  </div>                  {/* CI: Metronom · 📓 · Drummer */}
+{/* CI: Metronom · 📓 · Drummer */}
                   <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
                     {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
                     {song.lyrics&&<button onClick={(e)=>{e.stopPropagation();setGigLyricsId(id=>id===song.ps_id?null:song.ps_id);}}
