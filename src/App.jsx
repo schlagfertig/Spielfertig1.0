@@ -889,17 +889,18 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   if (gigMode) {
     const drummerColor = (d) => d==="Ron" ? C.red : d==="Tom" ? C.teal : C.gray;
     return (
-      <div style={{position:"fixed",inset:0,background:"#000",zIndex:200,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+      <div style={{position:"fixed",inset:0,background:C.bg,zIndex:200,display:"flex",flexDirection:"column",overflow:"hidden"}}>
         {/* Gig header */}
-        <div style={{background:"#0a0a0a",borderBottom:"1px solid #1a1a1a",padding:"12px 20px",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
-          <button onClick={()=>setGigMode(false)} style={{background:"transparent",border:"none",color:C.teal,cursor:"pointer",fontSize:20,padding:"4px 8px"}}>✕</button>
+        <div style={{background:C.bgCard,borderBottom:"1px solid "+C.grayDim,padding:"12px 20px",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+          <button onClick={()=>setGigMode(false)} title="Gig-Mode schließen" style={{background:"transparent",border:"1px solid "+C.tealBorder,borderRadius:8,color:C.teal,cursor:"pointer",fontSize:26,lineHeight:1,padding:"6px 14px",flexShrink:0}}>✕</button>
+          <button onClick={toggleTheme} title="Hell/Dunkel" style={{background:"transparent",border:"1px solid "+C.tealBorder,borderRadius:"50%",color:C.teal,cursor:"pointer",fontSize:18,width:40,height:40,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>{theme==="dark"?"☀️":"🌙"}</button>
           <div style={{flex:1,color:C.white,fontWeight:400,fontSize:24,fontFamily:"'Bebas Neue',cursive",letterSpacing:"0.05em"}}>{playlist.name}</div>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             {SETS.map(set=>(
               <button key={set} onClick={()=>{setActiveSet(set); setCurrentSongId(null);}} style={{
                 background:activeSet===set?C.teal:"transparent",
                 color:activeSet===set?"#000":C.gray,
-                border:"1px solid "+(activeSet===set?C.teal:"#333"),
+                border:"1px solid "+(activeSet===set?C.teal:C.grayDim),
                 borderRadius:4,padding:"6px 14px",fontSize:12,fontWeight:700,
                 letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer",fontFamily:"inherit"
               }}>{set} ({setCounts[set]})</button>
