@@ -214,7 +214,7 @@ function Confirm({ msg, onOk, onCancel }) {
 function Modal({ title, onClose, children }) {
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <div style={{ background:C.bgCard, border:"1px solid #222", borderRadius:8, padding:26, maxWidth:440, width:"90%" }}>
+      <div style={{ background:C.bgCard, border:"1px solid "+C.grayDim, borderRadius:8, padding:26, maxWidth:440, width:"90%" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
           <span style={{ color:C.teal, fontWeight:700, fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase" }}>{title}</span>
           <Btn variant="ghost" size="sm" onClick={onClose}>✕</Btn>
