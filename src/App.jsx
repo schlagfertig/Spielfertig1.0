@@ -957,6 +957,19 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                       {song.specialties&&<div style={{color:C.textDim,fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5}}>{song.specialties}</div>}
                     </div>
                   </div>
+                  {/* CI: Metronom · 📓 · Drummer */}
+                  <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0,marginLeft:"auto"}}>
+                    {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
+                    {song.lyrics&&<button onClick={(e)=>{e.stopPropagation();setGigLyricsId(id=>id===song.ps_id?null:song.ps_id);}}
+                      title="Lyrics"
+                      style={{background:"transparent",border:"none",color:gigLyricsId===song.ps_id?C.teal:C.grayDim,cursor:"pointer",fontSize:22,padding:"2px 4px"}}>📓</button>}
+                    {song.drummer&&<div style={{
+                      color:dCol, border:"1px solid "+dCol, borderRadius:4,
+                      padding:"5px 12px", fontSize:13, fontWeight:700,
+                      letterSpacing:"0.08em", minWidth:44, textAlign:"center"
+                    }}>{song.drummer}</div>}
+                  </div>
+                </div>
                 {gigLyricsId===song.ps_id&&song.lyrics&&(
                   <div onClick={(e)=>e.stopPropagation()}
                     style={{background:C.lyricsBg,border:"2px solid "+st.border,borderTop:"none",borderRadius:"0 0 7px 7px",padding:"14px 16px",color:C.lyricsText,fontSize:18,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
