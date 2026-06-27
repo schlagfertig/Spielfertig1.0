@@ -120,12 +120,16 @@ const THEMES = {
     teal: "#5cc8b8", tealDim: "rgba(92,200,184,0.12)", tealBorder: "rgba(92,200,184,0.32)",
     white: "#fff", gray: "#888", grayDim: "#444",
     red: "#e05555", redDim: "rgba(224,85,85,0.12)", redBorder: "rgba(224,85,85,0.32)",
+    bgNext: "#0d0d0d", borderSong: "#1a1a1a", borderNext: "#2a2a2a",
+    textDim: "#bbb", textMute: "#555", lyricsBg: "#070707", lyricsText: "#d8d8d8",
   },
   light: {
     bg: "#f4f4f2", bgCard: "#fff",
     teal: "#2a9d8c", tealDim: "rgba(42,157,140,0.12)", tealBorder: "rgba(42,157,140,0.4)",
     white: "#111", gray: "#666", grayDim: "#aaa",
     red: "#c0392b", redDim: "rgba(192,57,43,0.1)", redBorder: "rgba(192,57,43,0.4)",
+    bgNext: "#eceae6", borderSong: "#ddd", borderNext: "#c8c8c8",
+    textDim: "#555", textMute: "#999", lyricsBg: "#eceae6", lyricsText: "#222",
   },
 };
 
