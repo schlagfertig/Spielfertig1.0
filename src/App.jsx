@@ -924,8 +924,8 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
               <div key={song.id} style={{ display:"flex", flexDirection:"column" }}>
                 <div onClick={()=>setCurrentSongId(isCurrent ? null : song.ps_id)}
                   style={{
-                    background: isCurrent ? (song.drummer==="Ron"?C.redDim:C.tealDim) : isNext ? "#0d0d0d" : "transparent",
-                    border: "2px solid " + (isCurrent ? (song.drummer==="Ron"?C.red:C.teal) : isNext ? "#2a2a2a" : "#1a1a1a"),
+                    background: isCurrent ? (song.drummer==="Ron"?C.redDim:C.tealDim) : isNext ? C.bgNext : "transparent",
+                    border: "2px solid " + (isCurrent ? (song.drummer==="Ron"?C.red:C.teal) : isNext ? C.borderNext : C.borderSong),
                     borderRadius: (gigLyricsId===song.ps_id&&song.lyrics) ? "7px 7px 0 0" : 7,
                     padding:"9px 13px", display:"flex", alignItems:"center", gap:10,
                     cursor:"pointer", opacity, transition:"all .2s",
