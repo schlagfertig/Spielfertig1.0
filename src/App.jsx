@@ -936,23 +936,22 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                     {isCurrent
                       ? <div style={{color:song.drummer==="Ron"?C.red:C.teal,fontSize:16}}>▶</div>
                       : isNext
-                        ? <div style={{color:"#555",fontSize:10,letterSpacing:".04em"}}>NEXT</div>
+                        ? <div style={{color:C.textMute,fontSize:10,letterSpacing:".04em"}}>NEXT</div>
                         : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{i+1}</div>}
                   </div>
                   {/* Title + artist + notes */}
-                  <div style={{flex:1,minWidth:0}}>
                     <div style={{
-                      color: isCurrent?C.white:isNext?"#ccc":"#bbb",
+                      color: isCurrent?C.white:C.textDim,
                       fontFamily:"'Raleway',sans-serif", fontWeight:600,
                       fontSize: isCurrent?24:isNext?19:21,
                       lineHeight:1.15, transition:"font-size .2s",
                       whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"
                     }}>{song.title}</div>
-                    <div style={{color:isCurrent?"#999":"#555",fontSize:12,marginTop:1}}>
+                    <div style={{color:isCurrent?C.gray:C.textMute,fontSize:12,marginTop:1}}>
                       {song.artist}
-                      {song.bpm>0&&<span style={{color:isCurrent?C.grayDim:"#444",fontFamily:"'Space Mono',monospace",fontSize:11,marginLeft:6}}>{song.bpm} BPM</span>}
+                      {song.bpm>0&&<span style={{color:C.grayDim,fontFamily:"'Space Mono',monospace",fontSize:11,marginLeft:6}}>{song.bpm} BPM</span>}
                     </div>
-                    {song.specialties&&<div style={{color:"#bbb",fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5,marginTop:3}}>{song.specialties}</div>}
+                    {song.specialties&&<div style={{color:C.textDim,fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5,marginTop:3}}>{song.specialties}</div>}
                   </div>                  {/* CI: Metronom · 📓 · Drummer */}
                   <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
                     {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
