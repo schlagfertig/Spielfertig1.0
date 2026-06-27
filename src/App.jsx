@@ -1675,11 +1675,12 @@ export default function App() {
 
       {/* Watermark */}
       <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <img src={LOGO} alt="" style={{ width:340, opacity:0.07, mixBlendMode:"screen", userSelect:"none" }}/>
+        <img src={getLogo()} alt="" style={{ width:340, opacity:theme==="dark"?0.07:0.12, userSelect:"none" }}/>
+
       </div>
       {/* Corner logo */}
       <div style={{ position:"fixed", bottom:12, right:12, zIndex:5, pointerEvents:"none" }}>
-        <img src={getLogo()} alt="" style={{ width:340, opacity:theme==="dark"?0.07:0.12, userSelect:"none" }}/>
+        <img src={LOGO} alt="" style={{ width:56, height:56, objectFit:"cover", borderRadius:"50%", mixBlendMode:"screen", opacity:0.85, userSelect:"none", border:"1px solid "+C.tealBorder }}/>
       </div>
       {/* Theme toggle */}
       <button onClick={toggleTheme} title="Hell/Dunkel umschalten"
