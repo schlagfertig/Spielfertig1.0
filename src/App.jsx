@@ -333,9 +333,9 @@ function useMetronome(bpm) {
     if (!bpm || bpm <= 0) return;
     if (activeMetronomeStop) activeMetronomeStop();
     setActive(true); tick();
+    iRef.current = setInterval(tick, (60/bpm)*1000);
     activeMetronomeStop = () => { clearInterval(iRef.current); setActive(false); setBeat(false); };
   }, [bpm, tick]);
-    iRef.current = setInterval(tick, (60/bpm)*1000);
   const toggle = useCallback((e) => {
     e.stopPropagation();
     if (active) stop(); else start();
