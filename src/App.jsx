@@ -1036,7 +1036,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
 }
 
 // ── Setlist Manager ────────────────────────────────────────────────────────
-function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdit, onRefresh, show }) {
+function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdit, onRefresh, show, theme, toggleTheme }) {
   const [view, setView]         = useState("gigs");
   const [selGig, setSelGig]     = useState(null);
   const [selPl, setSelPl]       = useState(null);
@@ -1054,7 +1054,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
   const bandGigs   = gigs.filter(g=>g.band_id===band.id);
   const gigPls     = playlists.filter(p=>p.gig_id===selGig?.id);
 
-  if (view==="editor"&&selPl) return <PlaylistEditor playlist={selPl} allSongs={allSongs} playlistSongs={playlistSongs} canEdit={canEdit} onBack={()=>setView("playlists")} onRefresh={onRefresh} bandName={band.name} bandId={band.id} show={show}/>;
+  if (view==="editor"&&selPl) return <PlaylistEditor playlist={selPl} allSongs={allSongs} playlistSongs={playlistSongs} canEdit={canEdit} onBack={()=>setView("playlists")} onRefresh={onRefresh} bandName={band.name} bandId={band.id} show={show} theme={theme} toggleTheme={toggleTheme}/>;
 
   if (view==="playlists"&&selGig) return (
     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
@@ -1157,7 +1157,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
 }
 
 // ── Band Detail ────────────────────────────────────────────────────────────
-function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, user, onBack, onRefresh, show }) {
+function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, user, onBack, onRefresh, show, theme, toggleTheme }) {
   const [tab, setTab] = useState("songs");
   const canEdit = band.user_id === user.id;
   return (
@@ -1165,7 +1165,7 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
       <header style={{ borderBottom:"1px solid #111", background:"rgba(0,0,0,.97)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:50 }}>
         {/* Back button row */}
         <div style={{ maxWidth:720, margin:"0 auto", padding:"8px 16px 0", display:"flex", alignItems:"center" }}>
-          <Btn variant="ghost" size="sm" onClick={onBack}>←</Btn>
+          <Btn variant="outline" size="md" onClick={onBack} style={{fontSize:20,padding:"6px 18px"}}>← Zurück</Btn>
         </div>
         {/* Band logo – centered, large */}
         <div style={{ maxWidth:720, margin:"0 auto", padding:"6px 16px 10px", textAlign:"center" }}>
@@ -1184,7 +1184,7 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
       </header>
       <main style={{ maxWidth:720, margin:"0 auto", padding:"20px 16px" }}>
         {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={allBands} canEdit={canEdit} onRefresh={onRefresh} show={show}/>}
-        {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} canEdit={canEdit} onRefresh={onRefresh} show={show}/>}
+        {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} canEdit={canEdit} onRefresh={onRefresh} show={show} theme={theme} toggleTheme={toggleTheme}/>}
       </main>
     </div>
   );
