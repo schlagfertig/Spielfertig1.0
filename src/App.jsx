@@ -7,7 +7,7 @@ const SUPABASE_KEY =
   ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzdHdobXF3eG12bG9idnlnc3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDE3NjAsImV4cCI6MjA5NTE3Nzc2MH0" +
   ".DZK81qIrUo3gLldLO344T_wY_Al1MSzg3oCASPkaVqo";
 
-// Logo (base64)
+// Logo (public files)
 const LOGO_DARK  = "/Logo-dark.png";
 const LOGO_LIGHT = "/Logo-light.png";
 function getLogo() { return C.white === "#fff" ? LOGO_DARK : LOGO_LIGHT; }
