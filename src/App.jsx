@@ -34,10 +34,10 @@ const fetchWithTimeout = async (url, options, ms=8000) => {
     return await fetch(url, { ...options, signal: controller.signal });
   } finally {
     clearTimeout(timer);
-  }
 };
-
+  }
 // Minimal Supabase REST helper
+
 const sb = {
   headers: () => {
     const t = sb._token || SUPABASE_KEY;
@@ -1680,7 +1680,7 @@ export default function App() {
       </div>
       {/* Corner logo */}
       <div style={{ position:"fixed", bottom:12, right:12, zIndex:5, pointerEvents:"none" }}>
-        <img src={LOGO} alt="" style={{ width:56, height:56, objectFit:"cover", borderRadius:"50%", mixBlendMode:"screen", opacity:0.85, userSelect:"none", border:"1px solid "+C.tealBorder }}/>
+        <img src={getLogo()} alt="" style={{ width:56, height:56, objectFit:"cover", borderRadius:"50%", opacity:0.85, userSelect:"none", border:"1px solid "+C.tealBorder }}/>
       </div>
       {/* Theme toggle */}
       <button onClick={toggleTheme} title="Hell/Dunkel umschalten"
