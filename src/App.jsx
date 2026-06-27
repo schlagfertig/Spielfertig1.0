@@ -658,7 +658,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
                 {selected.includes(song.id) ? "✓" : ""}
               </button>
             )}
-            <div style={{flex:1, minWidth:0}}>
+            <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
             <SongRow song={song} showDrummer={(band.drummers||[]).length>1}
               onDelete={canEdit?(s=>setConfirm(s)):undefined}
               onEdit={canEdit?(s=>setEdit({...s,bpm:String(s.bpm)})):undefined}
