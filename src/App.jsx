@@ -939,9 +939,9 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                         ? <div style={{color:C.textMute,fontSize:10,letterSpacing:".04em"}}>NEXT</div>
                         : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{i+1}</div>}
                   </div>
-                  {/* Title + artist | notes — 50/50 */}
+                  {/* Title + artist | notes — 50/50 */}           
                   <div style={{flex:1,minWidth:0,overflow:"hidden",display:"flex",alignItems:"center",gap:14}}>
-                    <div style={{flex:1,minWidth:0}}>
+                    <div style={{flex:3,minWidth:0}}>
                       <div style={{
                         color: isCurrent?C.white:C.textDim,
                         fontFamily:"'Raleway',sans-serif", fontWeight:600,
@@ -953,7 +953,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                         {song.artist}
                       </div>
                     </div>
-                    <div style={{flex:1,minWidth:0}}>
+                    <div style={{flex:7,minWidth:0}}>
                       {song.specialties&&<div style={{color:C.textDim,fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5}}>{song.specialties}</div>}
                     </div>
                   </div>
