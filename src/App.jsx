@@ -1679,7 +1679,7 @@ export default function App() {
       </div>
       {/* Corner logo */}
       <div style={{ position:"fixed", bottom:12, right:12, zIndex:5, pointerEvents:"none" }}>
-        <img src={getLogo()} alt="" style={{ width:56, height:56, objectFit:"cover", borderRadius:"50%", opacity:0.85, userSelect:"none", border:"1px solid "+C.tealBorder }}/>
+        <img src={getLogo()} alt="" style={{ width:340, opacity:theme==="dark"?0.07:0.12, userSelect:"none" }}/>
       </div>
       {/* Theme toggle */}
       <button onClick={toggleTheme} title="Hell/Dunkel umschalten"
