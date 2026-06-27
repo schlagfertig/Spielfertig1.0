@@ -1518,7 +1518,7 @@ function SharedView({ playlistId }) {
 
       {/* SCHLAGFERTIG‽ watermark */}
       <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <img src={LOGO} alt="" style={{ width:320, opacity:0.05, mixBlendMode:"screen" }}/>
+        <img src={getLogo()} alt="" style={{ width:340, opacity:theme==="dark"?0.07:0.12, userSelect:"none" }}/>
       </div>
 
       {/* Header */}
