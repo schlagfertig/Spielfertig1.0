@@ -1687,7 +1687,7 @@ export default function App() {
 
       {selBand ? (
         <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={bands} user={user}
-          onBack={()=>setSelBand(null)} onRefresh={loadAll} show={show}/>
+          onBack={()=>setSelBand(null)} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme}/>
       ) : (
         <Landing bands={bands} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} user={user} onSelect={setSelBand} onLogout={handleLogout} onRefresh={loadAll} show={show}/>
       )}
