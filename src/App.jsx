@@ -949,13 +949,12 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                       {song.bpm>0&&<span style={{color:isCurrent?C.grayDim:"#444",fontFamily:"'Space Mono',monospace",fontSize:11,marginLeft:6}}>{song.bpm} BPM</span>}
                     </div>
                     {song.specialties&&<div style={{color:"#bbb",fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5,marginTop:3}}>{song.specialties}</div>}
-                  </div>
-                  {/* Metronome LEFT of drummer, same row */}
+                  </div>                  {/* CI: Metronom · 📓 · Drummer */}
                   <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+                    {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
                     {song.lyrics&&<button onClick={(e)=>{e.stopPropagation();setGigLyricsId(id=>id===song.ps_id?null:song.ps_id);}}
                       title="Lyrics"
                       style={{background:"transparent",border:"none",color:gigLyricsId===song.ps_id?C.teal:C.grayDim,cursor:"pointer",fontSize:22,padding:"2px 4px"}}>📓</button>}
-                    {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
                     {song.drummer&&<div style={{
                       color:dCol, border:"1px solid "+dCol, borderRadius:4,
                       padding:"5px 12px", fontSize:13, fontWeight:700,
