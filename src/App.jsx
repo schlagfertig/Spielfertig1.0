@@ -940,23 +940,23 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                         : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{i+1}</div>}
                   </div>
                   {/* Title + artist | notes — 50/50 */}
-                    <div style={{display:"flex",alignItems:"center",gap:14}}>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{
-                          color: isCurrent?C.white:C.textDim,
-                          fontFamily:"'Raleway',sans-serif", fontWeight:600,
-                          fontSize: isCurrent?24:isNext?19:21,
-                          lineHeight:1.15, transition:"font-size .2s",
-                          whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"
-                        }}>{song.title}</div>
-                        <div style={{color:isCurrent?C.gray:C.textMute,fontSize:12,marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                          {song.artist}
-                        </div>
-                      </div>
-                      <div style={{flex:1,minWidth:0}}>
-                        {song.specialties&&<div style={{color:C.textDim,fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5}}>{song.specialties}</div>}
+                  <div style={{flex:1,minWidth:0,overflow:"hidden",display:"flex",alignItems:"center",gap:14}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{
+                        color: isCurrent?C.white:C.textDim,
+                        fontFamily:"'Raleway',sans-serif", fontWeight:600,
+                        fontSize: isCurrent?24:isNext?19:21,
+                        lineHeight:1.15, transition:"font-size .2s",
+                        whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"
+                      }}>{song.title}</div>
+                      <div style={{color:isCurrent?C.gray:C.textMute,fontSize:12,marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                        {song.artist}
                       </div>
                     </div>
+                    <div style={{flex:1,minWidth:0}}>
+                      {song.specialties&&<div style={{color:C.textDim,fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5}}>{song.specialties}</div>}
+                    </div>
+                  </div>
                 {gigLyricsId===song.ps_id&&song.lyrics&&(
                   <div onClick={(e)=>e.stopPropagation()}
                     style={{background:C.lyricsBg,border:"2px solid "+st.border,borderTop:"none",borderRadius:"0 0 7px 7px",padding:"14px 16px",color:C.lyricsText,fontSize:18,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
