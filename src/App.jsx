@@ -831,7 +831,7 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
 }
 
 // ── Playlist Editor ────────────────────────────────────────────────────────
-function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, bandId, canEdit, show }) {
+function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, bandId, canEdit, show, theme, toggleTheme }) {
   const [activeSet, setActiveSet] = useState("Set 1");
   const [search, setSearch]       = useState("");
   const [dragId, setDragId]       = useState(null);
