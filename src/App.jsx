@@ -939,23 +939,19 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                         ? <div style={{color:C.textMute,fontSize:10,letterSpacing:".04em"}}>NEXT</div>
                         : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{i+1}</div>}
                   </div>
-                  {/* Title + artist | notes — 30/70 */}           
-                  <div style={{flex:1,minWidth:0,overflow:"hidden",display:"flex",alignItems:"center",gap:14}}>
-                    <div style={{flex:3,minWidth:0}}>
-                      <div style={{
-                        color: isCurrent?C.white:C.textDim,
-                        fontFamily:"'Raleway',sans-serif", fontWeight:600,
-                        fontSize: isCurrent?24:isNext?19:21,
-                        lineHeight:1.15, transition:"font-size .2s",
-                        whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"
-                      }}>{song.title}</div>
-                      <div style={{color:isCurrent?C.gray:C.textMute,fontSize:12,marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                        {song.artist}
-                      </div>
+                  {/* Title / artist (small) / notes — stacked */}
+                  <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
+                    <div style={{
+                      color: isCurrent?C.white:C.textDim,
+                      fontFamily:"'Raleway',sans-serif", fontWeight:600,
+                      fontSize: isCurrent?24:isNext?19:21,
+                      lineHeight:1.15, transition:"font-size .2s",
+                      whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"
+                    }}>{song.title}</div>
+                    <div style={{color:isCurrent?C.gray:C.textMute,fontSize:11,marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                      {song.artist}
                     </div>
-                    <div style={{flex:7,minWidth:0}}>
-                      {song.specialties&&<div style={{color:C.textDim,fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5}}>{song.specialties}</div>}
-                    </div>
+                    {song.specialties&&<div style={{color:C.textDim,fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5,marginTop:2}}>{song.specialties}</div>}
                   </div>
                   {/* CI: Metronom · 📓 · Drummer */}
                   <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0,marginLeft:"auto"}}>
