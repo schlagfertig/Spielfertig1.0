@@ -1594,15 +1594,21 @@ function SharedView({ playlistId }) {
   );
 }
 
+function readCache() {
+  try { const raw = localStorage.getItem("sf_cache"); return raw ? JSON.parse(raw) : null; }
+  catch(_) { return null; }
+}
+
 export default function App() {
+  const _cache = readCache();
   const [user,          setUser]   = useState(null);
-  const [bands,         setBands]  = useState([]);
-  const [songs,         setSongs]  = useState([]);
-  const [gigs,          setGigs]   = useState([]);
-  const [playlists,     setPls]    = useState([]);
-  const [playlistSongs, setPS]     = useState([]);
+  const [bands,         setBands]  = useState(_cache?.bands || []);
+  const [songs,         setSongs]  = useState(_cache?.songs || []);
+  const [gigs,          setGigs]   = useState(_cache?.gigs || []);
+  const [playlists,     setPls]    = useState(_cache?.pls || []);
+  const [playlistSongs, setPS]     = useState(_cache?.ps || []);
   const [selBand,       setSelBand]= useState(null);
-  const [loading,       setLoading]= useState(true);
+  const [loading,       setLoading]= useState(!_cache);
   const [toast,         setToast]  = useState(null);
   const [theme, setTheme] = useState(localStorage.getItem("sf_theme") || "dark");
   applyTheme(theme);
