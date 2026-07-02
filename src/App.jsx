@@ -1640,10 +1640,13 @@ export default function App() {
         sb.query("playlists",     { select:"*", order:"created_at.asc" }),
         sb.query("playlist_songs",{ select:"*", order:"position.asc" }),
       ]);
-      setBands(Array.isArray(b)?b:[]); setSongs(Array.isArray(s)?s:[]);
-      setGigs(Array.isArray(g)?g:[]); setPls(Array.isArray(pl)?pl:[]);
-      setPS(Array.isArray(ps)?ps:[]);
+const _b=Array.isArray(b)?b:[], _s=Array.isArray(s)?s:[], _g=Array.isArray(g)?g:[], _pl=Array.isArray(pl)?pl:[], _ps=Array.isArray(ps)?ps:[];
+      setBands(_b); setSongs(_s); setGigs(_g); setPls(_pl); setPS(_ps);
+      try {
+        localStorage.setItem("sf_cache", JSON.stringify({ bands:_b, songs:_s, gigs:_g, pls:_pl, ps:_ps, ts:Date.now() }));
+      } catch(_) {}
     } catch(e) { show("Ladefehler: "+e.message,"error"); }
+
     setLoading(false);
   },[]);
 
