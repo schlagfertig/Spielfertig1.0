@@ -848,6 +848,29 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const [currentSongId, setCurrentSongId] = useState(null);
   const [gigLyricsId, setGigLyricsId] = useState(null);
 
+  // Wake Lock: Display wach halten solange Gig-Mode läuft
+  useEffect(()=>{
+    if (!gigMode) return;
+    if (!("wakeLock" in navigator)) return;
+    let lock = null;
+    let cancelled = false;
+    const request = async () => {
+      try {
+        const l = await navigator.wakeLock.request("screen");
+        if (cancelled) { l.release(); return; }
+        lock = l;
+      } catch(_) {}
+    };
+    const onVisible = () => { if (document.visibilityState === "visible") request(); };
+    request();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisible);
+      if (lock) { try { lock.release(); } catch(_) {} }
+    };
+  },[gigMode]);
+
   const mySongs  = playlistSongs.filter(ps=>ps.playlist_id===playlist.id);
   const bandSongs= allSongs.filter(s=>s.band_id===bandId);
 
