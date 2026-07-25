@@ -1091,6 +1091,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
         <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>{selGig.name}</div>
       </div>
       <SealLine/>
+      {canEdit&&(
       <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:14 }}>
         <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Neue Playlist</div>
         <div style={{ display:"flex", gap:8 }}>
@@ -1098,6 +1099,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
           <Btn onClick={async()=>{ if(plName){ setSaving(true); await sb.insert("playlists",{gig_id:selGig.id,name:plName}); setPlName(""); await onRefresh(); show("Playlist erstellt!"); setSaving(false); }}} disabled={!plName||saving}>Erstellen</Btn>
         </div>
       </div>
+      )}
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
         {gigPls.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:28, fontSize:13 }}>Noch keine Playlists</div>
         :gigPls.map(p=>(
@@ -1108,9 +1110,9 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
             </div>
             <div style={{ display:"flex", gap:6 }}>
               <Btn size="sm" onClick={()=>{setSelPl(p);setView("editor");}}>Öffnen →</Btn>
-              <Btn variant="outline" size="sm" onClick={()=>{setTemplate(p);setTmplName(p.name+" (Kopie)");setTmplGig("");}}>⎘</Btn>
-              <Btn variant="outline" size="sm" onClick={()=>{setRenaming(p);setRenameTxt(p.name);}}>✎</Btn>
-              <Btn variant="danger" size="sm" onClick={()=>setConfirm({type:"pl",item:p})}>✕</Btn>
+              {canEdit&&<Btn variant="outline" size="sm" onClick={()=>{setTemplate(p);setTmplName(p.name+" (Kopie)");setTmplGig("");}}>⎘</Btn>}
+              {canEdit&&<Btn variant="outline" size="sm" onClick={()=>{setRenaming(p);setRenameTxt(p.name);}}>✎</Btn>}
+              {canEdit&&<Btn variant="danger" size="sm" onClick={()=>setConfirm({type:"pl",item:p})}>✕</Btn>}
             </div>
           </div>
         ))}
@@ -1154,6 +1156,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
       <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Gig-Verwaltung</div>
       <SealLine/>
+      {canEdit&&(
       <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:14 }}>
         <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Neuer Gig</div>
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
@@ -1162,6 +1165,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
           <Btn full disabled={!gigName||saving} onClick={async()=>{ setSaving(true); await sb.insert("gigs",{band_id:band.id,name:gigName,date:gigDate||null}); setGigName(""); setGigDate(""); await onRefresh(); show("Gig erstellt!"); setSaving(false); }}>Gig erstellen</Btn>
         </div>
       </div>
+      )}
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
         {bandGigs.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:28, fontSize:13 }}>Noch keine Gigs</div>
         :bandGigs.map(gig=>(
@@ -1173,9 +1177,9 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
               {gig.date&&<div style={{ color:C.grayDim, fontSize:11 }}>{new Date(gig.date+"T12:00:00").toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"})}</div>}
               <div style={{ color:C.grayDim, fontSize:11 }}>{playlists.filter(p=>p.gig_id===gig.id).length} Playlists</div>
             </div>
-            <div onClick={e=>e.stopPropagation()}>
+            {canEdit&&<div onClick={e=>e.stopPropagation()}>
               <Btn variant="danger" size="sm" onClick={()=>setConfirm({item:gig})}>✕</Btn>
-            </div>
+            </div>}
           </div>
         ))}
       </div>
