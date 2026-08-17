@@ -110,6 +110,16 @@ const sb = {
       localStorage.removeItem("sf_token");
       localStorage.removeItem("sf_user");
     },
+    async updateUser(data) {
+      const res = await fetchWithTimeout(SUPABASE_URL + "/auth/v1/user", {
+        method: "PUT",
+        headers: sb.headers(),
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.msg || json.error_description || "Update fehlgeschlagen");
+      return json;
+    },
   },
 };
 
