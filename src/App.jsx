@@ -1197,7 +1197,81 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
     </div>
   );
 }
+    
+// ── Member Manager ─────────────────────────────────────────────────────────
+function MemberManager({ band, canEdit, show }) {
+  const [invites, setInvites] = useState([]);
+  const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const inv = await sb.query("invites", { select:"*", filter:"band_id=eq."+band.id, order:"created_at.asc" });
+      setInvites(Array.isArray(inv)?inv:[]);
+    } catch(e) { show("Ladefehler: "+e.message,"error"); }
+    setLoading(false);
+  },[band.id]);
+
+  useEffect(()=>{ load(); },[load]);
+
+  const sendInvite = async () => {
+    if (!email.trim()) return;
+    setSaving(true);
+    try {
+      await sb.insert("invites", { band_id: band.id, email: email.trim().toLowerCase() });
+      setEmail("");
+      show("Einladung erstellt!");
+      await load();
+    } catch(e) { show("Fehler: "+e.message,"error"); }
+    setSaving(false);
+  };
+
+  const revokeInvite = async (inv) => {
+    setSaving(true);
+    try {
+      await sb.delete("invites", "id=eq."+inv.id);
+      show("Einladung zurückgezogen.");
+      await load();
+    } catch(e) { show("Fehler: "+e.message,"error"); }
+    setSaving(false);
+  };
+
+  if (!canEdit) return (
+    <div style={{ textAlign:"center", color:C.grayDim, padding:28, fontSize:13 }}>
+      Nur der Band-Owner kann Mitglieder verwalten.
+    </div>
+  );
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+      <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Team einladen</div>
+      <SealLine/>
+      <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:14 }}>
+        <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Neue Einladung</div>
+        <div style={{ display:"flex", gap:8 }}>
+          <Field value={email} onChange={setEmail} placeholder="E-Mail-Adresse…"/>
+          <Btn onClick={sendInvite} disabled={!email.trim()||saving}>Einladen</Btn>
+        </div>
+        <div style={{ color:C.grayDim, fontSize:11, marginTop:8 }}>
+          Die Person muss sich mit dieser E-Mail registrieren oder einloggen — dann tritt sie automatisch bei.
+        </div>
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+        {loading?<div style={{ textAlign:"center", padding:20 }}><Spinner/></div>
+        :invites.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:28, fontSize:13 }}>Keine offenen Einladungen</div>
+        :invites.map(inv=>(
+          <div key={inv.id} style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:5, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+            <div style={{ color:C.white, fontSize:14 }}>{inv.email}</div>
+            <Btn variant="danger" size="sm" onClick={()=>revokeInvite(inv)} disabled={saving}>✕</Btn>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+    
 // ── Band Detail ────────────────────────────────────────────────────────────
 function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, user, onBack, onRefresh, show, theme, toggleTheme }) {
   const [tab, setTab] = useState("songs");
@@ -1218,7 +1292,7 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
         </div>
         {/* Tabs */}
         <div style={{ maxWidth:720, margin:"0 auto", padding:"0 16px 10px", display:"flex", gap:6 }}>
-            {[{key:"songs",label:"🎵 Songs"},{key:"setlist",label:"📋 Setlist"}].map(({key,label})=>(
+            {[{key:"songs",label:"🎵 Songs"},{key:"setlist",label:"📋 Setlist"},{key:"members",label:"👥 Team"}].map(({key,label})=>(
             <button key={key} onClick={()=>setTab(key)} style={{ flex:1, background:tab===key?C.teal:"transparent", color:tab===key?"#000":C.gray, border:`1px solid ${tab===key?C.teal:"#222"}`, borderRadius:4, padding:"8px 0", fontSize:12, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>{label}</button>
             ))}          
         </div>
@@ -1227,6 +1301,7 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
       <main style={{ maxWidth:720, margin:"0 auto", padding:"20px 16px" }}>
         {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={allBands} canEdit={canEdit} onRefresh={onRefresh} show={show}/>}
         {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} canEdit={canEdit} onRefresh={onRefresh} show={show} theme={theme} toggleTheme={toggleTheme}/>}
+        {tab==="members" &&<MemberManager band={band} canEdit={canEdit} show={show}/>}
       </main>
     </div>
   );
