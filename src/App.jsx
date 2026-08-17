@@ -1367,6 +1367,10 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
   const [delBand, setDelBand] = useState(null);
   const [delSaving, setDelSaving] = useState(false);
   const [backupText, setBackupText] = useState(null);
+  const [showAccount, setShowAccount] = useState(false);
+  const [newPw, setNewPw] = useState("");
+  const [newPw2, setNewPw2] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
   const handleDeleteBand = async () => {
     setDelSaving(true);
     await sb.delete("bands", "id=eq." + delBand.id);
@@ -1400,11 +1404,35 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
               }
             }}>⬇ Backup</Btn>
               <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}>+ Band</Btn>
+              <Btn variant="outline" size="sm" onClick={()=>{setShowAccount(true);setNewPw("");setNewPw2("");}}>⚙ Konto</Btn>
               <Btn variant="ghost" size="sm" onClick={onLogout}>Abmelden</Btn>
             </div>
           </div>
         </div>
       </header>
+      {showAccount&&<Modal title="Konto" onClose={()=>setShowAccount(false)}>
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          <div style={{ color:C.grayDim, fontSize:12 }}>Angemeldet als</div>
+          <div style={{ color:C.white, fontSize:14, fontWeight:600 }}>{user.email}</div>
+          <SealLine/>
+          <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase" }}>Passwort ändern</div>
+          <Field value={newPw} onChange={setNewPw} type="password" placeholder="Neues Passwort…"/>
+          <Field value={newPw2} onChange={setNewPw2} type="password" placeholder="Passwort bestätigen…"/>
+          <Btn full disabled={!newPw||newPw.length<6||newPw!==newPw2||pwSaving} onClick={async()=>{
+            setPwSaving(true);
+            try {
+              await sb.auth.updateUser({ password: newPw });
+              show("Passwort geändert!");
+              setShowAccount(false); setNewPw(""); setNewPw2("");
+            } catch(err) {
+              show("Fehler: " + (err&&err.message ? err.message : "unbekannt"), "error");
+            }
+            setPwSaving(false);
+          }}>{pwSaving?"Speichere…":"Passwort speichern ✓"}</Btn>
+          {newPw&&newPw.length<6&&<div style={{ color:C.grayDim, fontSize:11 }}>Mindestens 6 Zeichen.</div>}
+          {newPw&&newPw2&&newPw!==newPw2&&<div style={{ color:C.red, fontSize:11 }}>Passwörter stimmen nicht überein.</div>}
+        </div>
+      </Modal>}
       <SealLine/>
       <main style={{ flex:1, maxWidth:720, margin:"0 auto", padding:"40px 24px", width:"100%", boxSizing:"border-box" }}>
         <div style={{ marginBottom:28 }}>
