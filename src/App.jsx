@@ -34,8 +34,8 @@ const fetchWithTimeout = async (url, options, ms=8000) => {
     return await fetch(url, { ...options, signal: controller.signal });
   } finally {
     clearTimeout(timer);
-};
   }
+};
 // Minimal Supabase REST helper
 
 const sb = {
@@ -1796,7 +1796,21 @@ const _b=Array.isArray(b)?b:[], _s=Array.isArray(s)?s:[], _g=Array.isArray(g)?g:
     setLoading(false);
   },[]);
 
-  useEffect(()=>{ if(user) loadAll(); },[user,loadAll]);
+  const joinPendingInvites = useCallback(async () => {
+    if (!user?.email) return;
+    try {
+      const inv = await sb.query("invites", { select:"*", filter:"email=eq."+encodeURIComponent(user.email.toLowerCase()) });
+      const list = Array.isArray(inv) ? inv : [];
+      for (const i of list) {
+        try {
+          await sb.insert("band_members", { band_id: i.band_id, user_id: user.id, role: "member" });
+          await sb.delete("invites", "id=eq."+i.id);
+        } catch(_) {}
+      }
+    } catch(_) {}
+  },[user]);
+
+  useEffect(()=>{ if(user) { joinPendingInvites().then(loadAll); } },[user,loadAll,joinPendingInvites]);
 
   const handleAuth = (u) => { setUser(u); };
   const handleLogout = async () => { await sb.auth.signOut(); setUser(null); setBands([]); setSongs([]); setGigs([]); setPls([]); setPS([]); };
