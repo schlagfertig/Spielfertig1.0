@@ -1,5 +1,5 @@
 // SPIELFERTIG‽ – Service Worker
-const CACHE = 'spielfertig-v4';
+const CACHE = 'spielfertig-v5';
 const PRECACHE = ['/', '/index.html', '/Logo-dark.png', '/Logo-light.png'];
 
 // Install: cache app shell
@@ -34,17 +34,14 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(cached => {
       const network = fetch(e.request).then(response => {
-        // Cache fresh static assets
         if (response.ok) {
           const clone = response.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return response;
       }).catch(() => {
-        // Offline fallback: return cached or fallback to index.html
         return cached || caches.match('/index.html');
       });
-      // Return cache immediately if available, update in background
       return cached || network;
     })
   );
