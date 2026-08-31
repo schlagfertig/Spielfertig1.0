@@ -2,18 +2,21 @@ import { useState } from "react";
 import { C, sb, SETS, dStyle } from "./core";
 import { Btn, Badge } from "./ui";
 import { useMetronome } from "./audio";
+import { SongFold, FoldBtn } from "./songPanels";
 
 function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, isDragging, extra, showDrummer=true }) {
   const st = dStyle(song.drummer);
   const { active, beat, toggle } = useMetronome(song.bpm);
   const [showLyrics, setShowLyrics] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const foldOpen = (showNotes && song.specialties) || (showLyrics && song.lyrics);
   const pulseColor  = beat?"#fff":active?C.teal:C.grayDim;
   const pulseGlow   = beat?`0 0 10px 4px ${C.teal}`:active?`0 0 4px 1px ${C.tealBorder}`:"none";
   const pulseBorder = active?`1px solid ${beat?"#fff":C.teal}`:"1px solid #2a2a2a";
   return (
     <div style={{ display:"flex", flexDirection:"column" }}>
       <div draggable={draggable} onDragStart={onDragStart} onDragOver={e=>e.preventDefault()} onDrop={onDrop}
-        style={{ background:isDragging?"#0a0a0a":st.bg, border:`1px solid ${isDragging?C.teal:st.border}`, borderRadius: showLyrics?"6px 6px 0 0":6, padding:"9px 13px", display:"flex", flexDirection:"column", gap:6, opacity:isDragging?.4:1, transition:"background .1s", cursor:draggable?"grab":"default" }}>
+        style={{ background:isDragging?"#0a0a0a":st.bg, border:`1px solid ${isDragging?C.teal:st.border}`, borderRadius: foldOpen?"6px 6px 0 0":6, padding:"9px 13px", display:"flex", flexDirection:"column", gap:6, opacity:isDragging?.4:1, transition:"background .1s", cursor:draggable?"grab":"default" }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
           {pos!==undefined&&<div style={{ color:C.grayDim, fontSize:11, width:18, textAlign:"right", flexShrink:0, fontFamily:"'Space Mono',monospace" }}>{pos}</div>}
           {draggable&&<div style={{ color:C.grayDim, fontSize:13, flexShrink:0 }}>⠿</div>}
@@ -31,18 +34,14 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
             </div>
           </div>
           {song.drummer&&showDrummer&&<Badge color={st.badge}>{song.drummer}</Badge>}
-          {song.lyrics&&<button onClick={e=>{e.stopPropagation();setShowLyrics(v=>!v);}} title="Lyrics" style={{ background:"transparent", border:"none", color:showLyrics?C.teal:C.grayDim, cursor:"pointer", padding:"4px 6px", fontSize:17, flexShrink:0 }}>📓</button>}
+          {song.specialties&&<FoldBtn on={showNotes} title="Notizen" icon="📝" onClick={()=>setShowNotes(v=>!v)}/>}
+          {song.lyrics&&<FoldBtn on={showLyrics} title="Lyrics" icon="📓" onClick={()=>setShowLyrics(v=>!v)}/>}
           {onEdit&&<button onClick={e=>{e.stopPropagation();onEdit(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"4px 6px", fontSize:17, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.color=C.teal} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✎</button>}
           {onDelete&&<button onClick={e=>{e.stopPropagation();onDelete(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"4px 6px", fontSize:17, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.color=C.red} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✕</button>}
           {extra&&extra}
         </div>
-        {song.specialties&&<div style={{ color:C.grayDim, fontSize:12, fontStyle:"italic", whiteSpace:"pre-wrap", lineHeight:1.5, paddingLeft: song.bpm>0?40:0 }}>{song.specialties}</div>}
       </div>
-      {showLyrics&&song.lyrics&&(
-        <div style={{ background:"#080808", border:`1px solid ${st.border}`, borderTop:"none", borderRadius:"0 0 6px 6px", padding:"12px 15px", color:"#cfcfcf", fontSize:14, lineHeight:1.7, whiteSpace:"pre-wrap" }}>
-          {song.lyrics}
-        </div>
-      )}
+      <SongFold notes={song.specialties} lyrics={song.lyrics} notesOpen={showNotes} lyricsOpen={showLyrics} border={st.border} compact/>
     </div>
   );
 }
@@ -101,8 +100,8 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
           </div>
           <div style={{ marginBottom:10 }}>
             <div style={{ color:C.grayDim, fontSize:10, marginBottom:4 }}>NOTIZEN</div>
-            <textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="z.B. Drums beginnt, Count-In…" rows={2}
-              style={{ background:"#0a0a0a", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:12, fontFamily:"inherit", width:"100%", resize:"none", lineHeight:1.5 }}/>
+            <textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder={"z.B. Count-In\nBD auf 1\nSchluss: Keys"} rows={5}
+              style={{ background:"#0a0a0a", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:12, fontFamily:"inherit", width:"100%", resize:"vertical", lineHeight:1.5 }}/>
           </div>
           <div style={{ display:"flex", gap:6 }}>
             <Btn variant="ghost" size="sm" onClick={()=>setOpen(false)}>Abbrechen</Btn>
