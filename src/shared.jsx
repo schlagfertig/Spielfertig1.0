@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { C, sb, SETS, dStyle, getBandLogo, getLogo } from "./core";
+import { C, sb, SETS, dStyle, getBandLogo, getLogo, bandLogoImgStyle } from "./core";
 import { SealIcon, Spinner } from "./ui";
 import { GigMetronome } from "./gig";
 import { SongFold, FoldBtn } from "./songPanels";
@@ -68,15 +68,14 @@ function SharedView({ playlistId }) {
 
   return (
     <div style={{ position:"fixed", inset:0, background:"#000", display:"flex", flexDirection:"column", overflow:"hidden", fontFamily:"'Raleway',sans-serif" }}>
-      <style>{"@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#000}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}img[src^=\"data:image\"],img[src*=\"logo-\"]{mix-blend-mode:screen}"}</style>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#000}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}"}</style>
       <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <img src={getLogo()} alt="" style={{ width:340, opacity:0.07, userSelect:"none" }}/>
+        <img src={getLogo()} alt="" style={{ width:340, height:"auto", objectFit:"contain", opacity:0.07, userSelect:"none" }}/>
       </div>
       <div style={{ background:"#0a0a0a", borderBottom:"1px solid #1a1a1a", flexShrink:0, position:"relative", zIndex:1 }}>
         {bandLogo&&(
-          <div style={{ padding:"16px 18px 8px", textAlign:"center", borderBottom:"1px solid #111" }}>
-            <img src={bandLogo} alt={data.bandName}
-              style={{ height:112, maxWidth:"85%", objectFit:"contain", filter:"invert(1)", mixBlendMode:"screen", opacity:.9 }}/>
+          <div style={{ padding:"16px 18px 8px", display:"flex", justifyContent:"center", borderBottom:"1px solid #111" }}>
+            <img src={bandLogo} alt={data.bandName} style={bandLogoImgStyle({ height:100, maxWidth:"85%" })}/>
           </div>
         )}
         <div style={{ padding:"10px 18px 12px" }}>
@@ -113,13 +112,13 @@ function SharedView({ playlistId }) {
                 <div key={i} style={{ display:"flex", flexDirection:"column" }}>
                 <div style={{ background:st.bg, border:"1px solid "+st.border, borderRadius: foldOpen?"7px 7px 0 0":7, padding:"9px 13px", display:"flex", alignItems:"center", gap:10 }}>
                   <div style={{ color:C.grayDim, fontSize:13, fontFamily:"'Space Mono',monospace", width:22, textAlign:"right", flexShrink:0 }}>{song.position}</div>
+                  {song.specialties&&<FoldBtn on={notesOpen} title="Notizen" icon="📝" onClick={()=>setNotesIdx(x=>x===i?null:i)}/>}
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ color:C.white, fontWeight:600, fontFamily:"'Raleway',sans-serif", fontSize:21, lineHeight:1.15, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{song.title}</div>
                     <div style={{ color:"#888", fontSize:12, marginTop:1 }}>{song.artist}{song.bpm>0&&<span style={{ color:"#555", fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:8 }}>{song.bpm}</span>}</div>
                     {preview&&<div style={{ color:"#bbb", fontSize:12, fontStyle:"italic", marginTop:2, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{preview}</div>}
                   </div>
                   <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
-                    {song.specialties&&<FoldBtn on={notesOpen} title="Notizen" icon="📝" onClick={()=>setNotesIdx(x=>x===i?null:i)}/>}
                     {song.lyrics&&<FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setLyricsIdx(x=>x===i?null:i)}/>}
                     {song.bpm>0&&<GigMetronome bpm={song.bpm} size={50}/>}
                     {song.drummer&&<div style={{ color:dCol, border:"1px solid "+dCol, borderRadius:4, padding:"4px 10px", fontSize:12, fontWeight:700, letterSpacing:"0.08em" }}>{song.drummer}</div>}

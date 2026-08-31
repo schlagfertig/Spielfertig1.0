@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C, getBandLogo } from "./core";
+import { C, getBandLogo, bandLogoImgStyle } from "./core";
 import { Btn, SealLine } from "./ui";
 import { SongDatabase } from "./songs";
 import { SetlistManager } from "./setlist";
@@ -8,16 +8,16 @@ import { MemberManager } from "./members";
 function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, user, onBack, onRefresh, show, theme, toggleTheme }) {
   const [tab, setTab] = useState("songs");
   const canEdit = band.user_id === user.id;
+  const logo = getBandLogo(band.name);
   return (
     <div style={{ minHeight:"100vh", background:C.bg }}>
       <header style={{ borderBottom:"1px solid #111", background:"rgba(0,0,0,.97)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:50 }}>
         <div style={{ maxWidth:720, margin:"0 auto", padding:"8px 16px 0", display:"flex", alignItems:"center" }}>
           <Btn variant="outline" size="md" onClick={onBack} style={{fontSize:20,padding:"6px 18px"}}>← Zurück</Btn>
         </div>
-        <div style={{ maxWidth:720, margin:"0 auto", padding:"6px 16px 10px", textAlign:"center" }}>
-          {getBandLogo(band.name)
-            ? <img src={getBandLogo(band.name)} alt={band.name}
-                style={{ height:90, maxWidth:"80%", objectFit:"contain", filter:"invert(1)", opacity:.9 }}/>
+        <div style={{ maxWidth:720, margin:"0 auto", padding:"6px 16px 10px", display:"flex", justifyContent:"center" }}>
+          {logo
+            ? <img src={logo} alt={band.name} style={bandLogoImgStyle({ height:90, maxWidth:"80%" })}/>
             : <div style={{ color:C.white, fontWeight:400, fontSize:26, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em" }}>{band.name}</div>}
         </div>
         <div style={{ maxWidth:720, margin:"0 auto", padding:"0 16px 10px", display:"flex", gap:6 }}>
