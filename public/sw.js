@@ -1,5 +1,5 @@
 // SPIELFERTIG‽ – Service Worker
-const CACHE = 'spielfertig-v6';
+const CACHE = 'spielfertig-v7';
 const PRECACHE = ['/', '/index.html', '/Logo-dark.png', '/Logo-light.png'];
 
 self.addEventListener('install', e => {
@@ -19,24 +19,47 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  const url = e.request.url;
-  if (
-    e.request.method !== 'GET' ||
-    url.includes('supabase.co') ||
-    url.includes('api.anthropic.com')
-  ) return;
+  const req = e.request;
+  if (req.method !== 'GET') return;
 
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      const network = fetch(e.request).then(response => {
-        if (response.ok) {
+  let url;
+  try { url = new URL(req.url); } catch (_) { return; }
+
+  // Auth/API und fremde Origins nie anfassen – sonst hängt Login im SW.
+  if (url.origin !== self.location.origin) return;
+  if (url.hostname.includes('supabase.co')) return;
+
+  const isDocOrScript =
+    req.destination === 'document' ||
+    req.destination === 'script' ||
+    req.mode === 'navigate' ||
+    url.pathname === '/' ||
+    url.pathname.endsWith('.html') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.jsx');
+
+  if (isDocOrScript) {
+    e.respondWith(
+      fetch(req).then(response => {
+        if (response && response.ok) {
           const clone = response.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
+          caches.open(CACHE).then(c => c.put(req, clone));
         }
         return response;
-      }).catch(() => {
-        return cached || caches.match('/index.html');
-      });
+      }).catch(() => caches.match(req).then(cached => cached || caches.match('/index.html')))
+    );
+    return;
+  }
+
+  e.respondWith(
+    caches.match(req).then(cached => {
+      const network = fetch(req).then(response => {
+        if (response && response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE).then(c => c.put(req, clone));
+        }
+        return response;
+      }).catch(() => cached || caches.match('/index.html'));
       return cached || network;
     })
   );

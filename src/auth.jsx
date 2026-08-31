@@ -12,21 +12,33 @@ function AuthScreen({ onAuth }) {
   const handle = async () => {
     if (!email || !password) { setError("Bitte E-Mail und Passwort eingeben."); return; }
     setLoading(true); setError("");
-    await new Promise(r => setTimeout(r, 300));
     try {
-      const res = mode === "login" ? await sb.auth.signIn(email, password) : await sb.auth.signUp(email, password);
-      if (res.error || res.error_description || res.msg) { setError(JSON.stringify(res).substring(0, 200)); }
-      else if (res.access_token) {
+      const res = mode === "login"
+        ? await sb.auth.signIn(email.trim(), password)
+        : await sb.auth.signUp(email.trim(), password);
+      if (res.error || res.error_description || res.msg) {
+        const raw = res.msg || res.error_description || res.error;
+        const pretty =
+          raw === "Invalid login credentials" ? "E-Mail oder Passwort stimmt nicht." :
+          raw === "Email not confirmed" ? "Bitte zuerst die Bestätigungs-E-Mail öffnen." :
+          String(raw).substring(0, 200);
+        setError(pretty);
+      } else if (res.access_token) {
         sb._token = res.access_token;
         localStorage.setItem("sf_token", res.access_token);
         localStorage.setItem("sf_user", JSON.stringify({ email: res.user?.email, id: res.user?.id }));
         onAuth({ email: res.user?.email, id: res.user?.id });
       } else if (mode === "register") {
         setError("Bestätigungs-E-Mail gesendet! Bitte bestätigen, dann einloggen.");
+      } else {
+        setError("Unerwartete Antwort vom Server. Bitte nochmal versuchen.");
       }
     } catch(e) {
-      if (e.name === "AbortError") setError("Zeitüberschreitung – bitte Internetverbindung prüfen und erneut versuchen.");
-      else setError("Fehler: " + e.message);
+      if (e.name === "AbortError" || e.name === "TimeoutError") {
+        setError("Zeitüberschreitung – Verbindung zu Supabase klemmt. Einmal hart neu laden (PWA vom Homescreen löschen hilft auf dem iPad). Werbeblocker / iCloud Private Relay kurz aus.");
+      } else {
+        setError("Fehler: " + (e.message || e.name));
+      }
     }
     setLoading(false);
   };

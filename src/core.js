@@ -23,18 +23,36 @@ function getBandLogo(name) {
   if (n.includes("geschwister")) return LOGO_GESCHWISTERLIED;
   return null;
 }
-// Fetch with timeout
-const fetchWithTimeout = async (url, options, ms=8000) => {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), ms);
+
+// Fetch with timeout + 1 Retry bei Abort/Netzwerk.
+// 20s statt 8s: iPad/Safari + PWA + Cloudflare brauchen oft länger als ein Desktop-Curl.
+const fetchWithTimeout = async (url, options = {}, ms = 20000) => {
+  const once = async () => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  };
   try {
-    return await fetch(url, { ...options, signal: controller.signal });
-  } finally {
-    clearTimeout(timer);
+    return await once();
+  } catch (e) {
+    const retryable = e && (e.name === "AbortError" || e.name === "TimeoutError" || e.name === "TypeError");
+    if (!retryable) throw e;
+    return await once();
   }
 };
-// Minimal Supabase REST helper
 
+async function parseJsonSafe(res) {
+  const text = await res.text();
+  if (!text) return {};
+  try { return JSON.parse(text); }
+  catch (_) { return { error: "parse_error", msg: text.substring(0, 180) }; }
+}
+
+// Minimal Supabase REST helper
 const sb = {
   headers: () => {
     const t = sb._token || SUPABASE_KEY;
@@ -51,34 +69,34 @@ const sb = {
     if (options.select)  url += "select=" + encodeURIComponent(options.select) + "&";
     if (options.filter)  url += options.filter + "&";
     if (options.order)   url += "order=" + options.order + "&";
-    const res = await fetch(url, { headers: { ...sb.headers(), "Prefer": "return=representation" } });
-    return res.json();
+    const res = await fetchWithTimeout(url, { headers: { ...sb.headers(), "Prefer": "return=representation" } }, 20000);
+    return parseJsonSafe(res);
   },
 
   async insert(table, data) {
-    const res = await fetch(SUPABASE_URL + "/rest/v1/" + table, {
+    const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table, {
       method: "POST",
       headers: { ...sb.headers(), "Prefer": "return=representation" },
       body: JSON.stringify(data),
-    });
-    const json = await res.json();
+    }, 20000);
+    const json = await parseJsonSafe(res);
     return Array.isArray(json) ? json[0] : json;
   },
 
   async update(table, data, filter) {
-    const res = await fetch(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
+    const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
       method: "PATCH",
       headers: { ...sb.headers(), "Prefer": "return=representation" },
       body: JSON.stringify(data),
-    });
-    return res.json();
+    }, 20000);
+    return parseJsonSafe(res);
   },
 
   async delete(table, filter) {
-    await fetch(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
+    await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
       method: "DELETE",
       headers: sb.headers(),
-    });
+    }, 20000);
   },
 
   auth: {
@@ -87,22 +105,24 @@ const sb = {
         method: "POST",
         headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY },
         body: JSON.stringify({ email, password }),
-      });
-      return res.json();
+      }, 25000);
+      return parseJsonSafe(res);
     },
     async signIn(email, password) {
       const res = await fetchWithTimeout(SUPABASE_URL + "/auth/v1/token?grant_type=password", {
         method: "POST",
         headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY },
         body: JSON.stringify({ email, password }),
-      });
-      return res.json();
+      }, 25000);
+      return parseJsonSafe(res);
     },
     async signOut() {
-      await fetchWithTimeout(SUPABASE_URL + "/auth/v1/logout", {
-        method: "POST",
-        headers: sb.headers(),
-      });
+      try {
+        await fetchWithTimeout(SUPABASE_URL + "/auth/v1/logout", {
+          method: "POST",
+          headers: sb.headers(),
+        }, 8000);
+      } catch (_) {}
       sb._token = null;
       localStorage.removeItem("sf_token");
       localStorage.removeItem("sf_user");
@@ -112,8 +132,8 @@ const sb = {
         method: "PUT",
         headers: sb.headers(),
         body: JSON.stringify(data),
-      });
-      const json = await res.json();
+      }, 20000);
+      const json = await parseJsonSafe(res);
       if (!res.ok) throw new Error(json.msg || json.error_description || "Update fehlgeschlagen");
       return json;
     },
