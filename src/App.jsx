@@ -83,7 +83,7 @@ export default function App() {
   if (shareId) return <SharedView playlistId={shareId}/>;
 
   if (loading) return (
-    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16 }}>
+    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:16 }}>
       <SealIcon size={52}/><Spinner/>
       <div style={{ color:C.grayDim, fontSize:11, letterSpacing:"0.15em" }}>LADEN…</div>
     </div>
@@ -102,14 +102,13 @@ export default function App() {
         @keyframes spin{to{transform:rotate(360deg)}}
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0a0a0a}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
         input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.3)}
-        img[src^="data:image"],img[src*="logo-geschwisterlied"],img[src*="logo-hardys"]{mix-blend-mode:screen}
       `}</style>
 
       <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <img src={getLogo()} alt="" style={{ width:340, opacity:theme==="dark"?0.07:0.12, userSelect:"none" }}/>
+        <img src={getLogo()} alt="" style={{ width:340, height:"auto", objectFit:"contain", opacity:theme==="dark"?0.07:0.12, userSelect:"none" }}/>
       </div>
       <div style={{ position:"fixed", bottom:12, right:12, zIndex:5, pointerEvents:"none" }}>
-        <img src={getLogo()} alt="" style={{ width:56, height:56, objectFit:"cover", borderRadius:"50%", opacity:0.85, userSelect:"none", border:"1px solid "+C.tealBorder }}/>
+        <img src={getLogo()} alt="" style={{ width:56, height:56, objectFit:"contain", opacity:0.85, userSelect:"none" }}/>
       </div>
       <button onClick={toggleTheme} title="Hell/Dunkel umschalten"
         style={{ position:"fixed", top:12, right:12, zIndex:10, width:40, height:40, borderRadius:"50%", background:C.bgCard, border:"1px solid "+C.tealBorder, color:C.teal, fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>

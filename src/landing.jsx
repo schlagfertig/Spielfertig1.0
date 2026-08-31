@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C, sb, getBandLogo } from "./core";
+import { C, sb, getBandLogo, bandLogoImgStyle } from "./core";
 import { Btn, Field, Badge, Modal, SealLine, SealIcon, Spinner } from "./ui";
 
 const BAND_COLORS = [
@@ -210,6 +210,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:16 }}>
             {bands.map(band=>{
               const count = songs.filter(s=>s.band_id===band.id).length;
+              const logo = getBandLogo(band.name);
               return (
                 <div key={band.id} onClick={()=>onSelect(band)}
                   style={{ background:"#111", border:"1px solid #1a1a1a", borderRadius:8, cursor:"pointer", position:"relative", overflow:"hidden", transition:"border-color .2s,transform .2s", display:"flex", flexDirection:"column" }}
@@ -217,9 +218,8 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
                   onMouseLeave={e=>{e.currentTarget.style.borderColor="#1a1a1a";e.currentTarget.style.transform="none";}}>
                   <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:"linear-gradient(90deg,transparent,"+band.color+",transparent)", zIndex:2 }}/>
                   <div style={{ flex:1, minHeight:130, background:"#0d0d0d", display:"flex", alignItems:"center", justifyContent:"center", padding:"18px 16px" }}>
-                    {getBandLogo(band.name)
-                      ? <img src={getBandLogo(band.name)} alt={band.name}
-                          style={{ width:"100%", maxHeight:110, objectFit:"contain", filter:"invert(1)", opacity:.92 }}/>
+                    {logo
+                      ? <img src={logo} alt={band.name} style={bandLogoImgStyle({ height:96, maxWidth:"100%", maxHeight:110 })}/>
                       : <div style={{ fontSize:42 }}>{band.emoji}</div>}
                   </div>
                   <div style={{ borderTop:"1px solid #1a1a1a", padding:"10px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", background:C.bgCard }}>

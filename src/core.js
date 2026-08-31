@@ -1,6 +1,6 @@
 import { LOGO_HARDYS_DATA } from "./logoHardys";
 
-// ── Supabase Client (inline, no npm needed via CDN) ────────────────────────
+// ── Supabase Client (inline, no npm needed via CDN) ────────────────
 const SUPABASE_URL = "https://hstwhmqwxmvlobvygsty.supabase.co";
 const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
@@ -12,9 +12,9 @@ const LOGO_DARK  = "/Logo-dark.png";
 const LOGO_LIGHT = "/Logo-light.png";
 function getLogo() { return C.white === "#fff" ? LOGO_DARK : LOGO_LIGHT; }
 
-// Band logos – Hardy's Original-Zeichnung (schwarz auf weiß),
-// CSS filter:invert(1) macht daraus weiß auf schwarz im Dark Mode.
-const LOGO_HARDYS = LOGO_HARDYS_DATA;
+// Band logos: SVG behält das Seitenverhältnis. invert nur im Dark Mode,
+// ohne mix-blend-mode (das hat den schwarzen Kasten erzeugt).
+const LOGO_HARDYS = "/logo-hardys.svg";
 const LOGO_GESCHWISTERLIED = "/logo-geschwisterlied.svg";
 function getBandLogo(name) {
   if (!name) return null;
@@ -23,9 +23,23 @@ function getBandLogo(name) {
   if (n.includes("geschwister")) return LOGO_GESCHWISTERLIED;
   return null;
 }
+function bandLogoImgStyle(extra = {}) {
+  const dark = C.white === "#fff";
+  return {
+    height: extra.height || 90,
+    width: "auto",
+    maxWidth: extra.maxWidth || "80%",
+    maxHeight: extra.maxHeight || extra.height || 90,
+    objectFit: "contain",
+    objectPosition: "center",
+    display: "block",
+    filter: dark ? "invert(1)" : "none",
+    opacity: extra.opacity ?? 0.92,
+    ...extra,
+  };
+}
 
 // Fetch with timeout + 1 Retry bei Abort/Netzwerk.
-// 20s statt 8s: iPad/Safari + PWA + Cloudflare brauchen oft länger als ein Desktop-Curl.
 const fetchWithTimeout = async (url, options = {}, ms = 20000) => {
   const once = async () => {
     const controller = new AbortController();
@@ -52,7 +66,6 @@ async function parseJsonSafe(res) {
   catch (_) { return { error: "parse_error", msg: text.substring(0, 180) }; }
 }
 
-// Minimal Supabase REST helper
 const sb = {
   headers: () => {
     const t = sb._token || SUPABASE_KEY;
@@ -140,7 +153,6 @@ const sb = {
   },
 };
 
-// ── Brand ─────────────────────────────────────────────────
 const THEMES = {
   dark: {
     bg: "#000", bgCard: "#0d0d0d",
@@ -186,7 +198,8 @@ const dStyle = d => {
 };
 
 export {
-  SUPABASE_URL, SUPABASE_KEY, LOGO_DARK, LOGO_LIGHT, getLogo, getBandLogo,
+  SUPABASE_URL, SUPABASE_KEY, LOGO_DARK, LOGO_LIGHT, getLogo, getBandLogo, bandLogoImgStyle,
+  LOGO_HARDYS_DATA,
   fetchWithTimeout, sb, THEMES, C, applyTheme, SETS, DRUMMER_COLORS,
   EXTRA_DRUMMER_PALETTE, dStyle
 };
