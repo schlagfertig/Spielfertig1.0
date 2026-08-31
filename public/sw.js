@@ -1,8 +1,7 @@
 // SPIELFERTIG‽ – Service Worker
-const CACHE = 'spielfertig-v5';
+const CACHE = 'spielfertig-v6';
 const PRECACHE = ['/', '/index.html', '/Logo-dark.png', '/Logo-light.png'];
 
-// Install: cache app shell
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c => c.addAll(PRECACHE))
@@ -10,7 +9,6 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
-// Activate: remove old caches
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -20,11 +18,8 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch: cache-first for static assets, network-only for Supabase API
 self.addEventListener('fetch', e => {
   const url = e.request.url;
-
-  // Skip non-GET, Supabase API, and auth calls
   if (
     e.request.method !== 'GET' ||
     url.includes('supabase.co') ||
