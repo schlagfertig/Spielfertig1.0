@@ -102,6 +102,7 @@ export default function App() {
         @keyframes spin{to{transform:rotate(360deg)}}
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0a0a0a}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
         input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.3)}
+        img[src^="data:image"],img[src*="logo-geschwisterlied"],img[src*="logo-hardys"]{mix-blend-mode:screen}
       `}</style>
 
       <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", display:"flex", alignItems:"center", justifyContent:"center" }}>
