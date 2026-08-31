@@ -5,6 +5,8 @@ import { SongRowMove } from "./songRow";
 import { exportPDF } from "./songPdf";
 import { GigMode } from "./gigMode";
 
+const REGULAR_SETS = SETS.filter(s => s !== "Zugaben");
+
 function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, bandId, canEdit, show, theme, toggleTheme }) {
   const [activeSet, setActiveSet] = useState("Set 1");
   const [search, setSearch]       = useState("");
@@ -33,8 +35,15 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
     return map;
   }, [mySongs, search, allSongs]);
 
-  const songsInSet = songsBySet[activeSet] || [];
   const setCounts = SETS.reduce((a,s)=>{a[s]=mySongs.filter(ps=>ps.set_name===s).length;return a;},{});
+  const lastRegular = [...REGULAR_SETS].reverse().find(s => (setCounts[s]||0) > 0) || "Set 1";
+  const encoreSongs = (songsBySet["Zugaben"] || []).map(s => ({...s, isEncore: true}));
+
+  const gigActive = activeSet === "Zugaben" ? lastRegular : activeSet;
+  const songsInSet = gigActive === lastRegular
+    ? [...(songsBySet[gigActive] || []), ...encoreSongs]
+    : (songsBySet[gigActive] || []);
+
   const usedIds = new Set(mySongs.map(ps=>ps.song_id));
   const available = bandSongs.filter(s=>!usedIds.has(s.id));
   const showDrummer = new Set(mySongs.map(s=>{
@@ -148,8 +157,8 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         playlist={playlist}
         songsInSet={songsInSet}
         setCounts={setCounts}
-        activeSet={activeSet}
-        onSetChange={(set)=>{ setActiveSet(set); setSearch(""); }}
+        activeSet={gigActive}
+        onSetChange={(set)=>{ setActiveSet(set === "Zugaben" ? lastRegular : set); setSearch(""); }}
         theme={theme}
         toggleTheme={toggleTheme}
         onClose={()=>setGigMode(false)}
@@ -241,7 +250,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
               >{dragId ? "Hier ablegen" : "Leeres Set — Song herziehen oder hinzufügen"}</div>
             ) : (
               <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
-                {list.map((song, i) => {
+                {list.map((song) => {
                   const dropPos = song.position;
                   const isOverHere = isOverSet && over.pos === dropPos && dragId !== song.ps_id;
                   return (
