@@ -11,8 +11,8 @@ const LOGO_LIGHT = "/Logo-light.png";
 function getLogo() { return C.white === "#fff" ? LOGO_DARK : LOGO_LIGHT; }
 
 // Band logos
-const LOGO_HARDYS = "/logo-hardys.jpg";
-const LOGO_GESCHWISTERLIED = "/logo-geschwisterlied.jpg";
+const LOGO_HARDYS = "/logo-hardys.svg";
+const LOGO_GESCHWISTERLIED = "/logo-geschwisterlied.svg";
 function getBandLogo(name) {
   if (!name) return null;
   const n = name.toLowerCase();
