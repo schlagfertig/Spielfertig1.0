@@ -11,7 +11,7 @@ const LOGO_LIGHT = "/Logo-light.png";
 function getLogo() { return C.white === "#fff" ? LOGO_DARK : LOGO_LIGHT; }
 
 // Band logos
-const LOGO_HARDYS = "/logo-hardys.svg";
+const LOGO_HARDYS = "/logo-hardys.svg?v=4";
 const LOGO_GESCHWISTERLIED = "/logo-geschwisterlied.svg";
 function getBandLogo(name) {
   if (!name) return null;
@@ -117,7 +117,7 @@ const sb = {
   },
 };
 
-// ── Brand ──────────────────────────────────────────────────
+// ── Brand ─────────────────────────────────────────────────
 const THEMES = {
   dark: {
     bg: "#000", bgCard: "#0d0d0d",
