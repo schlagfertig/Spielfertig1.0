@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="680" height="217" viewBox="0 0 680 217" role="img" aria-label="Hardy's Band">
-  <image href="data:image/jpeg;base64,PLACEHOLDER" width="680" height="217" preserveAspectRatio="xMidYMid meet"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="952" height="304" viewBox="0 0 952 304" role="img" aria-label="Hardy's Band">
+  <ellipse cx="476" cy="152" rx="450" ry="138" fill="#fff" stroke="#111" stroke-width="8"/>
+  <ellipse cx="476" cy="152" rx="434" ry="124" fill="none" stroke="#111" stroke-width="5"/>
+  <polygon fill="#111" points="78,140 80.1,146.4 87,146.4 81.4,150.3 83.5,156.7 78,152.8 72.5,156.7 74.6,150.3 69,146.4 75.9,146.4"/>
+  <polygon fill="#111" points="874,140 876.1,146.4 883,146.4 877.4,150.3 879.5,156.7 874,152.8 868.5,156.7 870.6,150.3 865,146.4 871.9,146.4"/>
+  <text x="200" y="148" fill="#111" font-family="Impact, Arial Black, sans-serif" font-size="78">HARDY</text>
+  <text x="690" y="148" fill="#111" font-family="Impact, Arial Black, sans-serif" font-size="78">S</text>
+  <g fill="#111" transform="translate(575,36)">
+    <ellipse cx="36" cy="14" rx="8" ry="9"/>
+    <path d="M30 22c8 2 14 6 18 14 4 8 8 28 8 36l-10 1c0-10-2-24-6-32-1 10-2 24-3 34h-10c1-12 2-26 3-36-6 0-12-2-14-4l14-13z"/>
+    <path d="M48 30 L78 6 l5 5 L54 36z"/>
+    <rect x="74" y="2" width="8" height="22" rx="2" transform="rotate(-42 78 13)"/>
+  </g>
+  <path fill="#111" d="M200 174h100l14 18-14 18H200l18-18z"/>
+  <path fill="#111" d="M752 174H652l-14 18 14 18h100l-18-18z"/>
+  <rect fill="#111" x="200" y="184" width="86" height="5"/>
+  <rect fill="#111" x="200" y="196" width="78" height="5"/>
+  <rect fill="#111" x="666" y="184" width="86" height="5"/>
+  <rect fill="#111" x="674" y="196" width="78" height="5"/>
+  <rect fill="#111" x="352" y="166" width="248" height="52"/>
+  <rect fill="none" stroke="#fff" stroke-width="2.5" x="360" y="174" width="232" height="36"/>
+  <text x="476" y="201" text-anchor="middle" fill="#fff" font-family="Impact, Arial Black, sans-serif" font-size="28" letter-spacing="6">BAND</text>
 </svg>
