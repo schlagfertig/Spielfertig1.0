@@ -66,7 +66,7 @@ function SharedView({ playlistId }) {
 
   return (
     <div style={{ position:"fixed", inset:0, background:"#000", display:"flex", flexDirection:"column", overflow:"hidden", fontFamily:"'Raleway',sans-serif" }}>
-      <style>{"@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#000}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}"}</style>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#000}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}img[src^=\"data:image\"],img[src*=\"logo-\"]{mix-blend-mode:screen}"}</style>
       <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", display:"flex", alignItems:"center", justifyContent:"center" }}>
         <img src={getLogo()} alt="" style={{ width:340, opacity:0.07, userSelect:"none" }}/>
       </div>
@@ -74,7 +74,7 @@ function SharedView({ playlistId }) {
         {bandLogo&&(
           <div style={{ padding:"16px 18px 8px", textAlign:"center", borderBottom:"1px solid #111" }}>
             <img src={bandLogo} alt={data.bandName}
-              style={{ height:112, maxWidth:"85%", objectFit:"contain", filter:"invert(1)", opacity:.9 }}/>
+              style={{ height:112, maxWidth:"85%", objectFit:"contain", filter:"invert(1)", mixBlendMode:"screen", opacity:.9 }}/>
           </div>
         )}
         <div style={{ padding:"10px 18px 12px" }}>
