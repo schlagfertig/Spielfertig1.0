@@ -1,5 +1,5 @@
 // SPIELFERTIG‽ – Service Worker
-const CACHE = 'spielfertig-v8';
+const CACHE = 'spielfertig-v9';
 const PRECACHE = ['/', '/index.html', '/Logo-dark.png', '/Logo-light.png'];
 
 self.addEventListener('install', e => {
@@ -25,7 +25,6 @@ self.addEventListener('fetch', e => {
   let url;
   try { url = new URL(req.url); } catch (_) { return; }
 
-  // Auth/API und fremde Origins nie anfassen – sonst hängt Login im SW.
   if (url.origin !== self.location.origin) return;
   if (url.hostname.includes('supabase.co')) return;
 

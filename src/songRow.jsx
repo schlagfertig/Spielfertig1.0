@@ -4,7 +4,7 @@ import { Btn, Badge } from "./ui";
 import { useMetronome } from "./audio";
 import { SongFold, FoldBtn } from "./songPanels";
 
-function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, isDragging, extra, showDrummer=true }) {
+function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, onDragOver, isDragging, dropActive, extra, showDrummer=true, onGripPointerDown }) {
   const st = dStyle(song.drummer);
   const { active, beat, toggle } = useMetronome(song.bpm);
   const [showLyrics, setShowLyrics] = useState(false);
@@ -15,11 +15,15 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
   const pulseBorder = active?`1px solid ${beat?"#fff":C.teal}`:"1px solid #2a2a2a";
   return (
     <div style={{ display:"flex", flexDirection:"column" }}>
-      <div draggable={draggable} onDragStart={onDragStart} onDragOver={e=>e.preventDefault()} onDrop={onDrop}
-        style={{ background:isDragging?"#0a0a0a":st.bg, border:`1px solid ${isDragging?C.teal:st.border}`, borderRadius: foldOpen?"6px 6px 0 0":6, padding:"9px 13px", display:"flex", flexDirection:"column", gap:6, opacity:isDragging?.4:1, transition:"background .1s", cursor:draggable?"grab":"default" }}>
+      <div draggable={!!draggable} onDragStart={onDragStart} onDragOver={e=>{ e.preventDefault(); onDragOver && onDragOver(e); }} onDrop={onDrop}
+        style={{ background:isDragging?"#0a0a0a":st.bg, border:`1px solid ${isDragging?C.teal:dropActive?C.teal:st.border}`, borderRadius: foldOpen?"6px 6px 0 0":6, padding:"9px 13px", display:"flex", flexDirection:"column", gap:6, opacity:isDragging?.4:1, transition:"background .1s,border-color .1s", cursor:draggable?"grab":"default" }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
           {pos!==undefined&&<div style={{ color:C.grayDim, fontSize:11, width:18, textAlign:"right", flexShrink:0, fontFamily:"'Space Mono',monospace" }}>{pos}</div>}
-          {draggable&&<div style={{ color:C.grayDim, fontSize:13, flexShrink:0 }}>⠿</div>}
+          {draggable&&<div
+            onPointerDown={onGripPointerDown}
+            title="Ziehen zum Verschieben"
+            style={{ color:C.grayDim, fontSize:16, flexShrink:0, cursor:"grab", padding:"4px 2px", touchAction:"none", userSelect:"none" }}
+          >⠿</div>}
           {song.bpm>0&&(
             <button onClick={toggle} title={`${active?"Stop":"Start"} (${song.bpm} BPM)`}
               style={{ background:"transparent", border:pulseBorder, borderRadius:"50%", width:32, height:32, flexShrink:0, cursor:"pointer", padding:0, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:pulseGlow, transition:"border-color .05s,box-shadow .05s" }}>
@@ -46,7 +50,7 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
   );
 }
 
-function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, saving, showDrummer=true, canEdit=true }) {
+function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, saving, showDrummer=true, canEdit=true, draggable, onDragStart, onDrop, onDragOver, isDragging, dropActive, onGripPointerDown }) {
   const [open, setOpen] = useState(false);
   const [newSet, setNewSet] = useState(song.set_name);
   const [newPos, setNewPos] = useState(String(song.position));
@@ -80,6 +84,8 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
   return (
     <div style={{ position:"relative" }}>
       <SongRow song={song} pos={song.position} showDrummer={showDrummer} onDelete={onDelete}
+        draggable={draggable} onDragStart={onDragStart} onDrop={onDrop} onDragOver={onDragOver}
+        isDragging={isDragging} dropActive={dropActive} onGripPointerDown={onGripPointerDown}
         onEdit={canEdit?(()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setNotes(song.specialties||""); setOpen(!open); }):undefined}/>
       {open&&(
         <div style={{ position:"absolute", right:0, top:"100%", zIndex:100, background:"#1a1a1a", border:"1px solid "+C.tealBorder, borderRadius:8, padding:14, minWidth:220, boxShadow:"0 8px 32px rgba(0,0,0,.8)" }}>
