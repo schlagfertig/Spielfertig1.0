@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { C, SETS, dStyle } from "./core";
 import { GigMetronome } from "./gig";
+import { SongFold, FoldBtn } from "./songPanels";
 
 function useWakeLock(active) {
   useEffect(() => {
@@ -29,9 +30,20 @@ function useWakeLock(active) {
 function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, theme, toggleTheme, onClose }) {
   const [currentSongId, setCurrentSongId] = useState(null);
   const [gigLyricsId, setGigLyricsId] = useState(null);
+  const [gigNotesId, setGigNotesId] = useState(null);
   useWakeLock(true);
 
   const drummerColor = (d) => d==="Ron" ? C.red : d==="Tom" ? C.teal : C.gray;
+
+  const pickSong = (song) => {
+    const isCurrent = currentSongId === song.ps_id;
+    if (isCurrent) {
+      setCurrentSongId(null);
+      return;
+    }
+    setCurrentSongId(song.ps_id);
+    if (song.specialties) setGigNotesId(song.ps_id);
+  };
 
   return (
     <div style={{position:"fixed",inset:0,background:C.bg,zIndex:200,display:"flex",flexDirection:"column",overflow:"hidden"}}>
@@ -59,13 +71,16 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           const isNext = currentSongId && !isCurrent && i === currentIdx + 1;
           const opacity = !currentSongId ? 1 : isCurrent ? 1 : isNext ? 0.75 : 0.35;
           const dCol = drummerColor(song.drummer);
+          const notesOpen = gigNotesId === song.ps_id;
+          const lyricsOpen = gigLyricsId === song.ps_id;
+          const foldOpen = (notesOpen && song.specialties) || (lyricsOpen && song.lyrics);
           return (
             <div key={song.id} style={{ display:"flex", flexDirection:"column" }}>
-              <div onClick={()=>setCurrentSongId(isCurrent ? null : song.ps_id)}
+              <div onClick={()=>pickSong(song)}
                 style={{
                   background: isCurrent ? (song.drummer==="Ron"?C.redDim:C.tealDim) : isNext ? C.bgNext : "transparent",
                   border: "2px solid " + (isCurrent ? (song.drummer==="Ron"?C.red:C.teal) : isNext ? C.borderNext : C.borderSong),
-                  borderRadius: (gigLyricsId===song.ps_id&&song.lyrics) ? "7px 7px 0 0" : 7,
+                  borderRadius: foldOpen ? "7px 7px 0 0" : 7,
                   padding:"9px 13px", display:"flex", alignItems:"center", gap:10,
                   cursor:"pointer", opacity, transition:"all .2s",
                   boxShadow: isCurrent ? "0 0 16px 2px " + (song.drummer==="Ron"?C.redBorder:C.tealBorder) : "none"
@@ -88,13 +103,11 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                   <div style={{color:isCurrent?C.gray:C.textMute,fontSize:11,marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
                     {song.artist}
                   </div>
-                  {song.specialties&&<div style={{color:C.textDim,fontSize:14,fontStyle:"italic",whiteSpace:"pre-wrap",lineHeight:1.5,marginTop:2}}>{song.specialties}</div>}
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0,marginLeft:"auto"}}>
                   {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
-                  {song.lyrics&&<button onClick={(e)=>{e.stopPropagation();setGigLyricsId(id=>id===song.ps_id?null:song.ps_id);}}
-                    title="Lyrics"
-                    style={{background:"transparent",border:"none",color:gigLyricsId===song.ps_id?C.teal:C.grayDim,cursor:"pointer",fontSize:22,padding:"2px 4px"}}>📓</button>}
+                  {song.specialties&&<FoldBtn on={notesOpen} title="Notizen" icon="📝" onClick={()=>setGigNotesId(id=>id===song.ps_id?null:song.ps_id)}/>}
+                  {song.lyrics&&<FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setGigLyricsId(id=>id===song.ps_id?null:song.ps_id)}/>}
                   {song.drummer&&<div style={{
                     color:dCol, border:"1px solid "+dCol, borderRadius:4,
                     padding:"5px 12px", fontSize:13, fontWeight:700,
@@ -102,12 +115,13 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                   }}>{song.drummer}</div>}
                 </div>
               </div>
-              {gigLyricsId===song.ps_id&&song.lyrics&&(
-                <div onClick={(e)=>e.stopPropagation()}
-                  style={{background:C.lyricsBg,border:"2px solid "+st.border,borderTop:"none",borderRadius:"0 0 7px 7px",padding:"14px 16px",color:C.lyricsText,fontSize:18,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
-                  {song.lyrics}
-                </div>
-              )}
+              <SongFold
+                notes={song.specialties}
+                lyrics={song.lyrics}
+                notesOpen={notesOpen}
+                lyricsOpen={lyricsOpen}
+                border={st.border}
+              />
             </div>
           );
         })}
