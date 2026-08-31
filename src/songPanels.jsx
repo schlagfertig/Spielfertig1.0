@@ -6,6 +6,7 @@ function SongFold({ notes, lyrics, notesOpen, lyricsOpen, border, compact }) {
   if (!showN && !showL) return null;
   const pad = compact ? "12px 14px" : "14px 16px";
   const fs = compact ? 14 : 18;
+  const sideBySide = showN && showL;
   return (
     <div
       onClick={e=>e.stopPropagation()}
@@ -21,10 +22,11 @@ function SongFold({ notes, lyrics, notesOpen, lyricsOpen, border, compact }) {
     >
       {showN && (
         <div style={{
-          flex:"1 1 260px",
-          minWidth:0,
+          flex: sideBySide ? "0 1 340px" : "1 1 100%",
+          minWidth: sideBySide ? 220 : 0,
+          maxWidth: sideBySide ? "42%" : "100%",
           padding:pad,
-          borderRight: showL ? "1px solid "+border : "none",
+          borderRight: sideBySide ? "1px solid "+border : "none",
           boxSizing:"border-box",
         }}>
           <div style={{ color:C.teal, fontSize:10, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:8 }}>Notizen</div>
@@ -32,7 +34,7 @@ function SongFold({ notes, lyrics, notesOpen, lyricsOpen, border, compact }) {
         </div>
       )}
       {showL && (
-        <div style={{ flex:"1 1 260px", minWidth:0, padding:pad, boxSizing:"border-box" }}>
+        <div style={{ flex:"1 1 380px", minWidth:0, padding:pad, boxSizing:"border-box" }}>
           <div style={{ color:C.teal, fontSize:10, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:8 }}>Lyrics</div>
           <div style={{ color:C.lyricsText, fontSize:fs, lineHeight:1.7, whiteSpace:"pre-wrap" }}>{lyrics}</div>
         </div>

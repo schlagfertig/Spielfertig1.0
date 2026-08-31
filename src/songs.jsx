@@ -115,7 +115,10 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
           <Field value={form.bpm}    onChange={v=>setForm(f=>({...f,bpm:v}))}    placeholder="BPM *" type="number"/>
           <Sel   value={form.drummer} onChange={v=>setForm(f=>({...f,drummer:v}))} options={band.drummers}/>
         </div>
-        <Field value={form.specialties} onChange={v=>setForm(f=>({...f,specialties:v}))} placeholder="Besonderheiten (optional)" style={{ marginBottom:8 }}/>
+        <div style={{ marginBottom:8 }}>
+          <div style={{ color:C.grayDim, fontSize:10, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:4 }}>Notizen</div>
+          <Field value={form.specialties} onChange={v=>setForm(f=>({...f,specialties:v}))} placeholder={"z.B. Count-In\nBD auf 1\nSchluss: Keys"} rows={3}/>
+        </div>
         <Btn full disabled={!form.title||!form.artist||!form.bpm||saving} onClick={handleAdd}>{saving?<Spinner/>:"Song hinzufügen"}</Btn>
       </div>
       <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
@@ -184,7 +187,10 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
           <Field value={editSong.artist}      onChange={v=>setEdit(s=>({...s,artist:v}))}      placeholder="Artist"/>
           <Field value={editSong.bpm}         onChange={v=>setEdit(s=>({...s,bpm:v}))}         placeholder="BPM" type="number"/>
           <Sel   value={editSong.drummer}     onChange={v=>setEdit(s=>({...s,drummer:v}))}     options={band.drummers}/>
-          <Field value={editSong.specialties||""} onChange={v=>setEdit(s=>({...s,specialties:v}))} placeholder="Besonderheiten"/>
+          <div>
+            <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Notizen</div>
+            <Field value={editSong.specialties||""} onChange={v=>setEdit(s=>({...s,specialties:v}))} placeholder={"z.B. Count-In\nBD auf 1\nSchluss: Keys"} rows={5}/>
+          </div>
           <div>
             <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Lyrics</div>
             <Field value={editSong.lyrics||""} onChange={v=>setEdit(s=>({...s,lyrics:v}))} placeholder="Songtext hier einfügen…" rows={8}/>

@@ -27,6 +27,11 @@ function useWakeLock(active) {
   }, [active]);
 }
 
+function firstNoteLine(text) {
+  if (!text) return "";
+  return String(text).split(/\r?\n/).map(l=>l.trim()).find(Boolean) || "";
+}
+
 function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, theme, toggleTheme, onClose }) {
   const [currentSongId, setCurrentSongId] = useState(null);
   const [gigLyricsId, setGigLyricsId] = useState(null);
@@ -74,6 +79,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           const notesOpen = gigNotesId === song.ps_id;
           const lyricsOpen = gigLyricsId === song.ps_id;
           const foldOpen = (notesOpen && song.specialties) || (lyricsOpen && song.lyrics);
+          const preview = (!notesOpen && song.specialties) ? firstNoteLine(song.specialties) : "";
           return (
             <div key={song.id} style={{ display:"flex", flexDirection:"column" }}>
               <div onClick={()=>pickSong(song)}
@@ -103,6 +109,11 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                   <div style={{color:isCurrent?C.gray:C.textMute,fontSize:11,marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
                     {song.artist}
                   </div>
+                  {preview && (
+                    <div style={{color:isCurrent?C.gray:C.textMute,fontSize:12,fontStyle:"italic",marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                      {preview}
+                    </div>
+                  )}
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0,marginLeft:"auto"}}>
                   {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}

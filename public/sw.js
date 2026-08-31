@@ -1,5 +1,5 @@
 // SPIELFERTIG‽ – Service Worker
-const CACHE = 'spielfertig-v7';
+const CACHE = 'spielfertig-v8';
 const PRECACHE = ['/', '/index.html', '/Logo-dark.png', '/Logo-light.png'];
 
 self.addEventListener('install', e => {

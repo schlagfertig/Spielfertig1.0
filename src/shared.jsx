@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { C, sb, SETS, dStyle, getBandLogo, getLogo } from "./core";
 import { SealIcon, Spinner } from "./ui";
 import { GigMetronome } from "./gig";
+import { SongFold, FoldBtn } from "./songPanels";
 
 function SharedView({ playlistId }) {
   const [data, setData]         = useState(null);
@@ -9,6 +10,7 @@ function SharedView({ playlistId }) {
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(true);
   const [lyricsIdx, setLyricsIdx] = useState(null);
+  const [notesIdx, setNotesIdx]   = useState(null);
 
   useEffect(()=>{
     (async()=>{
@@ -101,27 +103,29 @@ function SharedView({ playlistId }) {
           : songsInSet.map((song,i)=>{
               const st = dStyle(song.drummer);
               const dCol = drummerColor(song.drummer);
+              const notesOpen = notesIdx===i;
+              const lyricsOpen = lyricsIdx===i;
+              const foldOpen = (notesOpen && song.specialties) || (lyricsOpen && song.lyrics);
+              const preview = (!notesOpen && song.specialties)
+                ? String(song.specialties).split(/\r?\n/).map(l=>l.trim()).find(Boolean)
+                : "";
               return (
                 <div key={i} style={{ display:"flex", flexDirection:"column" }}>
-                <div style={{ background:st.bg, border:"1px solid "+st.border, borderRadius: lyricsIdx===i?"7px 7px 0 0":7, padding:"9px 13px", display:"flex", alignItems:"center", gap:10 }}>
+                <div style={{ background:st.bg, border:"1px solid "+st.border, borderRadius: foldOpen?"7px 7px 0 0":7, padding:"9px 13px", display:"flex", alignItems:"center", gap:10 }}>
                   <div style={{ color:C.grayDim, fontSize:13, fontFamily:"'Space Mono',monospace", width:22, textAlign:"right", flexShrink:0 }}>{song.position}</div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ color:C.white, fontWeight:600, fontFamily:"'Raleway',sans-serif", fontSize:21, lineHeight:1.15, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{song.title}</div>
                     <div style={{ color:"#888", fontSize:12, marginTop:1 }}>{song.artist}{song.bpm>0&&<span style={{ color:"#555", fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:8 }}>{song.bpm}</span>}</div>
-                    {song.specialties&&<div style={{ color:"#bbb", fontSize:12, fontStyle:"italic", marginTop:2, whiteSpace:"pre-wrap", lineHeight:1.4 }}>{song.specialties}</div>}
+                    {preview&&<div style={{ color:"#bbb", fontSize:12, fontStyle:"italic", marginTop:2, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{preview}</div>}
                   </div>
                   <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
-                    {song.lyrics&&<button onClick={()=>setLyricsIdx(x=>x===i?null:i)} title="Lyrics"
-                      style={{ background:"transparent", border:"none", color:lyricsIdx===i?C.teal:C.grayDim, cursor:"pointer", fontSize:20, padding:"2px 4px" }}>📓</button>}
+                    {song.specialties&&<FoldBtn on={notesOpen} title="Notizen" icon="📝" onClick={()=>setNotesIdx(x=>x===i?null:i)}/>}
+                    {song.lyrics&&<FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setLyricsIdx(x=>x===i?null:i)}/>}
                     {song.bpm>0&&<GigMetronome bpm={song.bpm} size={50}/>}
                     {song.drummer&&<div style={{ color:dCol, border:"1px solid "+dCol, borderRadius:4, padding:"4px 10px", fontSize:12, fontWeight:700, letterSpacing:"0.08em" }}>{song.drummer}</div>}
                   </div>
                 </div>
-                {lyricsIdx===i&&song.lyrics&&(
-                  <div style={{ background:"#070707", border:"1px solid "+st.border, borderTop:"none", borderRadius:"0 0 7px 7px", margin:"-5px 0 0", padding:"14px 18px", color:"#d8d8d8", fontSize:17, lineHeight:1.7, whiteSpace:"pre-wrap" }}>
-                    {song.lyrics}
-                  </div>
-                )}
+                <SongFold notes={song.specialties} lyrics={song.lyrics} notesOpen={notesOpen} lyricsOpen={lyricsOpen} border={st.border}/>
               </div>
               );
             })}
