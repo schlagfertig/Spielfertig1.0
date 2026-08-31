@@ -10,8 +10,9 @@ const LOGO_DARK  = "/Logo-dark.png";
 const LOGO_LIGHT = "/Logo-light.png";
 function getLogo() { return C.white === "#fff" ? LOGO_DARK : LOGO_LIGHT; }
 
-// Band logos
-const LOGO_HARDYS = "/logo-hardys.svg?v=4";
+// Band logos – Hardy's ist Original-Scan (schwarz auf weiß),
+// CSS filter:invert(1) macht daraus weiß auf schwarz im Dark Mode.
+const LOGO_HARDYS = "/logo-hardys.svg?v=5";
 const LOGO_GESCHWISTERLIED = "/logo-geschwisterlied.svg";
 function getBandLogo(name) {
   if (!name) return null;
