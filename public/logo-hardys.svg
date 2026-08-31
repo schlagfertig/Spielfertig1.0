@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="952" height="304" viewBox="0 0 952 304" role="img" aria-label="Hardy's Band">
-  <ellipse cx="476" cy="152" rx="450" ry="138" fill="#fff" stroke="#111" stroke-width="8"/>
-  <ellipse cx="476" cy="152" rx="434" ry="124" fill="none" stroke="#111" stroke-width="5"/>
+  <ellipse cx="476" cy="152" rx="450" ry="138" fill="none" stroke="#111" stroke-width="10"/>
+  <ellipse cx="476" cy="152" rx="432" ry="122" fill="none" stroke="#111" stroke-width="5"/>
   <polygon fill="#111" points="78,140 80.1,146.4 87,146.4 81.4,150.3 83.5,156.7 78,152.8 72.5,156.7 74.6,150.3 69,146.4 75.9,146.4"/>
   <polygon fill="#111" points="874,140 876.1,146.4 883,146.4 877.4,150.3 879.5,156.7 874,152.8 868.5,156.7 870.6,150.3 865,146.4 871.9,146.4"/>
   <text x="200" y="148" fill="#111" font-family="Impact, Arial Black, sans-serif" font-size="78">HARDY</text>
