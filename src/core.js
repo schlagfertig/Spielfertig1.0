@@ -1,20 +1,17 @@
 import { LOGO_HARDYS_DATA } from "./logoHardys";
 
-// ── Supabase Client (inline, no npm needed via CDN) ────────────────
 const SUPABASE_URL = "https://hstwhmqwxmvlobvygsty.supabase.co";
 const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
   ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzdHdobXF3eG12bG9idnlnc3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDE3NjAsImV4cCI6MjA5NTE3Nzc2MH0" +
   ".DZK81qIrUo3gLldLO344T_wY_Al1MSzg3oCASPkaVqo";
 
-// Logo (public files)
 const LOGO_DARK  = "/Logo-dark.png";
 const LOGO_LIGHT = "/Logo-light.png";
 function getLogo() { return C.white === "#fff" ? LOGO_DARK : LOGO_LIGHT; }
 
-// Band logos: SVG behält das Seitenverhältnis. invert nur im Dark Mode,
-// ohne mix-blend-mode (das hat den schwarzen Kasten erzeugt).
-const LOGO_HARDYS = "/logo-hardys.svg";
+// Hardy als PNG-Data-URI: iPad-Safari rendert SVG+eingebettetes PNG oft als ?-Kasten.
+const LOGO_HARDYS = LOGO_HARDYS_DATA;
 const LOGO_GESCHWISTERLIED = "/logo-geschwisterlied.svg";
 function getBandLogo(name) {
   if (!name) return null;
@@ -39,7 +36,6 @@ function bandLogoImgStyle(extra = {}) {
   };
 }
 
-// Fetch with timeout + 1 Retry bei Abort/Netzwerk.
 const fetchWithTimeout = async (url, options = {}, ms = 20000) => {
   const once = async () => {
     const controller = new AbortController();
