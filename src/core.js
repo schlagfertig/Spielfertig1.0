@@ -10,8 +10,7 @@ const LOGO_DARK  = "/Logo-dark.png";
 const LOGO_LIGHT = "/Logo-light.png";
 function getLogo() { return C.white === "#fff" ? LOGO_DARK : LOGO_LIGHT; }
 
-// Hardy als PNG-Data-URI: iPad-Safari rendert SVG+eingebettetes PNG oft als ?-Kasten.
-const LOGO_HARDYS = LOGO_HARDYS_DATA;
+const LOGO_HARDYS = "/logo-hardys.svg";
 const LOGO_GESCHWISTERLIED = "/logo-geschwisterlied.svg";
 function getBandLogo(name) {
   if (!name) return null;
