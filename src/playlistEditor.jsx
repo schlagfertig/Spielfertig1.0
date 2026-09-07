@@ -4,6 +4,7 @@ import { Btn, Field, SealLine, Spinner } from "./ui";
 import { SongRowMove } from "./songRow";
 import { exportPDF } from "./songPdf";
 import { GigMode } from "./gigMode";
+import { parseSetlistText, matchParsedSongs } from "./playlistImport";
 
 const REGULAR_SETS = SETS.filter(s => s !== "Zugaben");
 
@@ -17,6 +18,9 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const [dragId, setDragId]       = useState(null);
   const [over, setOver]           = useState(null);
   const [ghost, setGhost]         = useState(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importClear, setImportClear] = useState(true);
   const dragRef = useRef(null);
 
   const mySongs  = playlistSongs.filter(ps=>ps.playlist_id===playlist.id);
@@ -50,6 +54,11 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
     const song = allSongs.find(x=>x.id===s.song_id);
     return song?.drummer;
   }).filter(Boolean)).size>1;
+
+  const parsedImport = useMemo(() => parseSetlistText(importText), [importText]);
+  const matchedImport = useMemo(() => matchParsedSongs(parsedImport, bandSongs), [parsedImport, bandSongs]);
+  const importHits = matchedImport.filter(r => r.song);
+  const importMiss = matchedImport.filter(r => !r.song);
 
   const addToSet = async (song, setName) => {
     setSaving(true);
@@ -93,6 +102,34 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
       for (let i=0;i<ids.length;i++) await sb.update("playlist_songs",{set_name:toSet,position:i+1},"id=eq."+ids[i]);
     }
     await onRefresh(); setSaving(false);
+  };
+
+  const runImport = async () => {
+    if (!importHits.length || saving) return;
+    setSaving(true);
+    if (importClear) {
+      for (const ps of mySongs) {
+        await sb.delete("playlist_songs", "id=eq."+ps.id);
+      }
+    }
+    const counts = {};
+    SETS.forEach(s => { counts[s] = importClear ? 0 : mySongs.filter(ps=>ps.set_name===s).length; });
+    const already = new Set(importClear ? [] : mySongs.map(ps=>ps.song_id));
+    for (const row of importHits) {
+      if (already.has(row.song.id)) continue;
+      counts[row.set] = (counts[row.set] || 0) + 1;
+      await sb.insert("playlist_songs", {
+        playlist_id: playlist.id,
+        song_id: row.song.id,
+        set_name: row.set,
+        position: counts[row.set],
+      });
+      already.add(row.song.id);
+    }
+    await onRefresh();
+    setSaving(false);
+    setImportOpen(false);
+    show(importHits.length + " Songs importiert");
   };
 
   const draggedSong = dragId ? mySongs.map(hydrate).find(s=>s.ps_id===dragId) : null;
@@ -175,6 +212,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           <div style={{ color:C.grayDim, fontSize:11 }}>{mySongs.length} Songs gesamt · zum Planen ziehen</div>
         </div>
         <div style={{display:"flex",gap:3,alignItems:"center"}}>
+          {canEdit && <Btn variant="outline" size="sm" onClick={()=>setImportOpen(true)}>📥 Import</Btn>}
           <Btn variant="outline" size="sm" onClick={()=>exportPDF(playlist,allSongs,playlistSongs,bandName,printNotes)}>🖨 PDF</Btn>
           <button onClick={()=>setPrintNotes(!printNotes)} title={printNotes?"Notizen werden gedruckt":"Notizen nicht drucken"} style={{background:printNotes?C.tealDim:"transparent",border:"1px solid "+(printNotes?C.tealBorder:"#333"),color:printNotes?C.teal:C.grayDim,borderRadius:4,padding:"5px 8px",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:700,transition:"all .15s"}}>📝</button>
         </div>
@@ -286,6 +324,53 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           background:"#111", border:"1px solid "+C.teal, borderRadius:6, padding:"6px 10px",
           color:C.white, fontSize:13, fontWeight:600, boxShadow:"0 8px 24px rgba(0,0,0,.6)"
         }}>{draggedSong.title}</div>
+      )}
+
+      {importOpen && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
+          <div style={{ background:C.bgCard, border:"1px solid "+C.grayDim, borderRadius:8, padding:22, maxWidth:640, width:"100%", maxHeight:"90vh", overflowY:"auto" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+              <span style={{ color:C.teal, fontWeight:700, fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase" }}>Setlist importieren</span>
+              <Btn variant="ghost" size="sm" onClick={()=>setImportOpen(false)}>✕</Btn>
+            </div>
+            <div style={{ color:C.grayDim, fontSize:12, marginBottom:10 }}>
+              Text aus PDF/Notizen einfügen. Überschriften wie SET 1, SET 2, SET 3, ZUGABEN werden erkannt. Songs werden mit der Band-Datenbank abgeglichen.
+            </div>
+            <Field
+              rows={10}
+              value={importText}
+              onChange={setImportText}
+              placeholder={"SET 1\n1. Gimme Some Lovin’ – Blues Brothers\n2. I Love Rock’n’Roll – Joan Jett\n\nSET 2\n…\n\nZUGABEN\n1. Highway To Hell – AC/DC"}
+            />
+            <label style={{ display:"flex", alignItems:"center", gap:8, margin:"10px 0", color:C.gray, fontSize:12 }}>
+              <input type="checkbox" checked={importClear} onChange={e=>setImportClear(e.target.checked)} />
+              Bestehende Songs in dieser Playlist vorher leeren
+            </label>
+            {matchedImport.length>0 && (
+              <div style={{ marginBottom:12 }}>
+                <div style={{ color:C.teal, fontSize:11, fontWeight:700, marginBottom:6 }}>
+                  {importHits.length} erkannt · {importMiss.length} ohne Treffer
+                </div>
+                <div style={{ maxHeight:220, overflowY:"auto", display:"flex", flexDirection:"column", gap:3 }}>
+                  {matchedImport.map((row, i)=>(
+                    <div key={i} style={{ display:"flex", justifyContent:"space-between", gap:8, fontSize:12, padding:"4px 6px", background:"#080808", borderRadius:3 }}>
+                      <span style={{ color:C.grayDim, minWidth:64 }}>{row.set}</span>
+                      <span style={{ flex:1, color: row.song ? C.white : C.red }}>
+                        {row.title}{row.artist ? " – "+row.artist : ""}
+                      </span>
+                      <span style={{ color: row.song ? C.teal : C.red }}>
+                        {row.song ? "→ "+row.song.title : "nicht gefunden"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <Btn full disabled={!importHits.length||saving} onClick={runImport}>
+              {saving ? "Importiere…" : (importHits.length + " Songs übernehmen")}
+            </Btn>
+          </div>
+        </div>
       )}
     </div>
   );
