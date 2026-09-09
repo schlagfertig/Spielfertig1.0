@@ -11,6 +11,8 @@ const REGULAR_SETS = SETS.filter(s => s !== "Zugaben");
 function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, bandId, canEdit, show, theme, toggleTheme }) {
   const [activeSet, setActiveSet] = useState("Set 1");
   const [search, setSearch]       = useState("");
+  const [poolSearch, setPoolSearch] = useState("");
+  const [poolOpen, setPoolOpen]   = useState(true);
   const [addSet, setAddSet]       = useState(null);
   const [saving, setSaving]       = useState(false);
   const [gigMode, setGigMode]     = useState(false);
@@ -49,7 +51,11 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
     : (songsBySet[gigActive] || []);
 
   const usedIds = new Set(mySongs.map(ps=>ps.song_id));
-  const available = bandSongs.filter(s=>!usedIds.has(s.id));
+  const pq = poolSearch.toLowerCase();
+  const available = bandSongs
+    .filter(s=>!usedIds.has(s.id))
+    .filter(s=>!pq || s.title?.toLowerCase().includes(pq) || (s.artist?.toLowerCase()??"").includes(pq))
+    .sort((a,b)=>a.title.localeCompare(b.title));
   const showDrummer = new Set(mySongs.map(s=>{
     const song = allSongs.find(x=>x.id===s.song_id);
     return song?.drummer;
@@ -60,10 +66,16 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const importHits = matchedImport.filter(r => r.song);
   const importMiss = matchedImport.filter(r => !r.song);
 
-  const addToSet = async (song, setName) => {
+  const addToSet = async (song, setName, toPos) => {
+    if (!song || saving) return;
     setSaving(true);
-    const pos = mySongs.filter(ps=>ps.set_name===setName&&ps.playlist_id===playlist.id).length+1;
+    const items = mySongs.filter(ps=>ps.set_name===setName&&ps.playlist_id===playlist.id).sort((a,b)=>a.position-b.position);
+    const pos = Math.max(1, Math.min(toPos || items.length+1, items.length+1));
     await sb.insert("playlist_songs", { playlist_id:playlist.id, song_id:song.id, set_name:setName, position:pos });
+    for (let i=0;i<items.length;i++) {
+      const newPos = i+1 >= pos ? i+2 : i+1;
+      if (items[i].position !== newPos) await sb.update("playlist_songs",{position:newPos},"id=eq."+items[i].id);
+    }
     await onRefresh(); setSaving(false);
   };
 
@@ -132,15 +144,16 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
     show(importHits.length + " Songs importiert");
   };
 
-  const draggedSong = dragId ? mySongs.map(hydrate).find(s=>s.ps_id===dragId) : null;
+  const dragged = dragRef.current;
+  const draggedTitle = dragged?.song?.title || "";
 
-  const beginDrag = (song, e) => {
+  const beginDrag = (payload, e) => {
     if (!canEdit || saving) return;
-    setDragId(song.ps_id);
-    dragRef.current = song;
+    dragRef.current = payload;
+    setDragId(payload.kind === "pool" ? "pool-"+payload.song.id : payload.song.ps_id);
     if (e?.dataTransfer) {
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", String(song.ps_id));
+      e.dataTransfer.effectAllowed = "copyMove";
+      e.dataTransfer.setData("text/plain", payload.kind === "pool" ? "pool-"+payload.song.id : String(payload.song.ps_id));
     }
   };
 
@@ -152,9 +165,11 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   };
 
   const dropAt = (setName, pos) => {
-    const song = dragRef.current || draggedSong;
+    const payload = dragRef.current;
     endDrag();
-    if (song) moveSong(song, setName, pos);
+    if (!payload) return;
+    if (payload.kind === "pool") addToSet(payload.song, setName, pos);
+    else moveSong(payload.song, setName, pos);
   };
 
   useEffect(() => {
@@ -209,7 +224,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         <Btn variant="ghost" size="sm" onClick={onBack}>← Zurück</Btn>
         <div style={{ flex:1 }}>
           <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>{playlist.name}</div>
-          <div style={{ color:C.grayDim, fontSize:11 }}>{mySongs.length} Songs gesamt · zum Planen ziehen</div>
+          <div style={{ color:C.grayDim, fontSize:11 }}>{mySongs.length} Songs gesamt · Pool in Sets ziehen</div>
         </div>
         <div style={{display:"flex",gap:3,alignItems:"center"}}>
           {canEdit && <Btn variant="outline" size="sm" onClick={()=>setImportOpen(true)}>📥 Import</Btn>}
@@ -241,6 +256,50 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
       </div>
       <Field value={search} onChange={setSearch} placeholder="In der Playlist suchen…"/>
 
+      {canEdit && (
+        <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:12 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginBottom: poolOpen?8:0 }}>
+            <div style={{ color:C.teal, fontSize:12, fontWeight:800, letterSpacing:"0.1em", textTransform:"uppercase" }}>
+              Songpool <span style={{ color:C.grayDim, fontWeight:600, letterSpacing:0 }}>({available.length} frei)</span>
+            </div>
+            <div style={{ display:"flex", gap:6 }}>
+              <Btn variant="outline" size="sm" onClick={()=>setPoolOpen(o=>!o)}>{poolOpen?"Einklappen":"Aufklappen"}</Btn>
+            </div>
+          </div>
+          {poolOpen && (
+            <>
+              <Field value={poolSearch} onChange={setPoolSearch} placeholder="Pool durchsuchen…"/>
+              <div style={{ color:C.grayDim, fontSize:11, margin:"6px 0 8px" }}>
+                Ziehen und auf ein Set legen — oder + für {activeSet}
+              </div>
+              {available.length===0
+                ? <div style={{ color:C.grayDim, fontSize:12, padding:"8px 0" }}>Keine freien Songs{pq?" für diese Suche":" — alle sind schon in der Playlist"}.</div>
+                : <div style={{ display:"flex", flexDirection:"column", gap:4, maxHeight:220, overflowY:"auto" }}>
+                    {available.map(song=>(
+                      <div key={song.id}
+                        onPointerDown={(e)=>{ e.preventDefault(); beginDrag({ kind:"pool", song }, e); setGhost({ x:e.clientX, y:e.clientY }); }}
+                        style={{
+                          display:"flex", justifyContent:"space-between", alignItems:"center",
+                          padding:"7px 8px", background:"#0d0d0d", borderRadius:4,
+                          border:"1px solid "+(dragId==="pool-"+song.id?C.teal:"#1a1a1a"),
+                          opacity: dragId==="pool-"+song.id ? .45 : 1,
+                          cursor:"grab", touchAction:"none", userSelect:"none"
+                        }}>
+                        <div style={{ minWidth:0 }}>
+                          <span style={{ color:C.white, fontSize:13 }}>{song.title}</span>
+                          <span style={{ color:C.grayDim, fontSize:12 }}> · {song.artist}</span>
+                        </div>
+                        <div onPointerDown={e=>e.stopPropagation()}>
+                          <Btn size="sm" onClick={(e)=>{ e.stopPropagation(); addToSet(song, activeSet); }}>＋ {activeSet.replace("Set ","S")}</Btn>
+                        </div>
+                      </div>
+                    ))}
+                  </div>}
+            </>
+          )}
+        </div>
+      )}
+
       {SETS.map((set, si) => {
         const list = songsBySet[set] || [];
         const isOverSet = over && over.set === set;
@@ -261,13 +320,13 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
               <div style={{ color:C.teal, fontSize:13, fontWeight:800, letterSpacing:"0.12em", textTransform:"uppercase" }}>
                 {set} <span style={{ color:C.grayDim, fontWeight:600, letterSpacing:0, fontSize:11 }}>· {list.length} Songs</span>
               </div>
-              {canEdit&&<Btn variant="outline" size="sm" onClick={()=>setAddSet(addSet===set?null:set)}>{addSet===set?"✕ Schließen":"+ Hinzufügen"}</Btn>}
+              {canEdit&&<Btn variant="outline" size="sm" onClick={()=>setAddSet(addSet===set?null:set)}>{addSet===set?"✕ Schließen":"+ Liste"}</Btn>}
             </div>
 
             {addSet===set&&(
               <div style={{ marginBottom:12, background:"#080808", border:"1px solid #1a1a1a", borderRadius:4, padding:10 }}>
                 {available.length===0
-                  ? <div style={{ color:C.grayDim, fontSize:12 }}>Alle Songs der Band sind schon in dieser Playlist.</div>
+                  ? <div style={{ color:C.grayDim, fontSize:12 }}>Keine freien Songs.</div>
                   : <div style={{ display:"flex", flexDirection:"column", gap:4, maxHeight:180, overflowY:"auto" }}>
                       {available.map(song=>(
                         <div key={song.id} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"5px 8px", background:"#0d0d0d", borderRadius:3 }}>
@@ -285,7 +344,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                 onDragOver={e=>{ e.preventDefault(); setOver({ set, pos: 1 }); }}
                 onDrop={e=>{ e.preventDefault(); dropAt(set, 1); }}
                 style={{ textAlign:"center", color:isOverSet?C.teal:C.grayDim, padding:22, fontSize:13, border:"1px dashed "+(isOverSet?C.teal:"#222"), borderRadius:4 }}
-              >{dragId ? "Hier ablegen" : "Leeres Set — Song herziehen oder hinzufügen"}</div>
+              >{dragId ? "Hier ablegen" : "Leeres Set — aus dem Pool herziehen"}</div>
             ) : (
               <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
                 {list.map((song) => {
@@ -300,10 +359,10 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                         draggable={canEdit}
                         isDragging={dragId===song.ps_id}
                         dropActive={isOverHere}
-                        onDragStart={(e)=>beginDrag(song, e)}
+                        onDragStart={(e)=>beginDrag({ kind:"set", song }, e)}
                         onDragOver={(e)=>{ e.preventDefault(); setOver({ set, pos: dropPos }); }}
                         onDrop={(e)=>{ e.preventDefault(); e.stopPropagation(); dropAt(set, dropPos); }}
-                        onGripPointerDown={(e)=>{ e.stopPropagation(); e.currentTarget.setPointerCapture?.(e.pointerId); beginDrag(song, e); setGhost({ x:e.clientX, y:e.clientY }); }}
+                        onGripPointerDown={(e)=>{ e.stopPropagation(); e.currentTarget.setPointerCapture?.(e.pointerId); beginDrag({ kind:"set", song }, e); setGhost({ x:e.clientX, y:e.clientY }); }}
                       />
                     </div>
                   );
@@ -318,12 +377,12 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         );
       })}
 
-      {ghost && draggedSong && (
+      {ghost && draggedTitle && (
         <div style={{
           position:"fixed", left: ghost.x+12, top: ghost.y+12, pointerEvents:"none", zIndex:400,
           background:"#111", border:"1px solid "+C.teal, borderRadius:6, padding:"6px 10px",
           color:C.white, fontSize:13, fontWeight:600, boxShadow:"0 8px 24px rgba(0,0,0,.6)"
-        }}>{draggedSong.title}</div>
+        }}>{draggedTitle}</div>
       )}
 
       {importOpen && (
