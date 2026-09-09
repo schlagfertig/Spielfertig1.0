@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { C, SETS, dStyle } from "./core";
 import { GigMetronome } from "./gig";
 import { SongFold, FoldBtn } from "./songPanels";
+import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
 
 const REGULAR_SETS = SETS.filter(s => s !== "Zugaben");
 
@@ -38,6 +39,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
   const [currentSongId, setCurrentSongId] = useState(null);
   const [gigLyricsId, setGigLyricsId] = useState(null);
   const [gigNotesId, setGigNotesId] = useState(null);
+  const [prefs, togglePref] = useViewPrefs();
   useWakeLock(true);
 
   const drummerColor = (d) => d==="Ron" ? C.red : d==="Tom" ? C.teal : C.gray;
@@ -54,7 +56,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
       return;
     }
     setCurrentSongId(song.ps_id);
-    if (song.specialties) setGigNotesId(song.ps_id);
+    if (prefs.notes && song.specialties) setGigNotesId(song.ps_id);
   };
 
   const switchSet = (set) => {
@@ -66,7 +68,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
 
   return (
     <div style={{position:"fixed",inset:0,background:C.bg,zIndex:200,display:"flex",flexDirection:"column",overflow:"hidden"}}>
-      <div style={{background:C.bgCard,borderBottom:"1px solid "+C.grayDim,padding:"12px 20px",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+      <div style={{background:C.bgCard,borderBottom:"1px solid "+C.grayDim,padding:"12px 20px",display:"flex",alignItems:"center",gap:12,flexShrink:0,flexWrap:"wrap"}}>
         <button onClick={onClose} title="Gig-Mode schließen" style={{background:"transparent",border:"1px solid "+C.tealBorder,borderRadius:8,color:C.teal,cursor:"pointer",fontSize:26,lineHeight:1,padding:"6px 14px",flexShrink:0}}>✕</button>
         <button onClick={toggleTheme} title="Hell/Dunkel" style={{background:"transparent",border:"1px solid "+C.tealBorder,borderRadius:"50%",color:C.teal,cursor:"pointer",fontSize:18,width:40,height:40,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>{theme==="dark"?"☀️":"🌙"}</button>
         <div style={{flex:1,color:C.white,fontWeight:400,fontSize:24,fontFamily:"'Bebas Neue',cursive",letterSpacing:"0.05em"}}>{playlist.name}</div>
@@ -86,6 +88,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
             );
           })}
         </div>
+        <ViewPrefBar prefs={prefs} toggle={togglePref} />
       </div>
       <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:5}}>
         {songsInSet.map((song,i)=>{
@@ -98,10 +101,10 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           const isNext = currentSongId && !isCurrent && i === currentIdx + 1;
           const opacity = !currentSongId ? 1 : isCurrent ? 1 : isNext ? 0.75 : 0.35;
           const dCol = drummerColor(song.drummer);
-          const notesOpen = gigNotesId === song.ps_id;
-          const lyricsOpen = gigLyricsId === song.ps_id;
+          const notesOpen = prefs.notes && gigNotesId === song.ps_id;
+          const lyricsOpen = prefs.lyrics && gigLyricsId === song.ps_id;
           const foldOpen = (notesOpen && song.specialties) || (lyricsOpen && song.lyrics);
-          const preview = (!notesOpen && song.specialties) ? firstNoteLine(song.specialties) : "";
+          const preview = (prefs.notes && !notesOpen && song.specialties) ? firstNoteLine(song.specialties) : "";
           const encoreIdx = isEncore ? songsInSet.filter((s,j)=>j<=i && (s.set_name==="Zugaben"||s.isEncore)).length : 0;
           const setNum = songsInSet.slice(0,i+1).filter(s=>s.set_name!=="Zugaben"&&!s.isEncore).length;
           return (
@@ -134,7 +137,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                       ? <div style={{color:C.textMute,fontSize:10,letterSpacing:".04em"}}>NEXT</div>
                       : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{isEncore ? encoreIdx : setNum}</div>}
                 </div>
-                {song.specialties && (
+                {prefs.notes && song.specialties && (
                   <FoldBtn on={notesOpen} title="Notizen" icon="📝" onClick={()=>setGigNotesId(id=>id===song.ps_id?null:song.ps_id)}/>
                 )}
                 <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
@@ -155,8 +158,8 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                   )}
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0,marginLeft:"auto"}}>
-                  {song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
-                  {song.lyrics&&<FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setGigLyricsId(id=>id===song.ps_id?null:song.ps_id)}/>}
+                  {prefs.click && song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
+                  {prefs.lyrics && song.lyrics&&<FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setGigLyricsId(id=>id===song.ps_id?null:song.ps_id)}/>}
                   {song.drummer&&<div style={{
                     color:dCol, border:"1px solid "+dCol, borderRadius:4,
                     padding:"5px 12px", fontSize:13, fontWeight:700,
@@ -165,8 +168,8 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                 </div>
               </div>
               <SongFold
-                notes={song.specialties}
-                lyrics={song.lyrics}
+                notes={prefs.notes ? song.specialties : ""}
+                lyrics={prefs.lyrics ? song.lyrics : ""}
                 notesOpen={notesOpen}
                 lyricsOpen={lyricsOpen}
                 border={st.border}
