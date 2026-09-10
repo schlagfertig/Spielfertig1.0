@@ -9,7 +9,7 @@ function pickErr(res) {
   if (raw === "Invalid login credentials") return "E-Mail oder Passwort stimmt nicht.";
   if (raw === "Email not confirmed") return "Bitte zuerst die Bestätigungs-E-Mail öffnen.";
   if (String(raw).toLowerCase().includes("invalid api key")) {
-    return "Supabase-API-Key wird abgelehnt. In Supabase unter Project Settings → API den aktuellen anon/public Key kopieren.";
+    return "Supabase-API-Key wird abgelehnt.";
   }
   return String(raw).substring(0, 220);
 }
@@ -29,13 +29,15 @@ function AuthScreen({ onAuth }) {
         ? await sb.auth.signIn(email.trim(), password)
         : await sb.auth.signUp(email.trim(), password);
       const pretty = pickErr(res);
-      if (pretty) {
+      const token = res && (res.access_token || (res.session && res.session.access_token));
+      const u = (res && (res.user || (res.session && res.session.user))) || {};
+      if (pretty && !token) {
         setError(pretty);
-      } else if (res && res.access_token) {
-        sb._token = res.access_token;
-        localStorage.setItem("sf_token", res.access_token);
-        localStorage.setItem("sf_user", JSON.stringify({ email: res.user?.email, id: res.user?.id }));
-        onAuth({ email: res.user?.email, id: res.user?.id });
+      } else if (token) {
+        sb._token = token;
+        localStorage.setItem("sf_token", token);
+        localStorage.setItem("sf_user", JSON.stringify({ email: u.email || email.trim(), id: u.id }));
+        onAuth({ email: u.email || email.trim(), id: u.id });
       } else if (mode === "register") {
         setError("Bestätigungs-E-Mail gesendet! Bitte bestätigen, dann einloggen.");
       } else {
