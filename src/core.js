@@ -27,17 +27,20 @@ function getBandLogo(name) {
 }
 function bandLogoImgStyle(extra = {}) {
   const dark = C.white === "#fff";
+  const height = extra.height;
   return {
-    height: extra.height || 90,
-    width: "auto",
-    maxWidth: extra.maxWidth || "80%",
-    maxHeight: extra.maxHeight || extra.height || 90,
+    height: height ? height : "auto",
+    width: extra.width || "90%",
+    maxWidth: extra.maxWidth || "90%",
+    maxHeight: extra.maxHeight || height || 84,
     objectFit: "contain",
     objectPosition: "center",
     display: "block",
     filter: dark ? "invert(1)" : "none",
-    opacity: extra.opacity ?? 0.92,
+    opacity: extra.opacity ?? 0.95,
     ...extra,
+    height: extra.height || "auto",
+    maxHeight: extra.maxHeight || extra.height || 84,
   };
 }
 
