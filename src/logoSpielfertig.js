@@ -1,1 +1,1 @@
-export const LOGO_SPIELFERTIG = "/Logo-full.svg";
+export const LOGO_SPIELFERTIG = "/Logo-full.png";
