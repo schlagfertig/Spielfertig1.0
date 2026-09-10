@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { C, sb, getLogo } from "./core";
-import { LOGO_SPIELFERTIG } from "./logoSpielfertig";
-import { SealLine, Btn, Field } from "./ui";
+import { SealLine, Btn, Field, BrandWordmark } from "./ui";
 
 function pickErr(res) {
   if (!res || typeof res !== "object") return "";
@@ -54,20 +53,26 @@ function AuthScreen({ onAuth }) {
 
   return (
     <div style={{ minHeight:"100vh", background:"#000", display:"flex", flexDirection:"column", position:"relative", overflow:"hidden" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&display=swap');`}</style>
       <img src={getLogo()} alt="" aria-hidden="true"
         style={{
-          position:"absolute", left:"50%", top:"42%",
-          width:"min(160vw,920px)", height:"auto",
+          position:"absolute", left:"50%", top:"38%",
+          width:"min(140vw,820px)", height:"auto",
           transform:"translate(-50%,-50%)",
-          opacity:0.07, pointerEvents:"none", userSelect:"none",
-          filter:"saturate(0.7)"
+          opacity:0.05, pointerEvents:"none", userSelect:"none"
         }}/>
 
       <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"28px 20px 20px", position:"relative", zIndex:1 }}>
         <div style={{ width:"100%", maxWidth:400 }}>
-          <div style={{ textAlign:"center", marginBottom:18 }}>
-            <img src={LOGO_SPIELFERTIG} alt="Spiel Fertig"
-              style={{ width:"min(86vw,340px)", height:"auto", objectFit:"contain", display:"block", margin:"0 auto" }}/>
+          <div style={{ textAlign:"center", marginBottom:22 }}>
+            <div style={{ display:"flex", justifyContent:"center", marginBottom:10 }}>
+              <BrandWordmark size={42}/>
+            </div>
+            <img src={getLogo()} alt="Schlagfertig"
+              style={{ width:168, height:"auto", objectFit:"contain", display:"block", margin:"0 auto 10px" }}/>
+            <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.22em", textTransform:"uppercase" }}>
+              Zeit für guten Sound
+            </div>
           </div>
 
           <div style={{ background:"rgba(13,13,13,0.88)", border:"1px solid #1c1c1c", borderRadius:14, padding:"22px 20px 20px", backdropFilter:"blur(8px)" }}>
