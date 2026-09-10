@@ -2,7 +2,7 @@ import { LOGO_HARDYS_DATA } from "./logoHardys";
 
 const SUPABASE_URL = "https://hstwhmqwxmvlobvygsty.supabase.co";
 const SUPABASE_KEY =
-  "eyJhbGciOiJIUz1NiIsInR5cCI6IkpXVCJ9" +
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
   ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzdHdobXF3eG12bG9idnlnc3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDE3NjAsImV4cCI6MjA5NTE3Nzc2MH0" +
   ".DZK81qIrUo3gLldLO344T_wY_Al1MSzg3oCASPkaVqo";
 
@@ -65,13 +65,21 @@ async function parseJsonSafe(res) {
   catch (_) { return { error: "parse_error", msg: text.substring(0, 180) }; }
 }
 
+function authHeaders() {
+  return {
+    "Content-Type": "application/json",
+    apikey: SUPABASE_KEY,
+    Authorization: "Bearer " + SUPABASE_KEY,
+  };
+}
+
 const sb = {
   headers: () => {
     const t = sb._token || SUPABASE_KEY;
     return {
       "Content-Type": "application/json",
-      "apikey": SUPABASE_KEY,
-      "Authorization": "Bearer " + t
+      apikey: SUPABASE_KEY,
+      Authorization: "Bearer " + t
     };
   },
   _token: null,
@@ -80,13 +88,13 @@ const sb = {
     if (options.select)  url += "select=" + encodeURIComponent(options.select) + "&";
     if (options.filter)  url += options.filter + "&";
     if (options.order)   url += "order=" + options.order + "&";
-    const res = await fetchWithTimeout(url, { headers: { ...sb.headers(), "Prefer": "return=representation" } }, 20000);
+    const res = await fetchWithTimeout(url, { headers: { ...sb.headers(), Prefer: "return=representation" } }, 20000);
     return parseJsonSafe(res);
   },
   async insert(table, data) {
     const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table, {
       method: "POST",
-      headers: { ...sb.headers(), "Prefer": "return=representation" },
+      headers: { ...sb.headers(), Prefer: "return=representation" },
       body: JSON.stringify(data),
     }, 20000);
     const json = await parseJsonSafe(res);
@@ -95,7 +103,7 @@ const sb = {
   async update(table, data, filter) {
     const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
       method: "PATCH",
-      headers: { ...sb.headers(), "Prefer": "return=representation" },
+      headers: { ...sb.headers(), Prefer: "return=representation" },
       body: JSON.stringify(data),
     }, 20000);
     return parseJsonSafe(res);
@@ -110,7 +118,7 @@ const sb = {
     async signUp(email, password) {
       const res = await fetchWithTimeout(SUPABASE_URL + "/auth/v1/signup", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY },
+        headers: authHeaders(),
         body: JSON.stringify({ email, password }),
       }, 25000);
       return parseJsonSafe(res);
@@ -118,7 +126,7 @@ const sb = {
     async signIn(email, password) {
       const res = await fetchWithTimeout(SUPABASE_URL + "/auth/v1/token?grant_type=password", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY },
+        headers: authHeaders(),
         body: JSON.stringify({ email, password }),
       }, 25000);
       return parseJsonSafe(res);
