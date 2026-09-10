@@ -16,7 +16,7 @@ function getLogo(kind) {
   return LOGO_DARK;
 }
 
-const LOGO_HARDYS = LOGO_HARDYS_DATA;
+const LOGO_HARDYS = LOGO_HARDYS_DATA || "/logo-hardys.png";
 const LOGO_GESCHWISTERLIED = "/logo-geschwisterlied.svg";
 function getBandLogo(name) {
   if (!name) return null;
@@ -27,20 +27,22 @@ function getBandLogo(name) {
 }
 function bandLogoImgStyle(extra = {}) {
   const dark = C.white === "#fff";
-  const height = extra.height;
   return {
-    height: height ? height : "auto",
-    width: extra.width || "90%",
-    maxWidth: extra.maxWidth || "90%",
-    maxHeight: extra.maxHeight || height || 84,
+    width: extra.width || "auto",
+    height: extra.height || "auto",
+    maxWidth: extra.maxWidth || "88%",
+    maxHeight: extra.maxHeight || 72,
     objectFit: "contain",
     objectPosition: "center",
     display: "block",
+    background: "transparent",
     filter: dark ? "invert(1)" : "none",
-    opacity: extra.opacity ?? 0.95,
+    opacity: extra.opacity ?? 1,
     ...extra,
+    width: extra.width || "auto",
     height: extra.height || "auto",
-    maxHeight: extra.maxHeight || extra.height || 84,
+    maxWidth: extra.maxWidth || "88%",
+    maxHeight: extra.maxHeight || 72,
   };
 }
 
