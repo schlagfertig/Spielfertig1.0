@@ -8,10 +8,10 @@ const SUPABASE_KEY =
 
 const LOGO_DARK  = "/Logo-dark.png";
 const LOGO_LIGHT = "/Logo-light.png";
-const LOGO_FULL  = "/Logo-full.png";
+const LOGO_FULL  = "/Logo-dark.png";
 function getLogo(kind) {
-  if (kind === "print") return LOGO_FULL;
-  return LOGO_FULL;
+  if (kind === "light") return LOGO_LIGHT;
+  return LOGO_DARK;
 }
 
 const LOGO_HARDYS = "/logo-hardys.svg";
@@ -75,7 +75,6 @@ const sb = {
     };
   },
   _token: null,
-
   async query(table, options = {}) {
     let url = SUPABASE_URL + "/rest/v1/" + table + "?";
     if (options.select)  url += "select=" + encodeURIComponent(options.select) + "&";
@@ -84,7 +83,6 @@ const sb = {
     const res = await fetchWithTimeout(url, { headers: { ...sb.headers(), "Prefer": "return=representation" } }, 20000);
     return parseJsonSafe(res);
   },
-
   async insert(table, data) {
     const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table, {
       method: "POST",
@@ -94,7 +92,6 @@ const sb = {
     const json = await parseJsonSafe(res);
     return Array.isArray(json) ? json[0] : json;
   },
-
   async update(table, data, filter) {
     const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
       method: "PATCH",
@@ -103,14 +100,12 @@ const sb = {
     }, 20000);
     return parseJsonSafe(res);
   },
-
   async delete(table, filter) {
     await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
       method: "DELETE",
       headers: sb.headers(),
     }, 20000);
   },
-
   auth: {
     async signUp(email, password) {
       const res = await fetchWithTimeout(SUPABASE_URL + "/auth/v1/signup", {
@@ -172,11 +167,7 @@ const THEMES = {
 };
 
 const C = { ...THEMES.dark };
-
-function applyTheme(t) {
-  Object.assign(C, THEMES[t]);
-}
-
+function applyTheme(t) { Object.assign(C, THEMES[t]); }
 const SETS = ["Set 1", "Set 2", "Set 3", "Zugaben"];
 const DRUMMER_COLORS = {
   Tom: { bg: C.tealDim, border: C.tealBorder, badge: C.teal },
@@ -198,7 +189,6 @@ const dStyle = d => {
 
 export {
   SUPABASE_URL, SUPABASE_KEY, LOGO_DARK, LOGO_LIGHT, LOGO_FULL, getLogo, getBandLogo, bandLogoImgStyle,
-  LOGO_HARDYS_DATA,
-  fetchWithTimeout, sb, THEMES, C, applyTheme, SETS, DRUMMER_COLORS,
+  LOGO_HARDYS_DATA, fetchWithTimeout, sb, THEMES, C, applyTheme, SETS, DRUMMER_COLORS,
   EXTRA_DRUMMER_PALETTE, dStyle
 };
