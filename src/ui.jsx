@@ -12,19 +12,20 @@ const SealLine = ({ color = C.teal }) => (
 function Bang({ size=28, color }) {
   const fill = color || C.teal;
   return (
-    <svg width={Math.round(size*0.52)} height={size} viewBox="0 0 22 42" aria-hidden="true"
-      style={{ display:"inline-block", verticalAlign:"-0.18em", marginLeft:2 }}>
-      <path fill={fill} d="M11 1.6c-5.1 0-8.8 3.2-8.8 7.8 0 2.5 1.2 4.1 3.5 5.8 1.8 1.3 2.7 2.2 3 3.6L9.4 24h3.2l.5-4.8c.4-2 1.7-3.2 3.9-4.8 2.5-1.8 4-3.9 4-6.9 0-4.2-4-5.9-10-5.9z"/>
-      <path d="M13.4 3.2 L8.2 24.2" stroke={fill} strokeWidth="2.3" strokeLinecap="round"/>
-      <circle cx="11" cy="37.2" r="3.4" fill={fill}/>
+    <svg width={Math.round(size*0.42)} height={size} viewBox="0 0 18 40" aria-hidden="true"
+      style={{ display:"inline-block", verticalAlign:"-0.08em", marginLeft:1 }}>
+      <path d="M4.2 9.2C4.2 4.6 7.6 2.2 11.4 2.2c3.6 0 6.2 2.2 6.2 5.6 0 2.6-1.4 4.2-4.2 6.2L12.2 16.2"
+        fill="none" stroke={fill} strokeWidth="3.1" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8.6 2.8 L8.6 24.2" fill="none" stroke={fill} strokeWidth="3.1" strokeLinecap="round"/>
+      <circle cx="9.4" cy="35.4" r="3.05" fill={fill}/>
     </svg>
   );
 }
 
 function BrandWordmark({ size=34 }) {
   return (
-    <div style={{ color:C.white, fontWeight:400, fontSize:size, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em", lineHeight:1, display:"inline-flex", alignItems:"flex-end" }}>
-      SPIELFERTIG<Bang size={Math.round(size*0.92)}/>
+    <div style={{ color:C.white, fontWeight:400, fontSize:size, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em", lineHeight:1, display:"inline-flex", alignItems:"baseline" }}>
+      SPIELFERTIG<Bang size={Math.round(size*0.88)}/>
     </div>
   );
 }
