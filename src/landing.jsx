@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { C, sb, getBandLogo, bandLogoImgStyle, getLogo } from "./core";
 import { Btn, Field, Badge, Modal, SealLine, Spinner } from "./ui";
+import { LegalLinks } from "./legal";
 
 const BAND_COLORS = [
   { name:"Teal",   val:"#5cc8b8" },
@@ -232,8 +233,9 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           </div>
         )}
       </main>
-      <footer style={{ padding:"12px 24px", textAlign:"center" }}>
-        <div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em" }}>THOMAS SCHUSTER · <span style={{ color:C.teal }}>SCHLAGFERTIG‽</span></div>
+      <footer style={{ padding:"12px 24px 20px", textAlign:"center" }}>
+        <div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em", marginBottom:8 }}>THOMAS SCHUSTER · <span style={{ color:C.teal }}>SCHLAGFERTIG‽</span></div>
+        <LegalLinks dim/>
       </footer>
       {showAddBand && <AddBandModal user={user} onClose={()=>setShowAddBand(false)} onRefresh={onRefresh} show={show}/>}
       {backupText!==null && (
