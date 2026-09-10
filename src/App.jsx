@@ -4,6 +4,7 @@ import { SealIcon, Spinner, Toast } from "./ui";
 import { AuthScreen } from "./auth";
 import { BandDetail, Landing } from "./bands";
 import { SharedView } from "./shared";
+import { LegalView } from "./legal";
 
 function readCache() {
   try { const raw = localStorage.getItem("sf_cache"); return raw ? JSON.parse(raw) : null; }
@@ -26,7 +27,9 @@ export default function App() {
   const toggleTheme = () => { const t = theme==="dark"?"light":"dark"; localStorage.setItem("sf_theme",t); setTheme(t); };
   const show = (msg, type="success") => setToast({msg,type});
 
-  const shareId = typeof window!=="undefined" ? new URLSearchParams(window.location.search).get("share") : null;
+  const params = typeof window!=="undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const shareId = params.get("share");
+  const legalPage = params.get("legal");
 
   useEffect(()=>{
     if ("serviceWorker" in navigator) {
@@ -35,12 +38,12 @@ export default function App() {
   }, []);
 
   useEffect(()=>{
-    if (shareId) { setLoading(false); return; }
+    if (shareId || legalPage) { setLoading(false); return; }
     const token = localStorage.getItem("sf_token");
     const u     = localStorage.getItem("sf_user");
     if (token && u) { sb._token = token; setUser(JSON.parse(u)); }
     else setLoading(false);
-  },[shareId]);
+  },[shareId, legalPage]);
 
   const loadAll = useCallback(async () => {
     if (!sb._token) return;
@@ -76,11 +79,12 @@ export default function App() {
     } catch(_) {}
   },[user]);
 
-  useEffect(()=>{ if(user && !shareId) { joinPendingInvites().then(loadAll); } },[user,loadAll,joinPendingInvites,shareId]);
+  useEffect(()=>{ if(user && !shareId && !legalPage) { joinPendingInvites().then(loadAll); } },[user,loadAll,joinPendingInvites,shareId,legalPage]);
 
   const handleAuth = (u) => { setUser(u); };
   const handleLogout = async () => { await sb.auth.signOut(); setUser(null); setBands([]); setSongs([]); setGigs([]); setPls([]); setPS([]); };
 
+  if (legalPage === "impressum" || legalPage === "datenschutz") return <LegalView page={legalPage}/>;
   if (shareId) return <SharedView playlistId={shareId}/>;
 
   if (loading) return (
