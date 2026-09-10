@@ -95,12 +95,13 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           const isEncore = song.set_name === "Zugaben" || song.isEncore;
           const showEncoreHead = isEncore && !encoreStarted;
           if (isEncore) encoreStarted = true;
-          const st = dStyle(song.drummer);
+          const st = prefs.drummer ? dStyle(song.drummer) : { bg: C.bgCard, border: C.borderSong };
           const isCurrent = currentSongId === song.ps_id;
           const currentIdx = songsInSet.findIndex(s=>s.ps_id===currentSongId);
           const isNext = currentSongId && !isCurrent && i === currentIdx + 1;
           const opacity = !currentSongId ? 1 : isCurrent ? 1 : isNext ? 0.75 : 0.35;
           const dCol = drummerColor(song.drummer);
+          const ron = prefs.drummer && song.drummer==="Ron";
           const notesOpen = prefs.notes && gigNotesId === song.ps_id;
           const lyricsOpen = prefs.lyrics && gigLyricsId === song.ps_id;
           const foldOpen = (notesOpen && song.specialties) || (lyricsOpen && song.lyrics);
@@ -123,16 +124,16 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
               )}
               <div onClick={()=>pickSong(song)}
                 style={{
-                  background: isCurrent ? (song.drummer==="Ron"?C.redDim:C.tealDim) : isNext ? C.bgNext : "transparent",
-                  border: "2px solid " + (isCurrent ? (song.drummer==="Ron"?C.red:C.teal) : isNext ? C.borderNext : C.borderSong),
+                  background: isCurrent ? (ron?C.redDim:C.tealDim) : isNext ? C.bgNext : "transparent",
+                  border: "2px solid " + (isCurrent ? (ron?C.red:C.teal) : isNext ? C.borderNext : C.borderSong),
                   borderRadius: foldOpen ? "7px 7px 0 0" : 7,
                   padding:"9px 13px", display:"flex", alignItems:"center", gap:10,
                   cursor:"pointer", opacity, transition:"all .2s",
-                  boxShadow: isCurrent ? "0 0 16px 2px " + (song.drummer==="Ron"?C.redBorder:C.tealBorder) : "none"
+                  boxShadow: isCurrent ? "0 0 16px 2px " + (ron?C.redBorder:C.tealBorder) : "none"
                 }}>
                 <div style={{width:28,textAlign:"center",flexShrink:0}}>
                   {isCurrent
-                    ? <div style={{color:song.drummer==="Ron"?C.red:C.teal,fontSize:16}}>▶</div>
+                    ? <div style={{color:ron?C.red:C.teal,fontSize:16}}>▶</div>
                     : isNext
                       ? <div style={{color:C.textMute,fontSize:10,letterSpacing:".04em"}}>NEXT</div>
                       : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{isEncore ? encoreIdx : setNum}</div>}
@@ -160,7 +161,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                 <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0,marginLeft:"auto"}}>
                   {prefs.click && song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
                   {prefs.lyrics && song.lyrics&&<FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setGigLyricsId(id=>id===song.ps_id?null:song.ps_id)}/>}
-                  {song.drummer&&<div style={{
+                  {prefs.drummer && song.drummer&&<div style={{
                     color:dCol, border:"1px solid "+dCol, borderRadius:4,
                     padding:"5px 12px", fontSize:13, fontWeight:700,
                     letterSpacing:"0.08em", minWidth:44, textAlign:"center"
