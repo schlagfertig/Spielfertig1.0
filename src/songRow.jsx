@@ -3,13 +3,16 @@ import { C, sb, SETS, dStyle } from "./core";
 import { Btn, Badge } from "./ui";
 import { useMetronome } from "./audio";
 import { SongFold, FoldBtn } from "./songPanels";
+import { ChartLine, packSpecialties, songNotes, songChart } from "./chart";
 
 function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, onDragOver, isDragging, dropActive, extra, showDrummer=true, onGripPointerDown }) {
   const st = dStyle(song.drummer);
   const { active, beat, toggle } = useMetronome(song.bpm);
   const [showLyrics, setShowLyrics] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
-  const foldOpen = (showNotes && song.specialties) || (showLyrics && song.lyrics);
+  const notes = songNotes(song);
+  const chart = songChart(song);
+  const foldOpen = (showNotes && notes) || (showLyrics && song.lyrics);
   const pulseColor  = beat?"#fff":active?C.teal:C.grayDim;
   const pulseGlow   = beat?`0 0 10px 4px ${C.teal}`:active?`0 0 4px 1px ${C.tealBorder}`:"none";
   const pulseBorder = active?`1px solid ${beat?"#fff":C.teal}`:"1px solid #2a2a2a";
@@ -36,16 +39,17 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
               {song.artist}
               {song.bpm>0&&<span style={{ color:active?C.teal:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6, transition:"color .2s" }}>{song.bpm} BPM</span>}
             </div>
+            <ChartLine chart={chart}/>
           </div>
           {song.drummer&&showDrummer&&<Badge color={st.badge}>{song.drummer}</Badge>}
-          {song.specialties&&<FoldBtn on={showNotes} title="Notizen" icon="📝" onClick={()=>setShowNotes(v=>!v)}/>}
+          {notes&&<FoldBtn on={showNotes} title="Notizen" icon="📝" onClick={()=>setShowNotes(v=>!v)}/>}
           {song.lyrics&&<FoldBtn on={showLyrics} title="Lyrics" icon="📓" onClick={()=>setShowLyrics(v=>!v)}/>}
           {onEdit&&<button onClick={e=>{e.stopPropagation();onEdit(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"4px 6px", fontSize:17, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.color=C.teal} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✎</button>}
           {onDelete&&<button onClick={e=>{e.stopPropagation();onDelete(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"4px 6px", fontSize:17, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.color=C.red} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✕</button>}
           {extra&&extra}
         </div>
       </div>
-      <SongFold notes={song.specialties} lyrics={song.lyrics} notesOpen={showNotes} lyricsOpen={showLyrics} border={st.border} compact/>
+      <SongFold notes={notes} lyrics={song.lyrics} notesOpen={showNotes} lyricsOpen={showLyrics} border={st.border} compact/>
     </div>
   );
 }
@@ -54,7 +58,7 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
   const [open, setOpen] = useState(false);
   const [newSet, setNewSet] = useState(song.set_name);
   const [newPos, setNewPos] = useState(String(song.position));
-  const [notes, setNotes] = useState(song.specialties||"");
+  const [notes, setNotes] = useState(songNotes(song));
   const apply = async () => {
     setOpen(false);
     setSaving(true);
@@ -76,8 +80,8 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
       newOthers.splice(clamped-1, 0, { id: psId });
       for (let i=0;i<newOthers.length;i++) await sb.update("playlist_songs",{set_name:targetSet,position:i+1},"id=eq."+newOthers[i].id);
     }
-    if (notes !== (song.specialties||"")) {
-      await sb.update("songs", { specialties: notes }, "id=eq."+song.id);
+    if (notes !== songNotes(song)) {
+      await sb.update("songs", { specialties: packSpecialties(notes, songChart(song)) }, "id=eq."+song.id);
     }
     await onRefresh(); setSaving(false);
   };
@@ -86,7 +90,7 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
       <SongRow song={song} pos={song.position} showDrummer={showDrummer} onDelete={onDelete}
         draggable={draggable} onDragStart={onDragStart} onDrop={onDrop} onDragOver={onDragOver}
         isDragging={isDragging} dropActive={dropActive} onGripPointerDown={onGripPointerDown}
-        onEdit={canEdit?(()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setNotes(song.specialties||""); setOpen(!open); }):undefined}/>
+        onEdit={canEdit?(()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setNotes(songNotes(song)); setOpen(!open); }):undefined}/>
       {open&&(
         <div style={{ position:"absolute", right:0, top:"100%", zIndex:100, background:"#1a1a1a", border:"1px solid "+C.tealBorder, borderRadius:8, padding:14, minWidth:220, boxShadow:"0 8px 32px rgba(0,0,0,.8)" }}>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:10 }}>Verschieben nach</div>

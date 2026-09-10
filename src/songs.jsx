@@ -2,10 +2,11 @@ import { useState } from "react";
 import { C, sb, SETS } from "./core";
 import { Btn, Field, Sel, Modal, Confirm, Spinner } from "./ui";
 import { SongRow } from "./songRow";
+import { ChartEditor, emptyChart, packSpecialties, songNotes, songChart } from "./chart";
 
 function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, canEdit, onRefresh, show }) {
   const [search, setSearch]   = useState("");
-  const [form, setForm]       = useState({ title:"", artist:"", bpm:"", drummer:band.drummers[0]||"Tom", specialties:"" });
+  const [form, setForm]       = useState({ title:"", artist:"", bpm:"", drummer:band.drummers[0]||"Tom", specialties:"", chart: emptyChart() });
   const [editSong, setEdit]   = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [saving, setSaving]   = useState(false);
@@ -34,8 +35,8 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
   const handleAdd = async () => {
     if (!form.title||!form.artist||!form.bpm) return;
     setSaving(true);
-    await sb.insert("songs", { band_id:band.id, title:form.title, artist:form.artist, bpm:parseInt(form.bpm), drummer:form.drummer, specialties:form.specialties });
-    setForm({ title:"", artist:"", bpm:"", drummer:band.drummers[0]||"Tom", specialties:"" });
+    await sb.insert("songs", { band_id:band.id, title:form.title, artist:form.artist, bpm:parseInt(form.bpm), drummer:form.drummer, specialties:packSpecialties(form.specialties, form.chart) });
+    setForm({ title:"", artist:"", bpm:"", drummer:band.drummers[0]||"Tom", specialties:"", chart: emptyChart() });
     await onRefresh(); show("Song hinzugefügt!"); setSaving(false);
   };
   const handleDelete = async (song) => {
@@ -43,7 +44,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
     await onRefresh(); show("Song gelöscht."); setConfirm(null);
   };
   const handleUpdate = async () => {
-    await sb.update("songs", { title:editSong.title, artist:editSong.artist, bpm:parseInt(editSong.bpm), drummer:editSong.drummer, specialties:editSong.specialties, lyrics:editSong.lyrics||null }, "id=eq."+editSong.id);
+    await sb.update("songs", { title:editSong.title, artist:editSong.artist, bpm:parseInt(editSong.bpm), drummer:editSong.drummer, specialties:packSpecialties(editSong.specialties, editSong.chart), lyrics:editSong.lyrics||null }, "id=eq."+editSong.id);
     await onRefresh(); show("Song gespeichert!"); setEdit(null);
   };
   const handleBulkDelete = async () => {
@@ -116,6 +117,9 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
           <Sel   value={form.drummer} onChange={v=>setForm(f=>({...f,drummer:v}))} options={band.drummers}/>
         </div>
         <div style={{ marginBottom:8 }}>
+          <ChartEditor value={form.chart} onChange={v=>setForm(f=>({...f,chart:v}))}/>
+        </div>
+        <div style={{ marginBottom:8 }}>
           <div style={{ color:C.grayDim, fontSize:10, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:4 }}>Notizen</div>
           <Field value={form.specialties} onChange={v=>setForm(f=>({...f,specialties:v}))} placeholder={"z.B. Count-In\nBD auf 1\nSchluss: Keys"} rows={3}/>
         </div>
@@ -137,7 +141,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
             <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
             <SongRow song={song} showDrummer={(band.drummers||[]).length>1}
               onDelete={canEdit?(s=>setConfirm(s)):undefined}
-              onEdit={canEdit?(s=>setEdit({...s,bpm:String(s.bpm)})):undefined}
+              onEdit={canEdit?(s=>setEdit({...s,bpm:String(s.bpm),specialties:songNotes(s),chart:songChart(s)})):undefined}
               extra={canEdit?(<button onClick={e=>{e.stopPropagation();setAddTarget(song);setAtGig("");setAtPl("");setAtSet("Set 1");}}
                 style={{background:"transparent",border:"none",color:C.grayDim,cursor:"pointer",padding:"6px 10px",fontSize:16}}
                 title="Zur Setlist hinzufügen"
@@ -187,6 +191,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
           <Field value={editSong.artist}      onChange={v=>setEdit(s=>({...s,artist:v}))}      placeholder="Artist"/>
           <Field value={editSong.bpm}         onChange={v=>setEdit(s=>({...s,bpm:v}))}         placeholder="BPM" type="number"/>
           <Sel   value={editSong.drummer}     onChange={v=>setEdit(s=>({...s,drummer:v}))}     options={band.drummers}/>
+          <ChartEditor value={editSong.chart} onChange={v=>setEdit(s=>({...s,chart:v}))}/>
           <div>
             <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Notizen</div>
             <Field value={editSong.specialties||""} onChange={v=>setEdit(s=>({...s,specialties:v}))} placeholder={"z.B. Count-In\nBD auf 1\nSchluss: Keys"} rows={5}/>
