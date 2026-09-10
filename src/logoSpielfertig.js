@@ -1,1 +1,1 @@
-export const LOGO_SPIELFERTIG = "/Logo-full.svg";
+PLACEHOLDER_WILL_FAIL
