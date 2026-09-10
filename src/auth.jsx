@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { C, sb } from "./core";
-import { SealLine, Btn, Field, SealIcon } from "./ui";
+import { C, sb, getLogo } from "./core";
+import { SealLine, Btn, Field, SealIcon, BrandWordmark, Bang } from "./ui";
 
 function pickErr(res) {
   if (!res || typeof res !== "object") return "";
@@ -8,9 +8,7 @@ function pickErr(res) {
   if (!raw) return "";
   if (raw === "Invalid login credentials") return "E-Mail oder Passwort stimmt nicht.";
   if (raw === "Email not confirmed") return "Bitte zuerst die Bestätigungs-E-Mail öffnen.";
-  if (String(raw).toLowerCase().includes("invalid api key")) {
-    return "Supabase-API-Key wird abgelehnt.";
-  }
+  if (String(raw).toLowerCase().includes("invalid api key")) return "Supabase-API-Key wird abgelehnt.";
   return String(raw).substring(0, 220);
 }
 
@@ -54,29 +52,44 @@ function AuthScreen({ onAuth }) {
   };
 
   return (
-    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ width:"100%", maxWidth:380 }}>
-        <div style={{ marginBottom:28, textAlign:"center" }}>
-          <SealIcon size={56}/>
-          <div style={{ color:C.white, fontWeight:400, fontSize:34, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em", marginTop:12 }}>SPIELFERTIG<span style={{ color:C.teal }}>‽</span></div>
-          <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.2em", marginTop:4 }}>ZEIT FÜR GUTEN SOUND</div>
-        </div>
-        <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:10, padding:28 }}>
-          <SealLine/>
-          <div style={{ display:"flex", gap:6, margin:"16px 0" }}>
-            {[{k:"login",l:"Anmelden"},{k:"register",l:"Registrieren"}].map(({k,l})=>(
-              <button key={k} onClick={()=>{ setMode(k); setError(""); }} style={{ flex:1, background:mode===k?C.teal:"transparent", color:mode===k?"#000":C.gray, border:"1px solid "+(mode===k?C.teal:"#333"), borderRadius:4, padding:"7px 0", fontSize:12, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>{l}</button>
-            ))}
+    <div style={{ minHeight:"100vh", background:"#000", position:"relative", overflow:"hidden", display:"flex", flexDirection:"column" }}>
+      <img src={getLogo()} alt="" aria-hidden="true"
+        style={{ position:"absolute", left:"50%", top:"46%", transform:"translate(-50%,-50%)", width:"min(92vw,560px)", height:"auto", opacity:0.07, pointerEvents:"none", userSelect:"none" }}/>
+
+      <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"28px 20px 20px", position:"relative", zIndex:1 }}>
+        <div style={{ width:"100%", maxWidth:400 }}>
+          <div style={{ textAlign:"center", marginBottom:26 }}>
+            <SealIcon size={72}/>
+            <div style={{ marginTop:14 }}><BrandWordmark size={40}/></div>
+            <div style={{ color:"#555", fontSize:10, letterSpacing:"0.22em", marginTop:8, textTransform:"uppercase" }}>Zeit für guten Sound</div>
           </div>
-          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            <Field value={email} onChange={setEmail} placeholder="E-Mail" type="email"/>
-            <Field value={password} onChange={setPass} placeholder="Passwort" type="password"/>
-            {error && <div style={{ color:mode==="register"&&error.includes("Bestätigung")?C.teal:C.red, fontSize:12, padding:"8px 10px", background:mode==="register"&&error.includes("Bestätigung")?C.tealDim:C.redDim, borderRadius:4 }}>{error}</div>}
-            <Btn full onClick={handle} disabled={loading}>
-              {loading ? "Lädt…" : mode==="login" ? "Anmelden" : "Konto erstellen"}
-            </Btn>
+
+          <div style={{ background:"rgba(13,13,13,0.86)", border:"1px solid #1c1c1c", borderRadius:14, padding:"22px 20px 20px", boxShadow:"0 18px 50px rgba(0,0,0,.45)" }}>
+            <SealLine/>
+            <div style={{ display:"flex", gap:6, margin:"16px 0 14px" }}>
+              {[{k:"login",l:"Anmelden"},{k:"register",l:"Registrieren"}].map(({k,l})=>(
+                <button key={k} onClick={()=>{ setMode(k); setError(""); }} style={{
+                  flex:1, background:mode===k?C.teal:"transparent", color:mode===k?"#000":"#888",
+                  border:"1px solid "+(mode===k?C.teal:"#2a2a2a"), borderRadius:6, padding:"9px 0",
+                  fontSize:12, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase",
+                  cursor:"pointer", fontFamily:"inherit"
+                }}>{l}</button>
+              ))}
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              <Field value={email} onChange={setEmail} placeholder="E-Mail" type="email"/>
+              <Field value={password} onChange={setPass} placeholder="Passwort" type="password"/>
+              {error && <div style={{ color:mode==="register"&&error.includes("Bestätigung")?C.teal:C.red, fontSize:12, padding:"8px 10px", background:mode==="register"&&error.includes("Bestätigung")?C.tealDim:C.redDim, borderRadius:6, lineHeight:1.4 }}>{error}</div>}
+              <Btn full onClick={handle} disabled={loading} style={{ padding:"13px 18px", borderRadius:6, marginTop:4 }}>
+                {loading ? "Lädt…" : mode==="login" ? "Anmelden" : "Konto erstellen"}
+              </Btn>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div style={{ textAlign:"center", padding:"0 16px 22px", position:"relative", zIndex:1, color:"#3a3a3a", fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+        Thomas Schuster · SCHLAGFERTIG<Bang size={12} color="#5cc8b8"/>
       </div>
     </div>
   );
