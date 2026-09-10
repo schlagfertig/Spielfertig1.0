@@ -2,8 +2,10 @@ import { getBandLogo, getLogo } from "./core";
 
 function esc(s) {
   return String(s == null ? "" : s)
-    .replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">")
-    .replace(/"/g, """);
+    .replace(/&/g, "\u0026amp;")
+    .replace(/</g, "\u0026lt;")
+    .replace(/>/g, "\u0026gt;")
+    .replace(/"/g, "\u0026quot;");
 }
 function nl(s) {
   return esc(s).replace(/\n/g, "<br>");
@@ -43,6 +45,7 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName) {
     pages += "<section class='page" + (isLast ? "" : " brk") + "' data-count='" + n + "'>"
       + "<img class='wm' src='" + logo + "' alt=''/>"
       + "<header class='hdr'>"
+      +   "<img class='hlogo' src='" + logo + "' alt=''/>"
       +   "<div class='hbrand'>SPIELFERTIG<span style='color:" + teal + "'>‽</span></div>"
       +   "<div class='hright'>"
       +   (bandLogo
@@ -78,8 +81,9 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName) {
     + ".act .ghost{background:transparent;color:#5cc8b8;border:1px solid #5cc8b8}"
     + ".page{position:relative;height:277mm;display:flex;flex-direction:column;padding:2mm 0}"
     + ".brk{page-break-after:always}"
-    + ".wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:240px;opacity:.04;pointer-events:none}"
+    + ".wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:240px;opacity:.05;pointer-events:none}"
     + ".hdr{display:flex;align-items:center;gap:10px;position:relative;z-index:1;flex-shrink:0}"
+    + ".hlogo{height:40px;width:auto;object-fit:contain}"
     + ".hbrand{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:.06em}"
     + ".hright{flex:1;text-align:right}"
     + ".hband{font-family:'Bebas Neue',cursive;font-size:16px;color:#444}"
