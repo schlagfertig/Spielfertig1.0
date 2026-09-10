@@ -14,7 +14,7 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
     <div style={{ minHeight:"100vh", background:C.bg }}>
       <header style={{ borderBottom:"1px solid #111", background:"rgba(0,0,0,.97)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:50 }}>
         <div style={{ maxWidth:720, margin:"0 auto", padding:"8px 16px 0", display:"flex", alignItems:"center" }}>
-          <Btn variant="outline" size="md" onClick={onBack} style={{fontSize:20,padding:"6px 18px"}}← Zurück</Btn>
+          <Btn variant="outline" size="md" onClick={onBack} style={{fontSize:20,padding:"6px 18px"}}>← Zurück</Btn>
         </div>
         <div style={{ maxWidth:720, margin:"0 auto", padding:"6px 16px 10px", display:"flex", justifyContent:"center" }}>
           {logo
