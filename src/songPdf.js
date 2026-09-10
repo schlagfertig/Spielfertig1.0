@@ -1,4 +1,5 @@
 import { getBandLogo, getLogo } from "./core";
+import { chartPrintText, hasChart, songChart, songNotes } from "./chart";
 
 function esc(s) {
   return String(s == null ? "" : s)
@@ -11,7 +12,7 @@ function nl(s) {
   return esc(s).replace(/\n/g, "<br>");
 }
 
-function exportPDF(playlist, allSongs, playlistSongs, bandName) {
+function exportPDF(playlist, allSongs, playlistSongs, bandName, seedPrefs) {
   const ps = playlistSongs.filter(p => p.playlist_id === playlist.id);
   const regularSets = ["Set 1", "Set 2", "Set 3"].filter(s => ps.some(p => p.set_name === s));
   const zugaben = ps.filter(p => p.set_name === "Zugaben").sort((a, b) => a.position - b.position);
@@ -23,12 +24,15 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName) {
   function songRow(p, i) {
     const s = allSongs.find(x => x.id === p.song_id);
     if (!s) return "";
+    const notes = songNotes(s);
+    const chart = songChart(s);
     return "<div class='row'>"
       + "<div class='num'>" + (i + 1) + "</div>"
       + "<div class='main'><div class='stitle'>" + esc(s.title) + "</div>"
       + "<div class='sartist'>" + esc(s.artist || "") + "</div></div>"
       + "<div class='click'>" + (s.bpm ? s.bpm : "") + "</div>"
-      + "<div class='notes'>" + (s.specialties ? nl(s.specialties) : "") + "</div>"
+      + "<div class='chart'>" + (hasChart(chart) ? esc(chartPrintText(chart)) : "") + "</div>"
+      + "<div class='notes'>" + (notes ? nl(notes) : "") + "</div>"
       + "<div class='lyrics'>" + (s.lyrics ? nl(s.lyrics) : "") + "</div>"
       + "<div class='drummer'>" + esc(s.drummer || "") + "</div>"
       + "</div>";
@@ -97,8 +101,8 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName) {
     + ".main{flex:1;min-width:0}"
     + ".stitle{font-weight:800;font-size:var(--title,24px);line-height:1.12;letter-spacing:.01em}"
     + ".sartist{color:#555;font-size:var(--artist,13px);margin-top:1px}"
-    + ".click,.notes,.lyrics,.drummer{display:none}"
-    + "body.on-click .click{display:block;width:48px;flex-shrink:0;text-align:right;font-weight:700;color:#555;font-size:var(--artist,13px)}"
+    + ".click,.notes,.lyrics,.drummer,.chart{display:none}"
+    + "body.on-click .click{display:block;width:48px;flex-shrink:0;text-align:right;font-weight:700;color:#555;font-size:var(--artist,13px)}body.on-chart .chart{display:block;flex:0 1 28%;max-width:30%;font-size:10px;color:#2a9d8c;font-family:ui-monospace,Menlo,monospace;line-height:1.3;overflow:hidden}"
     + "body.on-notes .notes{display:block;flex:0 1 32%;max-width:34%;font-size:11px;color:#444;font-style:italic;line-height:1.3;overflow:hidden}"
     + "body.on-lyrics .lyrics{display:block;flex:0 1 30%;max-width:32%;font-size:11px;color:#333;line-height:1.3;overflow:hidden}"
     + "body.on-drummer .drummer{display:block;width:56px;flex-shrink:0;text-align:right;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#444}"
@@ -112,7 +116,7 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName) {
     +   "<button class='chip' data-k='notes'>Notizen</button>"
     +   "<button class='chip' data-k='lyrics'>Lyrics</button>"
     +   "<button class='chip' data-k='click'>Click / BPM</button>"
-    +   "<button class='chip' data-k='drummer'>Drummer</button>"
+    +   "<button class='chip' data-k='drummer'>Drummer</button><button class='chip' data-k='chart'>Chart</button>"
     +   "<div class='act'><button onclick='window.print()'>Drucken</button>"
     +   "<button class='ghost' onclick='window.close()'>Schließen</button></div>"
     + "</div>"
@@ -120,15 +124,25 @@ function exportPDF(playlist, allSongs, playlistSongs, bandName) {
     + "<script>"
     + "(function(){"
     + "var KEY='sf_print_prefs';"
-    + "var state={notes:false,lyrics:false,click:false,drummer:false};"
+    + "var state={notes:false,lyrics:false,click:false,drummer:false,chart:false};"
     + "try{var raw=localStorage.getItem(KEY);if(raw) Object.assign(state,JSON.parse(raw));}catch(e){}"
+    + (seedPrefs && typeof seedPrefs === "object"
+        ? "try{Object.assign(state," + JSON.stringify({
+            notes: !!seedPrefs.notes,
+            lyrics: !!seedPrefs.lyrics,
+            click: !!seedPrefs.click,
+            drummer: !!seedPrefs.drummer,
+            chart: !!seedPrefs.chart,
+          }) + ");}catch(e){}"
+        : "")
     + "function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}"
-    + "function extras(){return (state.notes?1:0)+(state.lyrics?1:0)+(state.drummer?1:0);}"
+    + "function extras(){return (state.notes?1:0)+(state.lyrics?1:0)+(state.drummer?1:0)+(state.chart?1:0);}"
     + "function layout(){"
     + "  document.body.classList.toggle('on-notes', !!state.notes);"
     + "  document.body.classList.toggle('on-lyrics', !!state.lyrics);"
     + "  document.body.classList.toggle('on-click', !!state.click);"
     + "  document.body.classList.toggle('on-drummer', !!state.drummer);"
+    + "  document.body.classList.toggle('on-chart', !!state.chart);"
     + "  document.body.classList.toggle('busy', extras()>0);"
     + "  document.querySelectorAll('.chip').forEach(function(b){b.classList.toggle('on', !!state[b.getAttribute('data-k')]);});"
     + "  document.querySelectorAll('.page').forEach(function(p){"
