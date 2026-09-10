@@ -1,4 +1,5 @@
 import { LOGO_HARDYS_DATA } from "./logoHardys";
+import { LOGO_SPIELFERTIG } from "./logoSpielfertig";
 
 const SUPABASE_URL = "https://hstwhmqwxmvlobvygsty.supabase.co";
 const SUPABASE_KEY =
@@ -8,9 +9,10 @@ const SUPABASE_KEY =
 
 const LOGO_DARK  = "/Logo-dark.png";
 const LOGO_LIGHT = "/Logo-light.png";
-const LOGO_FULL  = "/Logo-dark.png";
+const LOGO_FULL  = LOGO_SPIELFERTIG;
 function getLogo(kind) {
   if (kind === "light") return LOGO_LIGHT;
+  if (kind === "full") return LOGO_FULL;
   return LOGO_DARK;
 }
 

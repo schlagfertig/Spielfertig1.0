@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C, sb, getLogo } from "./core";
+import { LOGO_SPIELFERTIG } from "./logoSpielfertig";
 import { SealLine, Btn, Field } from "./ui";
 
 function pickErr(res) {
@@ -52,15 +53,24 @@ function AuthScreen({ onAuth }) {
   };
 
   return (
-    <div style={{ minHeight:"100vh", background:"#000", display:"flex", flexDirection:"column" }}>
-      <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"32px 20px 16px" }}>
+    <div style={{ minHeight:"100vh", background:"#000", display:"flex", flexDirection:"column", position:"relative", overflow:"hidden" }}>
+      <img src={getLogo()} alt="" aria-hidden="true"
+        style={{
+          position:"absolute", left:"50%", top:"42%",
+          width:"min(160vw,920px)", height:"auto",
+          transform:"translate(-50%,-50%)",
+          opacity:0.07, pointerEvents:"none", userSelect:"none",
+          filter:"saturate(0.7)"
+        }}/>
+
+      <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"28px 20px 20px", position:"relative", zIndex:1 }}>
         <div style={{ width:"100%", maxWidth:400 }}>
-          <div style={{ textAlign:"center", marginBottom:22 }}>
-            <img src={getLogo()} alt="Spiel Fertig"
-              style={{ width:"min(72vw,260px)", height:"auto", objectFit:"contain", display:"block", margin:"0 auto" }}/>
+          <div style={{ textAlign:"center", marginBottom:18 }}>
+            <img src={LOGO_SPIELFERTIG} alt="Spiel Fertig"
+              style={{ width:"min(86vw,340px)", height:"auto", objectFit:"contain", display:"block", margin:"0 auto" }}/>
           </div>
 
-          <div style={{ background:"#0d0d0d", border:"1px solid #1c1c1c", borderRadius:14, padding:"22px 20px 20px" }}>
+          <div style={{ background:"rgba(13,13,13,0.88)", border:"1px solid #1c1c1c", borderRadius:14, padding:"22px 20px 20px", backdropFilter:"blur(8px)" }}>
             <SealLine/>
             <div style={{ display:"flex", gap:6, margin:"16px 0 14px" }}>
               {[{k:"login",l:"Anmelden"},{k:"register",l:"Registrieren"}].map(({k,l})=>(
