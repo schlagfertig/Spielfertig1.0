@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { C, sb, getBandLogo, bandLogoImgStyle } from "./core";
-import { Btn, Field, Badge, Modal, SealLine, SealIcon, Spinner } from "./ui";
+import { C, sb, getBandLogo, bandLogoImgStyle, getLogo } from "./core";
+import { Btn, Field, Badge, Modal, SealLine, Spinner } from "./ui";
 
 const BAND_COLORS = [
   { name:"Teal",   val:"#5cc8b8" },
@@ -25,9 +25,7 @@ function AddBandModal({ user, onClose, onRefresh, show }) {
     try {
       const drummerList = drummers.split(",").map(d=>d.trim()).filter(Boolean);
       await sb.insert("bands", {
-        name: name.trim(),
-        color,
-        emoji,
+        name: name.trim(), color, emoji,
         drummers: drummerList.length ? drummerList : ["Tom"],
         user_id: user.id,
       });
@@ -51,7 +49,7 @@ function AddBandModal({ user, onClose, onRefresh, show }) {
               <button key={c.val} onClick={(e)=>{e.stopPropagation();setColor(c.val);}} title={c.name}
                 style={{ width:34, height:34, borderRadius:"50%", background:c.val, cursor:"pointer",
                   border: color===c.val ? "2px solid #fff" : "2px solid transparent",
-                  boxShadow: color===c.val ? "0 0 8px 2px "+c.val : "none", transition:"all .15s" }}/>
+                  boxShadow: color===c.val ? "0 0 8px 2px "+c.val : "none" }}/>
             ))}
           </div>
         </div>
@@ -61,19 +59,13 @@ function AddBandModal({ user, onClose, onRefresh, show }) {
             {BAND_EMOJIS.map(e=>(
               <button key={e} onClick={(ev)=>{ev.stopPropagation();setEmoji(e);}}
                 style={{ width:38, height:38, borderRadius:6, fontSize:20, cursor:"pointer", background: emoji===e ? C.tealDim : "#0a0a0a",
-                  border: emoji===e ? "1px solid "+C.tealBorder : "1px solid #222", transition:"all .15s" }}>{e}</button>
+                  border: emoji===e ? "1px solid "+C.tealBorder : "1px solid #222" }}>{e}</button>
             ))}
           </div>
         </div>
         <div>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:8 }}>Drummer</div>
           <Field value={drummers} onChange={setDrummers} placeholder="z.B. Tom, Tobi"/>
-          <div style={{ color:C.grayDim, fontSize:10, marginTop:4 }}>Mehrere mit Komma trennen</div>
-        </div>
-        <div style={{ background:"#0a0a0a", border:"1px solid #1a1a1a", borderRadius:6, padding:"12px 14px", display:"flex", alignItems:"center", gap:12 }}>
-          <div style={{ fontSize:26 }}>{emoji}</div>
-          <div style={{ flex:1, color:C.white, fontFamily:"'Bebas Neue',cursive", fontSize:20, letterSpacing:"0.05em" }}>{name || "Vorschau"}</div>
-          <Badge color={color}>0 Songs</Badge>
         </div>
         <Btn full disabled={!name.trim()||saving} onClick={handleSave}>{saving ? <Spinner/> : "Band erstellen"}</Btn>
       </div>
@@ -88,20 +80,13 @@ function downloadJSON(filename, dataObj) {
     if (!w) return false;
     w.document.open();
     w.document.write(
-      "<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>" +
-      "<title>" + filename + "</title></head>" +
+      "<!DOCTYPE html><html><head><meta charset='utf-8'><title>" + filename + "</title></head>" +
       "<body style='margin:0;background:#0a0a0a;color:#cfcfcf;font-family:monospace;'>" +
-      "<div style='position:sticky;top:0;background:#111;padding:12px 16px;border-bottom:1px solid #333;color:#5cc8b8;font-family:sans-serif;'>" +
-      "📋 Alles markieren und kopieren, oder über Teilen ⬆ in Dateien sichern.<br><b>" + filename + "</b></div>" +
-      "<pre style='padding:16px;white-space:pre-wrap;word-break:break-word;font-size:12px;'>" +
-      json.replace(/</g,"<").replace(/>/g,">") +
-      "</pre></body></html>"
+      "<pre style='padding:16px;white-space:pre-wrap;'>" + json.replace(/</g,"&lt;") + "</pre></body></html>"
     );
     w.document.close();
     return true;
-  } catch(e) {
-    return false;
-  }
+  } catch(e) { return false; }
 }
 
 function buildBandExport(band, songs, gigs, playlists, playlistSongs) {
@@ -133,49 +118,52 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
   const [newPw, setNewPw] = useState("");
   const [newPw2, setNewPw2] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
+
+  const runBackup = () => {
+    try {
+      const payload = {
+        exported_at: new Date().toISOString(),
+        version: 1,
+        bands: (bands||[]).map(b=>buildBandExport(b, songs, gigs, playlists, playlistSongs))
+      };
+      setBackupText(JSON.stringify(payload, null, 2));
+    } catch(err) {
+      show("Export-Fehler: " + (err&&err.message ? err.message : "unbekannt"));
+    }
+  };
+
   const handleDeleteBand = async () => {
     setDelSaving(true);
     await sb.delete("bands", "id=eq." + delBand.id);
     await onRefresh();
-    show("Band „" + delBand.name + "\" gelöscht.");
+    show("Band gelöscht.");
     setDelBand(null); setDelSaving(false);
   };
+
   return (
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column" }}>
-      <header style={{ borderBottom:"1px solid #111", padding:"16px 24px" }}>
-        <div style={{ maxWidth:720, margin:"0 auto", display:"flex", alignItems:"center", gap:14 }}>
-          <SealIcon size={40}/>
-          <div style={{ flex:1 }}>
-            <div style={{ color:C.white, fontWeight:400, fontSize:26, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em" }}>SPIELFERTIG<span style={{ color:C.teal }}>‽</span></div>
-            <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.2em" }}>ZEIT FÜR GUTEN SOUND</div>
+      <header style={{ borderBottom:"1px solid #111", padding:"12px 16px 12px 16px", paddingRight:56 }}>
+        <div style={{ maxWidth:720, margin:"0 auto", display:"flex", alignItems:"center", gap:10 }}>
+          <img src={getLogo()} alt="Spielfertig" style={{ height:46, width:"auto", objectFit:"contain", flexShrink:0 }}/>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ color:C.white, fontWeight:400, fontSize:20, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em" }}>SPIELFERTIG<span style={{ color:C.teal }}>‽</span></div>
+            <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.16em" }}>ZEIT FÜR GUTEN SOUND</div>
           </div>
-          <div style={{ textAlign:"right" }}>
-            <div style={{ color:C.gray, fontSize:11, marginBottom:4 }}>{user.email}</div>
-            <div style={{ display:"flex", gap:6, justifyContent:"flex-end" }}>
-            <Btn variant="outline" size="sm" onClick={()=>{
-              try {
-                const payload = {
-                  exported_at: new Date().toISOString(),
-                  version: 1,
-                  bands: (bands||[]).map(b=>buildBandExport(b, songs, gigs, playlists, playlistSongs))
-                };
-                const json = JSON.stringify(payload, null, 2);
-                setBackupText(json);
-              } catch(err) {
-                show("Export-Fehler: " + (err&&err.message ? err.message : "unbekannt"));
-              }
-            }}>⬇ Backup</Btn>
-              <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}>+ Band</Btn>
-              <Btn variant="outline" size="sm" onClick={()=>{setShowAccount(true);setNewPw("");setNewPw2("");}}>⚙ Konto</Btn>
-              <Btn variant="ghost" size="sm" onClick={onLogout}>Abmelden</Btn>
-            </div>
+          <div style={{ display:"flex", gap:6, alignItems:"center", flexShrink:0 }}>
+            <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}
+              style={{ padding:"4px 10px" }}>
+              <span style={{ fontSize:22, lineHeight:1, fontWeight:900 }}>+</span> Band
+            </Btn>
+            <Btn variant="outline" size="sm" onClick={()=>{setShowAccount(true);setNewPw("");setNewPw2("");}}>⚙ Konto</Btn>
           </div>
         </div>
       </header>
       {showAccount&&<Modal title="Konto" onClose={()=>setShowAccount(false)}>
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
           <div style={{ color:C.grayDim, fontSize:12 }}>Angemeldet als</div>
-          <div style={{ color:C.white, fontSize:14, fontWeight:600 }}>{user.email}</div>
+          <div style={{ color:C.white, fontSize:14, fontWeight:600, wordBreak:"break-all" }}>{user.email}</div>
+          <SealLine/>
+          <Btn full variant="outline" onClick={()=>{ setShowAccount(false); runBackup(); }}>⬇ Backup sichern</Btn>
           <SealLine/>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase" }}>Passwort ändern</div>
           <Field value={newPw} onChange={setNewPw} type="password" placeholder="Neues Passwort…"/>
@@ -190,14 +178,16 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
               show("Fehler: " + (err&&err.message ? err.message : "unbekannt"), "error");
             }
             setPwSaving(false);
-          }}>{pwSaving?"Speichere…":"Passwort speichern ✓"}</Btn>
+          }}>{pwSaving?"Speichere…":"Passwort speichern"}</Btn>
           {newPw&&newPw.length<6&&<div style={{ color:C.grayDim, fontSize:11 }}>Mindestens 6 Zeichen.</div>}
           {newPw&&newPw2&&newPw!==newPw2&&<div style={{ color:C.red, fontSize:11 }}>Passwörter stimmen nicht überein.</div>}
+          <SealLine/>
+          <Btn full variant="ghost" onClick={onLogout}>Abmelden</Btn>
         </div>
       </Modal>}
       <SealLine/>
-      <main style={{ flex:1, maxWidth:720, margin:"0 auto", padding:"40px 24px", width:"100%", boxSizing:"border-box" }}>
-        <div style={{ marginBottom:28 }}>
+      <main style={{ flex:1, maxWidth:720, margin:"0 auto", padding:"32px 20px", width:"100%", boxSizing:"border-box" }}>
+        <div style={{ marginBottom:24 }}>
           <h2 style={{ color:C.white, fontSize:24, fontWeight:900, marginBottom:6, fontFamily:"'Space Mono',monospace" }}>Deine Bands</h2>
           <p style={{ color:C.grayDim, fontSize:13 }}>Songdatenbank & Setlist-Manager</p>
         </div>
@@ -213,7 +203,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
               const logo = getBandLogo(band.name);
               return (
                 <div key={band.id} onClick={()=>onSelect(band)}
-                  style={{ background:"#111", border:"1px solid #1a1a1a", borderRadius:8, cursor:"pointer", position:"relative", overflow:"hidden", transition:"border-color .2s,transform .2s", display:"flex", flexDirection:"column" }}
+                  style={{ background:"#111", border:"1px solid #1a1a1a", borderRadius:8, cursor:"pointer", position:"relative", overflow:"hidden", display:"flex", flexDirection:"column" }}
                   onMouseEnter={e=>{e.currentTarget.style.borderColor=band.color+"88";e.currentTarget.style.transform="translateY(-2px)";}}
                   onMouseLeave={e=>{e.currentTarget.style.borderColor="#1a1a1a";e.currentTarget.style.transform="none";}}>
                   <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:"linear-gradient(90deg,transparent,"+band.color+",transparent)", zIndex:2 }}/>
@@ -224,9 +214,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
                   </div>
                   <div style={{ borderTop:"1px solid #1a1a1a", padding:"10px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", background:C.bgCard }}>
                     <span style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase" }}>Songs & Setlist</span>
-                    <div style={{ display:"flex", alignItems:"center", gap:8 }} onClick={e=>e.stopPropagation()}>
-                      <Badge color={band.color}>{count} Songs</Badge>
-                    </div>
+                    <Badge color={band.color}>{count} Songs</Badge>
                   </div>
                 </div>
               );
@@ -234,7 +222,6 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           </div>
         )}
       </main>
-      <SealLine/>
       <footer style={{ padding:"12px 24px", textAlign:"center" }}>
         <div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em" }}>THOMAS SCHUSTER · <span style={{ color:C.teal }}>SCHLAGFERTIG‽</span></div>
       </footer>
@@ -243,14 +230,14 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
         <Modal title="Backup – Daten sichern" onClose={()=>setBackupText(null)}>
           <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
             <div style={{ color:C.grayDim, fontSize:12, lineHeight:1.5 }}>
-              Markiere den Text und kopiere ihn, oder nutze „Kopieren". Sichere ihn z.B. in einer Notiz oder Mail. So hast du ein Backup all deiner Bands, Songs und Setlists.
+              Markiere den Text und kopiere ihn. So hast du ein Backup aller Bands, Songs und Setlists.
             </div>
             <textarea readOnly value={backupText} onFocus={e=>e.target.select()}
               style={{ width:"100%", height:240, background:"#0a0a0a", border:"1px solid #222", borderRadius:4, color:"#cfcfcf", fontFamily:"monospace", fontSize:11, padding:10, whiteSpace:"pre", boxSizing:"border-box" }}/>
             <Btn full onClick={()=>{
               if (navigator.clipboard&&navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(backupText).then(()=>show("Backup kopiert! 📋")).catch(()=>show("Bitte manuell markieren & kopieren"));
-              } else { show("Bitte manuell markieren & kopieren"); }
+                navigator.clipboard.writeText(backupText).then(()=>show("Backup kopiert!")).catch(()=>show("Bitte manuell kopieren"));
+              } else { show("Bitte manuell kopieren"); }
             }}>📋 Kopieren</Btn>
           </div>
         </Modal>
@@ -258,13 +245,9 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
       {delBand && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }}>
           <div style={{ background:C.bgCard, border:"1px solid "+C.redBorder, borderRadius:8, padding:28, maxWidth:360, width:"90%" }}>
-            <p style={{ color:C.red, fontSize:14, fontWeight:700, marginBottom:8, letterSpacing:"0.04em" }}>⚠ Band wirklich löschen?</p>
-            <p style={{ color:C.gray, fontSize:13, marginBottom:6, lineHeight:1.5 }}>
-              „{delBand.name}" wird mit <strong style={{color:C.white}}>allen Songs, Gigs und Setlists</strong> unwiderruflich gelöscht.
-            </p>
-            <p style={{ color:C.grayDim, fontSize:12, marginBottom:18 }}>Diese Aktion kann nicht rückgängig gemacht werden.</p>
-            <SealLine color={C.red}/>
-            <div style={{ display:"flex", gap:8, justifyContent:"flex-end", marginTop:14 }}>
+            <p style={{ color:C.red, fontSize:14, fontWeight:700, marginBottom:8 }}>Band wirklich löschen?</p>
+            <p style={{ color:C.gray, fontSize:13, marginBottom:18 }}>Alle Songs, Gigs und Setlists werden gelöscht.</p>
+            <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
               <Btn variant="ghost" onClick={()=>setDelBand(null)}>Abbrechen</Btn>
               <Btn variant="danger" disabled={delSaving} onClick={handleDeleteBand}>{delSaving?<Spinner/>:"Endgültig löschen"}</Btn>
             </div>
