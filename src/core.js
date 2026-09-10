@@ -2,13 +2,17 @@ import { LOGO_HARDYS_DATA } from "./logoHardys";
 
 const SUPABASE_URL = "https://hstwhmqwxmvlobvygsty.supabase.co";
 const SUPABASE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
+  "eyJhbGciOiJIUz1NiIsInR5cCI6IkpXVCJ9" +
   ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzdHdobXF3eG12bG9idnlnc3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MDE3NjAsImV4cCI6MjA5NTE3Nzc2MH0" +
   ".DZK81qIrUo3gLldLO344T_wY_Al1MSzg3oCASPkaVqo";
 
 const LOGO_DARK  = "/Logo-dark.png";
 const LOGO_LIGHT = "/Logo-light.png";
-function getLogo() { return C.white === "#fff" ? LOGO_DARK : LOGO_LIGHT; }
+const LOGO_FULL  = "/Logo-full.png";
+function getLogo(kind) {
+  if (kind === "print") return LOGO_FULL;
+  return LOGO_FULL;
+}
 
 const LOGO_HARDYS = "/logo-hardys.svg";
 const LOGO_GESCHWISTERLIED = "/logo-geschwisterlied.svg";
@@ -193,7 +197,7 @@ const dStyle = d => {
 };
 
 export {
-  SUPABASE_URL, SUPABASE_KEY, LOGO_DARK, LOGO_LIGHT, getLogo, getBandLogo, bandLogoImgStyle,
+  SUPABASE_URL, SUPABASE_KEY, LOGO_DARK, LOGO_LIGHT, LOGO_FULL, getLogo, getBandLogo, bandLogoImgStyle,
   LOGO_HARDYS_DATA,
   fetchWithTimeout, sb, THEMES, C, applyTheme, SETS, DRUMMER_COLORS,
   EXTRA_DRUMMER_PALETTE, dStyle
