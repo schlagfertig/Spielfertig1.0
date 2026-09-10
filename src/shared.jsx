@@ -103,7 +103,7 @@ function SharedView({ playlistId }) {
         {songsInSet.length===0
           ? <div style={{ textAlign:"center", color:C.grayDim, padding:32, fontSize:14 }}>Keine Songs in diesem Set</div>
           : songsInSet.map((song,i)=>{
-              const st = dStyle(song.drummer);
+              const st = prefs.drummer ? dStyle(song.drummer) : { bg:"#0d0d0d", border:"#1a1a1a" };
               const dCol = drummerColor(song.drummer);
               const notesOpen = prefs.notes && notesIdx===i;
               const lyricsOpen = prefs.lyrics && lyricsIdx===i;
@@ -124,7 +124,7 @@ function SharedView({ playlistId }) {
                   <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
                     {prefs.lyrics && song.lyrics&&<FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setLyricsIdx(x=>x===i?null:i)}/>}
                     {prefs.click && song.bpm>0&&<GigMetronome bpm={song.bpm} size={50}/>}
-                    {song.drummer&&<div style={{ color:dCol, border:"1px solid "+dCol, borderRadius:4, padding:"4px 10px", fontSize:12, fontWeight:700, letterSpacing:"0.08em" }}>{song.drummer}</div>}
+                    {prefs.drummer && song.drummer&&<div style={{ color:dCol, border:"1px solid "+dCol, borderRadius:4, padding:"4px 10px", fontSize:12, fontWeight:700, letterSpacing:"0.08em" }}>{song.drummer}</div>}
                   </div>
                 </div>
                 <SongFold notes={prefs.notes?song.specialties:""} lyrics={prefs.lyrics?song.lyrics:""} notesOpen={notesOpen} lyricsOpen={lyricsOpen} border={st.border}/>
