@@ -9,6 +9,26 @@ const SealLine = ({ color = C.teal }) => (
   </div>
 );
 
+function Bang({ size=28, color }) {
+  const fill = color || C.teal;
+  return (
+    <svg width={Math.round(size*0.52)} height={size} viewBox="0 0 22 42" aria-hidden="true"
+      style={{ display:"inline-block", verticalAlign:"-0.18em", marginLeft:2 }}>
+      <path fill={fill} d="M11 1.6c-5.1 0-8.8 3.2-8.8 7.8 0 2.5 1.2 4.1 3.5 5.8 1.8 1.3 2.7 2.2 3 3.6L9.4 24h3.2l.5-4.8c.4-2 1.7-3.2 3.9-4.8 2.5-1.8 4-3.9 4-6.9 0-4.2-4-5.9-10-5.9z"/>
+      <path d="M13.4 3.2 L8.2 24.2" stroke={fill} strokeWidth="2.3" strokeLinecap="round"/>
+      <circle cx="11" cy="37.2" r="3.4" fill={fill}/>
+    </svg>
+  );
+}
+
+function BrandWordmark({ size=34 }) {
+  return (
+    <div style={{ color:C.white, fontWeight:400, fontSize:size, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em", lineHeight:1, display:"inline-flex", alignItems:"flex-end" }}>
+      SPIELFERTIG<Bang size={Math.round(size*0.92)}/>
+    </div>
+  );
+}
+
 function Btn({ children, onClick, variant="primary", size="md", disabled, full, style:s={} }) {
   const sz = { sm:{padding:"5px 11px",fontSize:11}, md:{padding:"8px 18px",fontSize:12}, lg:{padding:"12px 28px",fontSize:13} };
   const vr = {
@@ -21,9 +41,9 @@ function Btn({ children, onClick, variant="primary", size="md", disabled, full, 
 }
 
 function Field({ value, onChange, placeholder, type="text", rows, style:s={} }) {
-  const base = { background:C.bgCard, border:"1px solid "+C.grayDim, color:C.white, borderRadius:4, padding:"9px 12px", fontSize:13, fontFamily:"inherit", outline:"none", width:"100%", boxSizing:"border-box", ...s };
-  if (rows) return <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows} onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor=C.grayDim} style={{...base,resize:"vertical",lineHeight:1.6}}/>;
-  return <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor=C.grayDim} style={base}/>;
+  const base = { background:"#0a0a0a", border:"1px solid #2a2a2a", color:C.white, borderRadius:6, padding:"12px 14px", fontSize:15, fontFamily:"inherit", outline:"none", width:"100%", boxSizing:"border-box", ...s };
+  if (rows) return <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows} onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor="#2a2a2a"} style={{...base,resize:"vertical",lineHeight:1.6}}/>;
+  return <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoCapitalize="none" autoCorrect="off" onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor="#2a2a2a"} style={base}/>;
 }
 
 function Sel({ value, onChange, options, style:s={} }) {
@@ -31,12 +51,12 @@ function Sel({ value, onChange, options, style:s={} }) {
 }
 
 function Badge({ children, color }) {
-  return <span style={{ color, border:`1px solid ${color}`, fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:2, letterSpacing:"0.08em", textTransform:"uppercase" }}>{children}</span>;
+  return <span style={{ color, border:"1px solid "+color, fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:2, letterSpacing:"0.08em", textTransform:"uppercase" }}>{children}</span>;
 }
 
 function Toast({ msg, type, onClose }) {
   useEffect(()=>{ const t=setTimeout(onClose,3200); return ()=>clearTimeout(t); },[]);
-  return <div style={{ position:"fixed", bottom:24, right:24, zIndex:9999, background:type==="error"?"#1a0000":"#001a16", border:`1px solid ${type==="error"?C.red:C.teal}`, color:type==="error"?C.red:C.teal, padding:"10px 18px", borderRadius:4, fontSize:12, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", animation:"fadeUp .2s ease" }}>{msg}</div>;
+  return <div style={{ position:"fixed", bottom:24, right:24, zIndex:9999, background:type==="error"?"#1a0000":"#001a16", border:"1px solid "+(type==="error"?C.red:C.teal), color:type==="error"?C.red:C.teal, padding:"10px 18px", borderRadius:4, fontSize:12, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", animation:"fadeUp .2s ease" }}>{msg}</div>;
 }
 
 function Confirm({ msg, onOk, onCancel }) {
@@ -80,7 +100,7 @@ function SealIcon({ size=40 }) {
 }
 
 function Spinner() {
-  return <div style={{ width:20, height:20, border:`2px solid #222`, borderTop:`2px solid ${C.teal}`, borderRadius:"50%", animation:"spin .7s linear infinite" }}/>;
+  return <div style={{ width:20, height:20, border:"2px solid #222", borderTop:"2px solid "+C.teal, borderRadius:"50%", animation:"spin .7s linear infinite" }}/>;
 }
 
-export { SealLine, Btn, Field, Sel, Badge, Toast, Confirm, Modal, SealIcon, Spinner };
+export { SealLine, Bang, BrandWordmark, Btn, Field, Sel, Badge, Toast, Confirm, Modal, SealIcon, Spinner };
