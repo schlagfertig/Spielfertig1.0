@@ -35,11 +35,12 @@ export default function App() {
   }, []);
 
   useEffect(()=>{
+    if (shareId) { setLoading(false); return; }
     const token = localStorage.getItem("sf_token");
     const u     = localStorage.getItem("sf_user");
     if (token && u) { sb._token = token; setUser(JSON.parse(u)); }
     else setLoading(false);
-  },[]);
+  },[shareId]);
 
   const loadAll = useCallback(async () => {
     if (!sb._token) return;
@@ -75,7 +76,7 @@ export default function App() {
     } catch(_) {}
   },[user]);
 
-  useEffect(()=>{ if(user) { joinPendingInvites().then(loadAll); } },[user,loadAll,joinPendingInvites]);
+  useEffect(()=>{ if(user && !shareId) { joinPendingInvites().then(loadAll); } },[user,loadAll,joinPendingInvites,shareId]);
 
   const handleAuth = (u) => { setUser(u); };
   const handleLogout = async () => { await sb.auth.signOut(); setUser(null); setBands([]); setSongs([]); setGigs([]); setPls([]); setPS([]); };

@@ -16,32 +16,36 @@ function SharedView({ playlistId }) {
   const [prefs, togglePref]     = useViewPrefs();
 
   useEffect(()=>{
+    let cancelled = false;
     (async()=>{
       try {
-        const pls = await sb.query("playlists", { select:"*", filter:"id=eq."+playlistId });
+        const q = (table, options) => sb.query(table, { ...options, anon: true });
+        const pls = await q("playlists", { select:"*", filter:"id=eq."+playlistId });
         const playlist = Array.isArray(pls)&&pls[0] ? pls[0] : null;
-        if (!playlist) { setError("Setlist nicht gefunden oder nicht freigegeben."); setLoading(false); return; }
-        const ps = await sb.query("playlist_songs", { select:"*", filter:"playlist_id=eq."+playlistId, order:"position.asc" });
+        if (!playlist) { if (!cancelled) { setError("Setlist nicht gefunden oder nicht freigegeben."); setLoading(false); } return; }
+        const ps = await q("playlist_songs", { select:"*", filter:"playlist_id=eq."+playlistId, order:"position.asc" });
         const psArr = Array.isArray(ps) ? ps : [];
         const ids = [...new Set(psArr.map(p=>p.song_id))];
         let songs = [];
         if (ids.length) {
-          const sres = await sb.query("songs", { select:"*", filter:"id=in.("+ids.join(",")+")" });
+          const sres = await q("songs", { select:"*", filter:"id=in.("+ids.join(",")+")" });
           songs = Array.isArray(sres) ? sres : [];
         }
         let bandName = "";
-        const gres = await sb.query("gigs", { select:"*", filter:"id=eq."+playlist.gig_id });
+        const gres = await q("gigs", { select:"*", filter:"id=eq."+playlist.gig_id });
         const gig = Array.isArray(gres)&&gres[0] ? gres[0] : null;
         if (gig) {
-          const bres = await sb.query("bands", { select:"*", filter:"id=eq."+gig.band_id });
+          const bres = await q("bands", { select:"*", filter:"id=eq."+gig.band_id });
           if (Array.isArray(bres)&&bres[0]) bandName = bres[0].name;
         }
         const firstSet = SETS.find(s=>psArr.some(p=>p.set_name===s)) || "Set 1";
+        if (cancelled) return;
         setActiveSet(firstSet);
         setData({ playlist, ps:psArr, songs, bandName });
-      } catch(e) { setError("Fehler beim Laden."); }
-      setLoading(false);
+      } catch(e) { if (!cancelled) setError("Fehler beim Laden."); }
+      if (!cancelled) setLoading(false);
     })();
+    return () => { cancelled = true; };
   },[playlistId]);
 
   const drummerColor = (d) => d==="Ron" ? C.red : d==="Tom" ? C.teal : C.gray;

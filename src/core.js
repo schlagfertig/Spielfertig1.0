@@ -89,13 +89,22 @@ const sb = {
       Authorization: "Bearer " + t
     };
   },
+  anonHeaders: () => ({
+    "Content-Type": "application/json",
+    apikey: SUPABASE_KEY,
+    Authorization: "Bearer " + SUPABASE_KEY,
+  }),
   _token: null,
   async query(table, options = {}) {
     let url = SUPABASE_URL + "/rest/v1/" + table + "?";
     if (options.select)  url += "select=" + encodeURIComponent(options.select) + "&";
     if (options.filter)  url += options.filter + "&";
     if (options.order)   url += "order=" + options.order + "&";
-    const res = await fetchWithTimeout(url, { headers: { ...sb.headers(), Prefer: "return=representation" } }, 20000);
+    const headers = {
+      ...(options.anon ? sb.anonHeaders() : sb.headers()),
+      Prefer: "return=representation",
+    };
+    const res = await fetchWithTimeout(url, { headers }, 20000);
     return parseJsonSafe(res);
   },
   async insert(table, data) {
