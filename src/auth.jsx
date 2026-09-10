@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C, sb, getLogo } from "./core";
-import { SealLine, Btn, Field, SealIcon, BrandWordmark, Bang } from "./ui";
+import { SealLine, Btn, Field } from "./ui";
 
 function pickErr(res) {
   if (!res || typeof res !== "object") return "";
@@ -52,19 +52,15 @@ function AuthScreen({ onAuth }) {
   };
 
   return (
-    <div style={{ minHeight:"100vh", background:"#000", position:"relative", overflow:"hidden", display:"flex", flexDirection:"column" }}>
-      <img src={getLogo()} alt="" aria-hidden="true"
-        style={{ position:"absolute", left:"50%", top:"46%", transform:"translate(-50%,-50%)", width:"min(92vw,560px)", height:"auto", opacity:0.07, pointerEvents:"none", userSelect:"none" }}/>
-
-      <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"28px 20px 20px", position:"relative", zIndex:1 }}>
+    <div style={{ minHeight:"100vh", background:"#000", display:"flex", flexDirection:"column" }}>
+      <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"32px 20px 16px" }}>
         <div style={{ width:"100%", maxWidth:400 }}>
-          <div style={{ textAlign:"center", marginBottom:26 }}>
-            <SealIcon size={72}/>
-            <div style={{ marginTop:14 }}><BrandWordmark size={40}/></div>
-            <div style={{ color:"#555", fontSize:10, letterSpacing:"0.22em", marginTop:8, textTransform:"uppercase" }}>Zeit für guten Sound</div>
+          <div style={{ textAlign:"center", marginBottom:22 }}>
+            <img src={getLogo()} alt="Spiel Fertig"
+              style={{ width:"min(72vw,260px)", height:"auto", objectFit:"contain", display:"block", margin:"0 auto" }}/>
           </div>
 
-          <div style={{ background:"rgba(13,13,13,0.86)", border:"1px solid #1c1c1c", borderRadius:14, padding:"22px 20px 20px", boxShadow:"0 18px 50px rgba(0,0,0,.45)" }}>
+          <div style={{ background:"#0d0d0d", border:"1px solid #1c1c1c", borderRadius:14, padding:"22px 20px 20px" }}>
             <SealLine/>
             <div style={{ display:"flex", gap:6, margin:"16px 0 14px" }}>
               {[{k:"login",l:"Anmelden"},{k:"register",l:"Registrieren"}].map(({k,l})=>(
@@ -86,10 +82,6 @@ function AuthScreen({ onAuth }) {
             </div>
           </div>
         </div>
-      </div>
-
-      <div style={{ textAlign:"center", padding:"0 16px 22px", position:"relative", zIndex:1, color:"#3a3a3a", fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-        Thomas Schuster · SCHLAGFERTIG<Bang size={12} color="#5cc8b8"/>
       </div>
     </div>
   );
