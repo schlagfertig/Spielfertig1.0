@@ -1,16 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 660" role="img" aria-label="Spiel Fertig">
-  <rect width="760" height="660" fill="#000"/>
-  <g fill="none" stroke="#5cc8b8" stroke-linecap="butt">
-    <path d="M90 318 A290 290 0 0 1 670 318" stroke-width="11"/>
-    <path d="M142 318 A238 238 0 0 1 618 318" stroke-width="7"/>
-    <path d="M192 318 A188 188 0 0 1 568 318" stroke-width="5"/>
-    <path d="M90 342 A290 290 0 0 0 670 342" stroke-width="11"/>
-    <path d="M142 342 A238 238 0 0 0 618 342" stroke-width="7"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 700" role="img" aria-label="Spiel Fertig">
+  <rect width="800" height="700" fill="#000"/>
+  <defs>
+    <clipPath id="topHalf"><rect x="0" y="0" width="800" height="318"/></clipPath>
+    <clipPath id="botHalf"><rect x="0" y="382" width="800" height="318"/></clipPath>
+    <path id="nameArc" d="M 248 448 A 152 152 0 0 0 552 448"/>
+  </defs>
+  <g clip-path="url(#topHalf)" fill="none" stroke="#5cc8b8">
+    <circle cx="400" cy="350" r="270" stroke-width="12"/>
+    <circle cx="400" cy="350" r="216" stroke-width="8"/>
+    <circle cx="400" cy="350" r="166" stroke-width="5"/>
   </g>
-  <rect x="64" y="298" width="632" height="64" fill="#000"/>
-  <line x1="64" y1="298" x2="696" y2="298" stroke="#5cc8b8" stroke-width="8"/>
-  <line x1="64" y1="362" x2="696" y2="362" stroke="#5cc8b8" stroke-width="8"/>
-  <text x="380" y="346" text-anchor="middle" fill="#fff" font-family="Arial Narrow, Arial, Helvetica, sans-serif" font-size="56" font-weight="700" letter-spacing="7">SPIEL FERTIG?</text>
-  <text x="380" y="428" text-anchor="middle" fill="#fff" font-family="Georgia, 'Times New Roman', serif" font-size="26" font-style="italic" letter-spacing="1">Thomas Schuster</text>
-  <path d="M208 286 L340 432 L572 162" fill="none" stroke="#fff" stroke-width="56" stroke-linecap="butt" stroke-linejoin="miter"/>
+  <g clip-path="url(#botHalf)" fill="none" stroke="#5cc8b8">
+    <circle cx="400" cy="350" r="270" stroke-width="12"/>
+    <circle cx="400" cy="350" r="216" stroke-width="8"/>
+  </g>
+  <rect x="68" y="318" width="664" height="64" fill="#000"/>
+  <line x1="68" y1="318" x2="732" y2="318" stroke="#5cc8b8" stroke-width="8"/>
+  <line x1="68" y1="382" x2="732" y2="382" stroke="#5cc8b8" stroke-width="8"/>
+  <text x="400" y="366" text-anchor="middle" fill="#fff" font-family="Arial Narrow, Arial, Helvetica, sans-serif" font-size="52" font-weight="700" letter-spacing="7">SPIEL FERTIG?</text>
+  <text fill="#fff" font-family="Georgia, Times New Roman, serif" font-size="24" font-style="italic">
+    <textPath href="#nameArc" startOffset="50%" text-anchor="middle">Thomas Schuster</textPath>
+  </text>
+  <path d="M218 298 L352 456 L598 166" fill="none" stroke="#fff" stroke-width="56" stroke-linecap="butt" stroke-linejoin="miter"/>
 </svg>
