@@ -16,7 +16,7 @@ function getLogo(kind) {
   return LOGO_DARK;
 }
 
-const LOGO_HARDYS = "/logo-hardys.svg";
+const LOGO_HARDYS = LOGO_HARDYS_DATA;
 const LOGO_GESCHWISTERLIED = "/logo-geschwisterlied.svg";
 function getBandLogo(name) {
   if (!name) return null;
