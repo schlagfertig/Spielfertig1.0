@@ -2,7 +2,7 @@ import { useState } from "react";
 import { C } from "./core";
 
 const KEY = "sf_view_prefs";
-const DEFAULTS = { notes: true, lyrics: true, click: true, drummer: true };
+const DEFAULTS = { notes: true, lyrics: true, click: true, drummer: true, chart: true };
 
 function readPrefs() {
   try {
@@ -50,6 +50,7 @@ function ViewPrefBar({ prefs, toggle }) {
       <PrefChip on={prefs.lyrics}  label="📓 Lyrics"  onClick={()=>toggle("lyrics")} />
       <PrefChip on={prefs.click}   label="⏱ Click"    onClick={()=>toggle("click")} />
       <PrefChip on={prefs.drummer} label="🥁 Drummer" onClick={()=>toggle("drummer")} />
+      <PrefChip on={prefs.chart}   label="▦ Chart"    onClick={()=>toggle("chart")} />
     </div>
   );
 }
