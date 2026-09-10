@@ -3,6 +3,7 @@ import { C, SETS, dStyle } from "./core";
 import { GigMetronome } from "./gig";
 import { SongFold, FoldBtn } from "./songPanels";
 import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
+import { ChartStrip, hasChart, songChart, songNotes } from "./chart";
 
 const REGULAR_SETS = SETS.filter(s => s !== "Zugaben");
 
@@ -56,7 +57,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
       return;
     }
     setCurrentSongId(song.ps_id);
-    if (prefs.notes && song.specialties) setGigNotesId(song.ps_id);
+    if (prefs.notes && songNotes(song)) setGigNotesId(song.ps_id);
   };
 
   const switchSet = (set) => {
@@ -102,10 +103,12 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           const opacity = !currentSongId ? 1 : isCurrent ? 1 : isNext ? 0.75 : 0.35;
           const dCol = drummerColor(song.drummer);
           const ron = prefs.drummer && song.drummer==="Ron";
+          const notes = songNotes(song);
+          const chart = songChart(song);
           const notesOpen = prefs.notes && gigNotesId === song.ps_id;
           const lyricsOpen = prefs.lyrics && gigLyricsId === song.ps_id;
-          const foldOpen = (notesOpen && song.specialties) || (lyricsOpen && song.lyrics);
-          const preview = (prefs.notes && !notesOpen && song.specialties) ? firstNoteLine(song.specialties) : "";
+          const foldOpen = (notesOpen && notes) || (lyricsOpen && song.lyrics);
+          const preview = (prefs.notes && !notesOpen && notes) ? firstNoteLine(notes) : "";
           const encoreIdx = isEncore ? songsInSet.filter((s,j)=>j<=i && (s.set_name==="Zugaben"||s.isEncore)).length : 0;
           const setNum = songsInSet.slice(0,i+1).filter(s=>s.set_name!=="Zugaben"&&!s.isEncore).length;
           return (
@@ -138,7 +141,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                       ? <div style={{color:C.textMute,fontSize:10,letterSpacing:".04em"}}>NEXT</div>
                       : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{isEncore ? encoreIdx : setNum}</div>}
                 </div>
-                {prefs.notes && song.specialties && (
+                {prefs.notes && notes && (
                   <FoldBtn on={notesOpen} title="Notizen" icon="📝" onClick={()=>setGigNotesId(id=>id===song.ps_id?null:song.ps_id)}/>
                 )}
                 <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
@@ -157,6 +160,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                       {preview}
                     </div>
                   )}
+                  {prefs.chart && isCurrent && hasChart(chart) && <ChartStrip chart={chart}/>}
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0,marginLeft:"auto"}}>
                   {prefs.click && song.bpm>0&&<GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
@@ -169,7 +173,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                 </div>
               </div>
               <SongFold
-                notes={prefs.notes ? song.specialties : ""}
+                notes={prefs.notes ? notes : ""}
                 lyrics={prefs.lyrics ? song.lyrics : ""}
                 notesOpen={notesOpen}
                 lyricsOpen={lyricsOpen}

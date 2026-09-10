@@ -4,6 +4,7 @@ import { SealIcon, Spinner } from "./ui";
 import { GigMetronome } from "./gig";
 import { SongFold, FoldBtn } from "./songPanels";
 import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
+import { ChartLine, hasChart, songChart, songNotes } from "./chart";
 
 function SharedView({ playlistId }) {
   const [data, setData]         = useState(null);
@@ -70,7 +71,7 @@ function SharedView({ playlistId }) {
 
   return (
     <div style={{ position:"fixed", inset:0, background:"#000", display:"flex", flexDirection:"column", overflow:"hidden", fontFamily:"'Raleway',sans-serif" }}>
-      <style>{"@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#000}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}"}</style>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#000}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}" }</style>
       <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", display:"flex", alignItems:"center", justifyContent:"center" }}>
         <img src={getLogo()} alt="" style={{ width:340, height:"auto", objectFit:"contain", opacity:0.07, userSelect:"none" }}/>
       </div>
@@ -105,20 +106,23 @@ function SharedView({ playlistId }) {
           : songsInSet.map((song,i)=>{
               const st = prefs.drummer ? dStyle(song.drummer) : { bg:"#0d0d0d", border:"#1a1a1a" };
               const dCol = drummerColor(song.drummer);
+              const notes = songNotes(song);
+              const chart = songChart(song);
               const notesOpen = prefs.notes && notesIdx===i;
               const lyricsOpen = prefs.lyrics && lyricsIdx===i;
-              const foldOpen = (notesOpen && song.specialties) || (lyricsOpen && song.lyrics);
-              const preview = (prefs.notes && !notesOpen && song.specialties)
-                ? String(song.specialties).split(/\r?\n/).map(l=>l.trim()).find(Boolean)
+              const foldOpen = (notesOpen && notes) || (lyricsOpen && song.lyrics);
+              const preview = (prefs.notes && !notesOpen && notes)
+                ? String(notes).split(/\r?\n/).map(l=>l.trim()).find(Boolean)
                 : "";
               return (
                 <div key={i} style={{ display:"flex", flexDirection:"column" }}>
                 <div style={{ background:st.bg, border:"1px solid "+st.border, borderRadius: foldOpen?"7px 7px 0 0":7, padding:"9px 13px", display:"flex", alignItems:"center", gap:10 }}>
                   <div style={{ color:C.grayDim, fontSize:13, fontFamily:"'Space Mono',monospace", width:22, textAlign:"right", flexShrink:0 }}>{song.position}</div>
-                  {prefs.notes && song.specialties&&<FoldBtn on={notesOpen} title="Notizen" icon="📝" onClick={()=>setNotesIdx(x=>x===i?null:i)}/>}
+                  {prefs.notes && notes&&<FoldBtn on={notesOpen} title="Notizen" icon="📝" onClick={()=>setNotesIdx(x=>x===i?null:i)}/>}
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ color:C.white, fontWeight:600, fontFamily:"'Raleway',sans-serif", fontSize:21, lineHeight:1.15, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{song.title}</div>
                     <div style={{ color:"#888", fontSize:12, marginTop:1 }}>{song.artist}{song.bpm>0&&<span style={{ color:"#555", fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:8 }}>{song.bpm}</span>}</div>
+                    {prefs.chart && hasChart(chart) && <ChartLine chart={chart}/>}
                     {preview&&<div style={{ color:"#bbb", fontSize:12, fontStyle:"italic", marginTop:2, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{preview}</div>}
                   </div>
                   <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
@@ -127,7 +131,7 @@ function SharedView({ playlistId }) {
                     {prefs.drummer && song.drummer&&<div style={{ color:dCol, border:"1px solid "+dCol, borderRadius:4, padding:"4px 10px", fontSize:12, fontWeight:700, letterSpacing:"0.08em" }}>{song.drummer}</div>}
                   </div>
                 </div>
-                <SongFold notes={prefs.notes?song.specialties:""} lyrics={prefs.lyrics?song.lyrics:""} notesOpen={notesOpen} lyricsOpen={lyricsOpen} border={st.border}/>
+                <SongFold notes={prefs.notes?notes:""} lyrics={prefs.lyrics?song.lyrics:""} notesOpen={notesOpen} lyricsOpen={lyricsOpen} border={st.border}/>
               </div>
               );
             })}
