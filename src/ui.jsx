@@ -76,14 +76,28 @@ function Confirm({ msg, onOk, onCancel }) {
 }
 
 function Modal({ title, onClose, children }) {
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <div style={{ background:C.bgCard, border:"1px solid "+C.grayDim, borderRadius:8, padding:26, maxWidth:440, width:"90%" }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+    <div
+      onClick={onClose}
+      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:"16px 12px", boxSizing:"border-box" }}
+    >
+      <div
+        onClick={e=>e.stopPropagation()}
+        style={{ background:C.bgCard, border:"1px solid "+C.grayDim, borderRadius:8, width:"100%", maxWidth:440, maxHeight:"92dvh", display:"flex", flexDirection:"column", overflow:"hidden" }}
+      >
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"16px 18px 10px", flexShrink:0 }}>
           <span style={{ color:C.teal, fontWeight:700, fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase" }}>{title}</span>
           <Btn variant="ghost" size="sm" onClick={onClose}>✕</Btn>
         </div>
-        <SealLine/><div style={{ marginTop:14 }}>{children}</div>
+        <div style={{ padding:"0 18px", flexShrink:0 }}><SealLine/></div>
+        <div style={{ marginTop:10, padding:"0 18px 20px", overflowY:"auto", WebkitOverflowScrolling:"touch", overscrollBehavior:"contain", flex:"1 1 auto", minHeight:0 }}>
+          {children}
+        </div>
       </div>
     </div>
   );
