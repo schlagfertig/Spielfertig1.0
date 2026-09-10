@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { C, sb, getLogo } from "./core";
 import { SealLine, Btn, Field, BrandWordmark } from "./ui";
+import { LegalLinks } from "./legal";
 
 function pickErr(res) {
   if (!res || typeof res !== "object") return "";
@@ -62,7 +63,7 @@ function AuthScreen({ onAuth }) {
           opacity:0.05, pointerEvents:"none", userSelect:"none"
         }}/>
 
-      <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"28px 20px 20px", position:"relative", zIndex:1 }}>
+      <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"28px 20px 12px", position:"relative", zIndex:1 }}>
         <div style={{ width:"100%", maxWidth:400 }}>
           <div style={{ textAlign:"center", marginBottom:22 }}>
             <div style={{ display:"flex", justifyContent:"center", marginBottom:10 }}>
@@ -97,6 +98,9 @@ function AuthScreen({ onAuth }) {
             </div>
           </div>
         </div>
+      </div>
+      <div style={{ position:"relative", zIndex:1, padding:"8px 16px 18px", textAlign:"center" }}>
+        <LegalLinks/>
       </div>
     </div>
   );
