@@ -3,9 +3,9 @@ import { BrandWordmark, SealLine } from "./ui";
 
 export const LEGAL = {
   name: "Thomas Schuster",
-  street: "",
-  zip: "",
-  city: "",
+  street: "Mittleres Höfle 10",
+  zip: "86916",
+  city: "Kaufering",
   country: "Deutschland",
   email: "thomas-schuster83@gmx.de",
   brand: "SPIELFERTIG‽",
