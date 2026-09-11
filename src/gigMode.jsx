@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C, SETS, dStyle } from "./core";
+import { useIsNarrow, HeadToggle } from "./ui";
 import { GigMetronome } from "./gig";
 import { SongFold, FoldBtn } from "./songPanels";
 import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
@@ -18,6 +19,9 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
   const [gigLyricsId, setGigLyricsId] = useState(null);
   const [gigNotesId, setGigNotesId] = useState(null);
   const [prefs, togglePref] = useViewPrefs();
+  const narrow = useIsNarrow();
+  const [headOpen, setHeadOpen] = useState(false);
+  const showExtra = !narrow || headOpen;
   useWakeLock(true);
 
   const drummerColor = (d) => d==="Ron" ? C.red : d==="Tom" ? C.teal : C.gray;
@@ -46,10 +50,13 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
 
   return (
     <div style={{position:"fixed",inset:0,background:C.bg,zIndex:200,display:"flex",flexDirection:"column",overflow:"hidden"}}>
-      <div style={{background:C.bgCard,borderBottom:"1px solid "+C.grayDim,padding:"12px 20px",display:"flex",alignItems:"center",gap:12,flexShrink:0,flexWrap:"wrap"}}>
+      <div style={{background:C.bgCard,borderBottom:"1px solid "+C.grayDim,padding: narrow ? "8px 12px" : "12px 20px",display:"flex",alignItems:"center",gap:8,flexShrink:0,flexWrap:"wrap"}}>
         <button onClick={onClose} title="Gig-Mode schließen" style={{background:"transparent",border:"1px solid "+C.tealBorder,borderRadius:8,color:C.teal,cursor:"pointer",fontSize:26,lineHeight:1,padding:"6px 14px",flexShrink:0}}>✕</button>
-        <button onClick={toggleTheme} title="Hell/Dunkel" style={{background:"transparent",border:"1px solid "+C.tealBorder,borderRadius:"50%",color:C.teal,cursor:"pointer",fontSize:18,width:40,height:40,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>{theme==="dark"?"☀️":"🌙"}</button>
-        <div style={{flex:1,color:C.white,fontWeight:400,fontSize:24,fontFamily:"'Bebas Neue',cursive",letterSpacing:"0.05em"}}>{playlist.name}</div>
+        {showExtra && (
+          <button onClick={toggleTheme} title="Hell/Dunkel" style={{background:"transparent",border:"1px solid "+C.tealBorder,borderRadius:"50%",color:C.teal,cursor:"pointer",fontSize:18,width:40,height:40,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>{theme==="dark"?"☀️":"🌙"}</button>
+        )}
+        <div style={{flex:1,minWidth:0,color:C.white,fontWeight:400,fontSize: narrow ? 18 : 24,fontFamily:"'Bebas Neue',cursive",letterSpacing:"0.05em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{playlist.name}</div>
+        {narrow && <HeadToggle open={headOpen} onClick={()=>setHeadOpen(o=>!o)}/>}
         <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
           {gigTabs.map(set=>{
             const n = setCounts[set]||0;
@@ -66,7 +73,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
             );
           })}
         </div>
-        <ViewPrefBar prefs={prefs} toggle={togglePref} />
+        {showExtra && <ViewPrefBar prefs={prefs} toggle={togglePref} />}
       </div>
       <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:5}}>
         {songsInSet.map((song,i)=>{

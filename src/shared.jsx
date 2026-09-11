@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { C, sb, SETS, dStyle, getBandLogo, getLogo, bandLogoImgStyle } from "./core";
-import { SealIcon, Spinner } from "./ui";
+import { SealIcon, Spinner, useIsNarrow, HeadToggle } from "./ui";
 import { GigMetronome } from "./gig";
 import { SongFold, FoldBtn } from "./songPanels";
 import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
@@ -15,6 +15,9 @@ function SharedView({ playlistId }) {
   const [lyricsIdx, setLyricsIdx] = useState(null);
   const [notesIdx, setNotesIdx]   = useState(null);
   const [prefs, togglePref]     = useViewPrefs();
+  const narrow = useIsNarrow();
+  const [headOpen, setHeadOpen] = useState(false);
+  const showExtra = !narrow || headOpen;
   useWakeLock(true);
 
   useEffect(()=>{
@@ -82,17 +85,18 @@ function SharedView({ playlistId }) {
         <img src={getLogo()} alt="" style={{ width:340, height:"auto", objectFit:"contain", opacity:0.07, userSelect:"none" }}/>
       </div>
       <div style={{ background:"#0a0a0a", borderBottom:"1px solid #1a1a1a", flexShrink:0, position:"relative", zIndex:1 }}>
-        {bandLogo&&(
+        {bandLogo && showExtra && (
           <div style={{ padding:"16px 18px 8px", display:"flex", justifyContent:"center", borderBottom:"1px solid #111" }}>
             <img src={bandLogo} alt={data.bandName} style={bandLogoImgStyle({ height:100, maxWidth:"85%" })}/>
           </div>
         )}
-        <div style={{ padding:"10px 18px 12px" }}>
-          <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:10 }}>
+        <div style={{ padding: showExtra ? "10px 18px 12px" : "8px 14px 10px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
             <div style={{ color:C.white, fontWeight:700, fontSize:17, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.05em", flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{data.playlist.name}</div>
-            <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.1em", flexShrink:0 }}>NUR ANSICHT</div>
+            {!narrow && <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.1em", flexShrink:0 }}>NUR ANSICHT</div>}
+            {narrow && <HeadToggle open={headOpen} onClick={()=>setHeadOpen(o=>!o)}/>}
           </div>
-          <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:8 }}>
+          <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom: showExtra ? 8 : 0 }}>
             {SETS.map(set=>(
               <button key={set} onClick={()=>setActiveSet(set)} style={{
                 background:activeSet===set?C.teal:"transparent",
@@ -103,7 +107,7 @@ function SharedView({ playlistId }) {
               }}>{set} ({setCounts[set]})</button>
             ))}
           </div>
-          <ViewPrefBar prefs={prefs} toggle={togglePref} />
+          {showExtra && <ViewPrefBar prefs={prefs} toggle={togglePref} />}
         </div>
       </div>
       <div style={{ flex:1, overflowY:"auto", padding:"12px 14px", display:"flex", flexDirection:"column", gap:5, position:"relative", zIndex:1 }}>
