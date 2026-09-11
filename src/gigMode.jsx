@@ -1,35 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { C, SETS, dStyle } from "./core";
 import { GigMetronome } from "./gig";
 import { SongFold, FoldBtn } from "./songPanels";
 import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
 import { ChartStrip, hasChart, songChart, songNotes } from "./chart";
+import { useWakeLock } from "./wakeLock";
 
 const REGULAR_SETS = SETS.filter(s => s !== "Zugaben");
-
-function useWakeLock(active) {
-  useEffect(() => {
-    if (!active) return;
-    if (!("wakeLock" in navigator)) return;
-    let lock = null;
-    let cancelled = false;
-    const request = async () => {
-      try {
-        const l = await navigator.wakeLock.request("screen");
-        if (cancelled) { l.release(); return; }
-        lock = l;
-      } catch(_) {}
-    };
-    const onVisible = () => { if (document.visibilityState === "visible") request(); };
-    request();
-    document.addEventListener("visibilitychange", onVisible);
-    return () => {
-      cancelled = true;
-      document.removeEventListener("visibilitychange", onVisible);
-      if (lock) { try { lock.release(); } catch(_) {} }
-    };
-  }, [active]);
-}
 
 function firstNoteLine(text) {
   if (!text) return "";

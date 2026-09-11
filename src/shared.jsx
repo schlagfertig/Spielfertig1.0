@@ -5,6 +5,7 @@ import { GigMetronome } from "./gig";
 import { SongFold, FoldBtn } from "./songPanels";
 import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
 import { ChartLine, hasChart, songChart, songNotes } from "./chart";
+import { useWakeLock } from "./wakeLock";
 
 function SharedView({ playlistId }) {
   const [data, setData]         = useState(null);
@@ -14,6 +15,7 @@ function SharedView({ playlistId }) {
   const [lyricsIdx, setLyricsIdx] = useState(null);
   const [notesIdx, setNotesIdx]   = useState(null);
   const [prefs, togglePref]     = useViewPrefs();
+  useWakeLock(true);
 
   useEffect(()=>{
     let cancelled = false;
