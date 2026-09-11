@@ -1,5 +1,40 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { C } from "./core";
+
+function useIsNarrow(max = 720) {
+  const [narrow, setNarrow] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(max-width:" + max + "px)").matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width:" + max + "px)");
+    const on = () => setNarrow(mq.matches);
+    if (mq.addEventListener) mq.addEventListener("change", on);
+    else mq.addListener(on);
+    on();
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", on);
+      else mq.removeListener(on);
+    };
+  }, [max]);
+  return narrow;
+}
+
+function HeadToggle({ open, onClick, title }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title || (open ? "Kopfzeile einklappen" : "Kopfzeile aufklappen")}
+      aria-expanded={open}
+      style={{
+        background:"transparent", border:"1px solid "+C.tealBorder, borderRadius:6,
+        color:C.teal, cursor:"pointer", fontSize:14, lineHeight:1,
+        padding:"6px 10px", flexShrink:0, letterSpacing:"0.06em",
+        fontFamily:"inherit", fontWeight:700,
+      }}
+    >{open ? "▲" : "▼"}</button>
+  );
+}
 
 const SealLine = ({ color = C.teal }) => (
   <div style={{ display:"flex", alignItems:"center", gap:10, margin:"4px 0" }}>
@@ -64,11 +99,11 @@ function Confirm({ msg, onOk, onCancel }) {
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }}>
       <div style={{ background:C.bgCard, border:"1px solid #222", borderRadius:8, padding:28, maxWidth:340, width:"90%" }}>
-        <p style={{ color:C.white, fontSize:14, fontWeight:600, marginBottom:6 }}>Löschen bestätigen</p>
+        <p style={{ color:C.white, fontSize:14, fontWeight:600, marginBottom:6 }}>Öschen bestätigen</p>
         <p style={{ color:C.gray, fontSize:13, marginBottom:20 }}>{msg}</p>
         <SealLine/><div style={{ display:"flex", gap:8, justifyContent:"flex-end", marginTop:14 }}>
           <Btn variant="ghost" onClick={onCancel}>Abbrechen</Btn>
-          <Btn variant="danger" onClick={onOk}>Löschen</Btn>
+          <Btn variant="danger" onClick={onOk}>Öschen</Btn>
         </div>
       </div>
     </div>
@@ -118,4 +153,4 @@ function Spinner() {
   return <div style={{ width:20, height:20, border:"2px solid #222", borderTop:"2px solid "+C.teal, borderRadius:"50%", animation:"spin .7s linear infinite" }}/>;
 }
 
-export { SealLine, Bang, BrandWordmark, Btn, Field, Sel, Badge, Toast, Confirm, Modal, SealIcon, Spinner };
+export { useIsNarrow, HeadToggle, SealLine, Bang, BrandWordmark, Btn, Field, Sel, Badge, Toast, Confirm, Modal, SealIcon, Spinner };
