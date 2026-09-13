@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { C, sb, SETS } from "./core";
-import { Btn, Field, SealLine, Spinner } from "./ui";
+import { Btn, Field, SealLine, Spinner, useIsNarrow, ToolTile } from "./ui";
 import { SongRowMove } from "./songRow";
 import { exportPDF } from "./songPdf";
 import { GigMode } from "./gigMode";
@@ -13,7 +13,8 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const [activeSet, setActiveSet] = useState("Set 1");
   const [search, setSearch]       = useState("");
   const [poolSearch, setPoolSearch] = useState("");
-  const [poolOpen, setPoolOpen]   = useState(true);
+  const narrow = useIsNarrow();
+  const [poolOpen, setPoolOpen]   = useState(() => typeof window === "undefined" || window.innerWidth > 720);
   const [addSet, setAddSet]       = useState(null);
   const [saving, setSaving]       = useState(false);
   const [gigMode, setGigMode]     = useState(false);
@@ -156,28 +157,39 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
     return <GigMode playlist={playlist} songsInSet={songsInSet} setCounts={setCounts} activeSet={gigActive} onSetChange={(set)=>{ setActiveSet(set === "Zugaben" ? lastRegular : set); setSearch(""); }} theme={theme} toggleTheme={toggleTheme} onClose={()=>setGigMode(false)} canEdit={canEdit} onRefresh={onRefresh} />;
   }
 
+  const sharePl = async (e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    await sb.update("playlists", { is_shared: true }, "id=eq." + playlist.id);
+    const url = window.location.origin + "/?share=" + playlist.id;
+    if (navigator.clipboard&&navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(()=>show("Link kopiert! An Putzerfische senden 🐟")).catch(()=>show(url,"success"));
+    } else { show(url,"success"); }
+  };
+
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-        <Btn variant="ghost" size="sm" onClick={onBack}>← Zurück</Btn>
-        <div style={{ flex:1 }}>
-          <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>{playlist.name}</div>
-          <div style={{ color:C.grayDim, fontSize:11 }}>{mySongs.length} Songs gesamt{orderEdit ? " · Reihenfolge an" : " · Reihenfolge gesperrt"}</div>
+    <div style={{ display:"flex", flexDirection:"column", gap:14, minWidth:0, overflowX:"hidden" }}>
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
+          <Btn variant="ghost" size="sm" onClick={onBack} style={{ padding:"6px 8px", flexShrink:0 }}>{narrow ? "←" : "← Zurück"}</Btn>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ color:C.white, fontWeight:700, fontSize:15, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{playlist.name}</div>
+            <div style={{ color:C.grayDim, fontSize:11 }}>{mySongs.length} Songs{orderEdit ? " · Reihenfolge an" : ""}</div>
+          </div>
+          {saving&&<Spinner/>}
         </div>
-        <div style={{display:"flex",gap:3,alignItems:"center"}}>
-          {canEdit && <Btn variant={orderEdit?"primary":"outline"} size="sm" onClick={()=>setOrderEdit(o=>!o)}>{orderEdit ? "Fertig" : "↕ Reihenfolge"}</Btn>}
-          {canEdit && <Btn variant="outline" size="sm" onClick={()=>setImportOpen(true)}>📥 Import</Btn>}
-          <Btn variant="outline" size="sm" onClick={()=>setPrintOpen(true)}>🖨 PDF</Btn>
+        <div style={{ display:"flex", gap:6 }}>
+          {canEdit && <ToolTile icon="↕" label={orderEdit ? "Fertig" : "Folge"} active={orderEdit} onClick={()=>setOrderEdit(o=>!o)}/>}
+          {canEdit && <ToolTile icon="📥" label="Import" onClick={()=>setImportOpen(true)}/>}
+          <ToolTile icon="🖨" label="PDF" onClick={()=>setPrintOpen(true)}/>
+          <ToolTile icon="🔗" label="Teilen" onClick={sharePl}/>
+          <ToolTile icon="🎸" label="Gig" primary onClick={()=>setGigMode(true)}/>
         </div>
-        <Btn variant="outline" size="sm" onClick={async(e)=>{ if (e) { e.stopPropagation(); e.preventDefault(); } await sb.update("playlists", { is_shared: true }, "id=eq." + playlist.id); const url = window.location.origin + "/?share=" + playlist.id; if (navigator.clipboard&&navigator.clipboard.writeText) { navigator.clipboard.writeText(url).then(()=>show("Link kopiert! An Putzerfische senden 🐟")).catch(()=>show(url,"success")); } else { show(url,"success"); } }}>🔗 Teilen</Btn>
-        <Btn variant="primary" size="sm" onClick={()=>setGigMode(true)}>🎸 Gig</Btn>
-        {saving&&<Spinner/>}
       </div>
       <SealLine/>
-      <div style={{ background:"#071412", border:"1px solid "+C.tealBorder, borderRadius:6, padding:"8px 10px", display:"flex", gap:5, flexWrap:"wrap", alignItems:"center" }}>
-        <div style={{ color:C.teal, fontSize:9, fontWeight:800, letterSpacing:"0.16em", textTransform:"uppercase" }}>Sets</div>
+      <div style={{ background:"#071412", border:"1px solid "+C.tealBorder, borderRadius:6, padding:"8px 10px", display:"flex", gap:5, flexWrap:"nowrap", alignItems:"center", overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
+        <div style={{ color:C.teal, fontSize:9, fontWeight:800, letterSpacing:"0.16em", textTransform:"uppercase", flexShrink:0 }}>Sets</div>
         {SETS.map(set=>(
-          <button key={set} onClick={()=>{ const el = document.getElementById("set-block-"+set.replace(/\s+/g,"-")); if (el) el.scrollIntoView({ behavior:"smooth", block:"start" }); setActiveSet(set); }} style={{ background:activeSet===set?C.teal:"transparent", color:activeSet===set?"#000":C.gray, border:"1px solid "+(activeSet===set?C.teal:"#222"), borderRadius:3, padding:"5px 12px", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>
+          <button key={set} onClick={()=>{ const el = document.getElementById("set-block-"+set.replace(/\s+/g,"-")); if (el) el.scrollIntoView({ behavior:"smooth", block:"start" }); setActiveSet(set); }} style={{ background:activeSet===set?C.teal:"transparent", color:activeSet===set?"#000":C.gray, border:"1px solid "+(activeSet===set?C.teal:"#222"), borderRadius:3, padding:"5px 12px", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit", flexShrink:0 }}>
             {set} <span style={{ opacity:.7 }}>({setCounts[set]})</span>
           </button>
         ))}
@@ -191,7 +203,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           </div>
           {poolOpen && (<>
             <Field value={poolSearch} onChange={setPoolSearch} placeholder="Pool durchsuchen…"/>
-            <div style={{ color:C.grayDim, fontSize:11, margin:"6px 0 8px" }}>{orderEdit ? "Ziehen und auf ein Set legen — oder + für "+activeSet : "Reihenfolge ist gesperrt. + setzt in "+activeSet+", oder „↕ Reihenfolge“ einschalten."}</div>
+            <div style={{ color:C.grayDim, fontSize:11, margin:"6px 0 8px" }}>{orderEdit ? "Ziehen und auf ein Set legen — oder + für "+activeSet : "Reihenfolge gesperrt. + setzt in "+activeSet+"."}</div>
             {available.length===0 ? <div style={{ color:C.grayDim, fontSize:12, padding:"8px 0" }}>Keine freien Songs{pq?" für diese Suche":" — alle sind schon in der Playlist"}.</div>
             : <div style={{ display:"flex", flexDirection:"column", gap:4, maxHeight:220, overflowY:"auto" }}>
                 {available.map(song=>(
@@ -204,7 +216,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           </>)}
         </div>
       )}
-      {SETS.map((set, si) => {
+      {SETS.map((set) => {
         const list = songsBySet[set] || [];
         const isOverSet = over && over.set === set;
         return (
