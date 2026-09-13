@@ -14,10 +14,10 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
   const logo = getBandLogo(band.name);
   const hardys = /hardy/i.test(band.name || "");
   return (
-    <div style={{ minHeight:"100vh", background:C.bg }}>
+    <div style={{ minHeight:"100vh", background:C.bg, overflowX:"hidden" }}>
       <header style={{ borderBottom:"1px solid #111", background:"rgba(0,0,0,.97)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:50 }}>
-        <div style={{ maxWidth:720, margin:"0 auto", padding:"8px 16px 0", display:"flex", alignItems:"center", gap:8 }}>
-          <Btn variant="outline" size="md" onClick={onBack} style={{fontSize:20,padding:"6px 18px"}}>← Zurück</Btn>
+        <div style={{ maxWidth:720, margin:"0 auto", padding: narrow ? "8px 56px 0 12px" : "8px 16px 0", display:"flex", alignItems:"center", gap:8 }}>
+          <Btn variant="outline" size="md" onClick={onBack} style={{fontSize: narrow?18:20, padding: narrow?"6px 10px":"6px 18px", flexShrink:0}}>{narrow ? "←" : "← Zurück"}</Btn>
           {narrow && !showBrand && (
             <div style={{ flex:1, minWidth:0, color:C.white, fontFamily:"'Bebas Neue',cursive", fontSize:18, letterSpacing:"0.06em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
               {band.name}
@@ -32,14 +32,14 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
               : <div style={{ color:C.white, fontWeight:400, fontSize:26, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em" }}>{band.name}</div>}
           </div>
         )}
-        <div style={{ maxWidth:720, margin:"0 auto", padding: showBrand ? "0 16px 10px" : "8px 16px 10px", display:"flex", gap:6 }}>
+        <div style={{ maxWidth:720, margin:"0 auto", padding: showBrand ? "0 16px 10px" : "8px 12px 10px", display:"flex", gap:6 }}>
             {[{key:"songs",label:"🎶 Songs"},{key:"setlist",label:"📋 Setlist"},{key:"members",label:"👥 Team"}].map(({key,label})=>(
             <button key={key} onClick={()=>setTab(key)} style={{ flex:1, background:tab===key?C.teal:"transparent", color:tab===key?"#000":C.gray, border:`1px solid ${tab===key?C.teal:"#222"}`, borderRadius:4, padding:"8px 0", fontSize:12, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>{label}</button>
             ))}
         </div>
         <SealLine color={band.color}/>
       </header>
-      <main style={{ maxWidth:720, margin:"0 auto", padding:"20px 16px" }}>
+      <main style={{ maxWidth:720, margin:"0 auto", padding: narrow ? "14px 12px 28px" : "20px 16px", minWidth:0, overflowX:"hidden" }}>
         {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={allBands} canEdit={canEdit} onRefresh={onRefresh} show={show}/>}
         {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} canEdit={canEdit} onRefresh={onRefresh} show={show} theme={theme} toggleTheme={toggleTheme}/>}
         {tab==="members" &&<MemberManager band={band} canEdit={canEdit} show={show}/>}
