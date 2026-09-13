@@ -36,6 +36,24 @@ function HeadToggle({ open, onClick, title }) {
   );
 }
 
+function ToolTile({ icon, label, onClick, active, primary }) {
+  const on = !!(primary || active);
+  return (
+    <button type="button" onClick={onClick} style={{
+      flex: "1 1 0", minWidth: 0, display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center", gap: 4, padding: "8px 2px",
+      background: on ? C.teal : "transparent",
+      color: on ? "#000" : C.teal,
+      border: "1px solid " + (on ? C.teal : C.tealBorder),
+      borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontWeight: 700,
+      fontSize: 9, letterSpacing: "0.05em", textTransform: "uppercase",
+    }}>
+      <span style={{ fontSize: 18, lineHeight: 1 }}>{icon}</span>
+      <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:"100%" }}>{label}</span>
+    </button>
+  );
+}
+
 const SealLine = ({ color = C.teal }) => (
   <div style={{ display:"flex", alignItems:"center", gap:10, margin:"4px 0" }}>
     <div style={{ flex:1, height:1, background:color, opacity:.4 }} />
@@ -153,4 +171,4 @@ function Spinner() {
   return <div style={{ width:20, height:20, border:"2px solid #222", borderTop:"2px solid "+C.teal, borderRadius:"50%", animation:"spin .7s linear infinite" }}/>;
 }
 
-export { useIsNarrow, HeadToggle, SealLine, Bang, BrandWordmark, Btn, Field, Sel, Badge, Toast, Confirm, Modal, SealIcon, Spinner };
+export { useIsNarrow, HeadToggle, ToolTile, SealLine, Bang, BrandWordmark, Btn, Field, Sel, Badge, Toast, Confirm, Modal, SealIcon, Spinner };
