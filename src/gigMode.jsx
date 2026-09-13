@@ -193,9 +193,11 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                       ? <div style={{color:C.textMute,fontSize:10,letterSpacing:".04em"}}>NEXT</div>
                       : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{isEncore ? encoreIdx : setNum}</div>}
                 </div>
-                {prefs.notes && notes && !skippedRow && (
-                  <FoldBtn on={notesOpen} title="Notizen" icon="📝" onClick={()=>setGigNotesId(id=>id===song.ps_id?null:song.ps_id)}/>
-                )}
+                <div style={{width:36,minWidth:36,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {notes && !skippedRow && (
+                    <FoldBtn on={notesOpen} title={notesOpen?"Notiz schließen":"Notiz hinterlegt"} icon="📝" onClick={()=>setGigNotesId(id=>id===song.ps_id?null:song.ps_id)}/>
+                  )}
+                </div>
                 <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
                   <div style={{
                     color: skippedRow ? C.grayDim : isCurrent?C.white:C.textDim,
@@ -216,8 +218,13 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                   {prefs.chart && isCurrent && hasChart(chart) && <ChartStrip chart={chart}/>}
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0,marginLeft:"auto"}}>
-                  {prefs.click && song.bpm>0 && !skippedRow && !(isCurrent && currentFoldOpen) && <GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
                   {prefs.lyrics && song.lyrics && !skippedRow && <FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setGigLyricsId(id=>id===song.ps_id?null:song.ps_id)}/>}
+                  {prefs.click && song.bpm>0 && !skippedRow && !(isCurrent && currentFoldOpen) && <GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
+                  {prefs.drummer && song.drummer && !skippedRow && <div style={{
+                    color:dCol, border:"1px solid "+dCol, borderRadius:4,
+                    padding:"5px 12px", fontSize:13, fontWeight:700,
+                    letterSpacing:"0.08em", minWidth:44, textAlign:"center"
+                  }}>{song.drummer}</div>}
                   {canEdit && (
                     <button onClick={(e)=>openNotesEdit(song,e)} title="Notizen bearbeiten"
                       style={{background:"transparent",border:"1px solid #333",borderRadius:4,color:C.gray,cursor:"pointer",padding:"4px 7px",fontSize:14}}>✎</button>
@@ -226,11 +233,6 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                     style={{background: skippedRow ? C.tealDim : "transparent", border:"1px solid "+(skippedRow?C.teal:"#333"), borderRadius:4, color: skippedRow?C.teal:C.grayDim, cursor:"pointer", padding:"4px 7px", fontSize:12, fontWeight:700, letterSpacing:"0.04em"}}>
                     {skippedRow ? "AN" : "AUS"}
                   </button>
-                  {prefs.drummer && song.drummer && !skippedRow && <div style={{
-                    color:dCol, border:"1px solid "+dCol, borderRadius:4,
-                    padding:"5px 12px", fontSize:13, fontWeight:700,
-                    letterSpacing:"0.08em", minWidth:44, textAlign:"center"
-                  }}>{song.drummer}</div>}
                 </div>
               </div>
               <SongFold

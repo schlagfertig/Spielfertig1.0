@@ -141,19 +141,21 @@ function SharedView({ playlistId }) {
                 <div key={i} style={{ display:"flex", flexDirection:"column" }}>
                 <div style={{ background:skippedRow?"#0a0a0a":st.bg, border:"1px solid "+(skippedRow?"#2a2a2a":st.border), borderRadius: foldOpen?"7px 7px 0 0":7, padding:"9px 13px", display:"flex", alignItems:"center", gap:10, opacity: skippedRow?0.4:1 }}>
                   <div style={{ color:C.grayDim, fontSize:13, fontFamily:"'Space Mono',monospace", width:22, textAlign:"right", flexShrink:0 }}>{skippedRow?"⊘":song.position}</div>
-                  {prefs.notes && notes&&<FoldBtn on={notesOpen} title="Notizen" icon="📝" onClick={()=>setNotesIdx(x=>x===i?null:i)}/>}
+                  <div style={{width:36,minWidth:36,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    {notes && !skippedRow && <FoldBtn on={notesOpen} title={notesOpen?"Notiz schließen":"Notiz hinterlegt"} icon="📝" onClick={()=>setNotesIdx(x=>x===i?null:i)}/>}
+                  </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ color:C.white, fontWeight:600, fontFamily:"'Raleway',sans-serif", fontSize:21, lineHeight:1.15, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", textDecoration: skippedRow?"line-through":"none" }}>{song.title}</div>
                     <div style={{ color:"#888", fontSize:12, marginTop:1 }}>{song.artist}{song.bpm>0&&<span style={{ color:"#555", fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:8 }}>{song.bpm}</span>}</div>
                     {prefs.chart && hasChart(chart) && <ChartLine chart={chart}/>}
                     {preview&&<div style={{ color:"#bbb", fontSize:12, fontStyle:"italic", marginTop:2, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{preview}</div>}
                   </div>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
-                    {prefs.lyrics && song.lyrics&&<FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setLyricsIdx(x=>x===i?null:i)}/>}
+                  <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0, marginLeft:"auto" }}>
+                    {prefs.lyrics && song.lyrics && !skippedRow && <FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setLyricsIdx(x=>x===i?null:i)}/>}
                     {prefs.click && song.bpm>0 && !skippedRow && !(lyricsOpen && prefs.click) && <GigMetronome bpm={song.bpm} size={50}/>}
+                    {prefs.drummer && song.drummer && !skippedRow &&<div style={{ color:dCol, border:"1px solid "+dCol, borderRadius:4, padding:"4px 10px", fontSize:12, fontWeight:700, letterSpacing:"0.08em" }}>{song.drummer}</div>}
                     <button onClick={(e)=>toggleSkip(song.id,e)} title={skippedRow?"Wieder aktivieren":"Song streichen"}
                       style={{background:skippedRow?C.tealDim:"transparent",border:"1px solid "+(skippedRow?C.teal:"#333"),borderRadius:4,color:skippedRow?C.teal:C.grayDim,cursor:"pointer",padding:"3px 6px",fontSize:11,fontWeight:700}}>{skippedRow?"AN":"AUS"}</button>
-                    {prefs.drummer && song.drummer && !skippedRow &&<div style={{ color:dCol, border:"1px solid "+dCol, borderRadius:4, padding:"4px 10px", fontSize:12, fontWeight:700, letterSpacing:"0.08em" }}>{song.drummer}</div>}
                   </div>
                 </div>
                 <SongFold notes={prefs.notes?notes:""} lyrics={prefs.lyrics?song.lyrics:""} notesOpen={notesOpen} lyricsOpen={lyricsOpen} border={st.border}/>
