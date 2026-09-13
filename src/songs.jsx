@@ -23,6 +23,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
   const [atSet,    setAtSet]    = useState("Set 1");
   const [atSaving, setAtSaving] = useState(false);
   const [sortBy, setSortBy] = useState("none");
+  const [addOpen, setAddOpen] = useState(false);
   const bandSongs = songs.filter(s=>s.band_id===band.id);
   const filtered = bandSongs
     .filter(s=>s.title.toLowerCase().includes(search.toLowerCase())||(s.artist?.toLowerCase()??"").includes(search.toLowerCase()))
@@ -37,7 +38,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
     setSaving(true);
     await sb.insert("songs", { band_id:band.id, title:form.title, artist:form.artist, bpm:parseInt(form.bpm), drummer:form.drummer, specialties:packSpecialties(form.specialties, form.chart) });
     setForm({ title:"", artist:"", bpm:"", drummer:band.drummers[0]||"Tom", specialties:"", chart: emptyChart() });
-    await onRefresh(); show("Song hinzugefügt!"); setSaving(false);
+    await onRefresh(); show("Song hinzugefügt!"); setSaving(false); setAddOpen(false);
   };
   const handleDelete = async (song) => {
     await sb.delete("songs", "id=eq."+song.id);
@@ -108,9 +109,17 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
           }}>{l}</button>
         ))}
       </div>
-      <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:15 }}>
-        <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Neuer Song</div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:8 }}>
+      {canEdit && (
+      <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding: addOpen ? 15 : "10px 15px" }}>
+        <button type="button" onClick={()=>setAddOpen(o=>!o)} style={{
+          width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:8,
+          background:"transparent", border:"none", padding:0, cursor:"pointer", fontFamily:"inherit"
+        }}>
+          <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase" }}>+ Neuer Song</div>
+          <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase" }}>{addOpen ? "Einklappen ▲" : "Aufklappen ▼"}</div>
+        </button>
+        {addOpen && (<>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, margin:"12px 0 8px" }}>
           <Field value={form.title}  onChange={v=>setForm(f=>({...f,title:v}))}  placeholder="Titel *"/>
           <Field value={form.artist} onChange={v=>setForm(f=>({...f,artist:v}))} placeholder="Artist *"/>
           <Field value={form.bpm}    onChange={v=>setForm(f=>({...f,bpm:v}))}    placeholder="BPM *" type="number"/>
@@ -124,7 +133,9 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
           <Field value={form.specialties} onChange={v=>setForm(f=>({...f,specialties:v}))} placeholder={"z.B. Count-In\nBD auf 1\nSchluss: Keys"} rows={3}/>
         </div>
         <Btn full disabled={!form.title||!form.artist||!form.bpm||saving} onClick={handleAdd}>{saving?<Spinner/>:"Song hinzufügen"}</Btn>
+        </>)}
       </div>
+      )}
       <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
         {filtered.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:32, fontSize:13 }}>Keine Songs</div>
         :filtered.map(song=>(
