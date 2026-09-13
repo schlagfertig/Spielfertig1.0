@@ -1,6 +1,6 @@
 import { C } from "./core";
 
-function SongFold({ notes, lyrics, notesOpen, lyricsOpen, border, compact }) {
+function SongFold({ notes, lyrics, notesOpen, lyricsOpen, border, compact, onEditNotes }) {
   const showN = !!(notesOpen && notes);
   const showL = !!(lyricsOpen && lyrics);
   if (!showN && !showL) return null;
@@ -29,7 +29,12 @@ function SongFold({ notes, lyrics, notesOpen, lyricsOpen, border, compact }) {
           borderRight: sideBySide ? "1px solid "+border : "none",
           boxSizing:"border-box",
         }}>
-          <div style={{ color:C.teal, fontSize:10, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:8 }}>Notizen</div>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+            <div style={{ color:C.teal, fontSize:10, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase", flex:1 }}>Notizen</div>
+            {onEditNotes && (
+              <button onClick={onEditNotes} style={{ background:"transparent", border:"none", color:C.teal, cursor:"pointer", fontSize:14, padding:0 }}>✎</button>
+            )}
+          </div>
           <div style={{ color:C.lyricsText, fontSize:fs, lineHeight:1.6, whiteSpace:"pre-wrap", fontStyle:"italic" }}>{notes}</div>
         </div>
       )}

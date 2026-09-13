@@ -47,7 +47,6 @@ export default function App() {
 
   const loadAll = useCallback(async () => {
     if (!sb._token) return;
-    setLoading(true);
     try {
       const [b,s,g,pl,ps] = await Promise.all([
         sb.query("bands",         { select:"*", order:"created_at.asc" }),
