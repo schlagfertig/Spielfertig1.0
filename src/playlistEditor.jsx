@@ -28,6 +28,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const [importText, setImportText] = useState("");
   const [importClear, setImportClear] = useState(true);
   const dragRef = useRef(null);
+  const [picked, setPicked] = useState([]);
 
   const mySongs  = playlistSongs.filter(ps=>ps.playlist_id===playlist.id);
   const bandSongs= allSongs.filter(s=>s.band_id===bandId);
@@ -55,6 +56,27 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const importHits = matchedImport.filter(r => r.song);
   const importMiss = matchedImport.filter(r => !r.song);
 
+  const togglePick = (song) => {
+    if (!song || saving) return;
+    setPicked(list => list.some(s => s.id === song.id) ? list.filter(s => s.id !== song.id) : [...list, song]);
+  };
+  const addManyToSet = async (songs, setName) => {
+    const batch = (songs || []).filter(s => s && !usedIds.has(s.id));
+    if (!batch.length || saving) return;
+    setSaving(true);
+    let pos = mySongs.filter(ps=>ps.set_name===setName&&ps.playlist_id===playlist.id).length;
+    const seen = new Set();
+    for (const song of batch) {
+      if (seen.has(song.id)) continue;
+      seen.add(song.id);
+      pos += 1;
+      await sb.insert("playlist_songs", { playlist_id:playlist.id, song_id:song.id, set_name:setName, position:pos });
+    }
+    setPicked([]);
+    await onRefresh();
+    setSaving(false);
+    if (show) show(seen.size + " Songs in " + setName);
+  };
   const addToSet = async (song, setName, toPos) => {
     if (!song || saving) return;
     setSaving(true);
@@ -203,13 +225,32 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           </div>
           {poolOpen && (<>
             <Field value={poolSearch} onChange={setPoolSearch} placeholder="Pool durchsuchen…"/>
-            <div style={{ color:C.grayDim, fontSize:11, margin:"6px 0 8px" }}>{orderEdit ? "Ziehen und auf ein Set legen — oder + für "+activeSet : "Reihenfolge gesperrt. + setzt in "+activeSet+"."}</div>
+            <div style={{ color:C.grayDim, fontSize:11, margin:"6px 0 8px" }}>{orderEdit ? "Ziehen und auf ein Set legen — oder antippen zum Sammeln." : "Antippen sammelt in Tipp-Reihenfolge. Dann Set wählen."}</div>
+            {picked.length>0 && (
+              <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:8, padding:"8px", background:"#071412", border:"1px solid "+C.tealBorder, borderRadius:6 }}>
+                <div style={{ color:C.teal, fontSize:11, fontWeight:800, letterSpacing:"0.08em", textTransform:"uppercase" }}>{picked.length} gewählt · Tipp-Reihenfolge</div>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>
+                  {picked.map((s,i)=>(
+                    <button key={s.id} type="button" onClick={()=>togglePick(s)} style={{ background:"#0d0d0d", border:"1px solid "+C.tealBorder, color:C.white, borderRadius:4, padding:"3px 7px", fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>{i+1}. {s.title}</button>
+                  ))}
+                </div>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:5, alignItems:"center" }}>
+                  {SETS.map(set=>(
+                    <Btn key={set} size="sm" disabled={saving} onClick={()=>addManyToSet(picked, set)}>→ {set.replace("Set ","S")}</Btn>
+                  ))}
+                  <Btn variant="ghost" size="sm" onClick={()=>setPicked([])}>Leeren</Btn>
+                </div>
+              </div>
+            )}
             {available.length===0 ? <div style={{ color:C.grayDim, fontSize:12, padding:"8px 0" }}>Keine freien Songs{pq?" für diese Suche":" — alle sind schon in der Playlist"}.</div>
             : <div style={{ display:"flex", flexDirection:"column", gap:4, maxHeight:220, overflowY:"auto" }}>
                 {available.map(song=>(
-                  <div key={song.id} onPointerDown={orderEdit?(e)=>{ e.preventDefault(); beginDrag({ kind:"pool", song }, e); setGhost({ x:e.clientX, y:e.clientY }); }:undefined} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"7px 8px", background:"#0d0d0d", borderRadius:4, border:"1px solid "+(dragId==="pool-"+song.id?C.teal:"#1a1a1a"), opacity: dragId==="pool-"+song.id ? .45 : 1, cursor: orderEdit?"grab":"default", touchAction: orderEdit?"none":"auto", userSelect:"none" }}>
-                    <div style={{ minWidth:0 }}><span style={{ color:C.white, fontSize:13 }}>{song.title}</span><span style={{ color:C.grayDim, fontSize:12 }}> · {song.artist}</span></div>
-                    <div onPointerDown={e=>e.stopPropagation()}><Btn size="sm" onClick={(e)=>{ e.stopPropagation(); addToSet(song, activeSet); }}>＋ {activeSet.replace("Set ","S")}</Btn></div>
+                  <div key={song.id} onClick={()=>{ if (!orderEdit) togglePick(song); }} onPointerDown={orderEdit?(e)=>{ e.preventDefault(); beginDrag({ kind:"pool", song }, e); setGhost({ x:e.clientX, y:e.clientY }); }:undefined} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"7px 8px", background: picked.some(s=>s.id===song.id)?"#071412":"#0d0d0d", borderRadius:4, border:"1px solid "+(dragId==="pool-"+song.id||picked.some(s=>s.id===song.id)?C.teal:"#1a1a1a"), opacity: dragId==="pool-"+song.id ? .45 : 1, cursor: orderEdit?"grab":"pointer", touchAction: orderEdit?"none":"auto", userSelect:"none" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
+                      <div style={{ width:22, height:22, borderRadius:11, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, fontFamily:"'Space Mono',monospace", background: picked.some(s=>s.id===song.id)?C.teal:"#151515", color: picked.some(s=>s.id===song.id)?"#000":C.grayDim }}>{picked.findIndex(s=>s.id===song.id)>=0 ? picked.findIndex(s=>s.id===song.id)+1 : ""}</div>
+                      <div style={{ minWidth:0 }}><span style={{ color:C.white, fontSize:13 }}>{song.title}</span><span style={{ color:C.grayDim, fontSize:12 }}> · {song.artist}</span></div>
+                    </div>
+                    <div onPointerDown={e=>e.stopPropagation()} onClick={e=>e.stopPropagation()}><Btn size="sm" onClick={(e)=>{ e.stopPropagation(); addToSet(song, activeSet); }}>＋ {activeSet.replace("Set ","S")}</Btn></div>
                   </div>
                 ))}
               </div>}
@@ -230,11 +271,20 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
                 {available.length===0 ? <div style={{ color:C.grayDim, fontSize:12 }}>Keine freien Songs.</div>
                 : <div style={{ display:"flex", flexDirection:"column", gap:4, maxHeight:180, overflowY:"auto" }}>
                     {available.map(song=>(
-                      <div key={song.id} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"5px 8px", background:"#0d0d0d", borderRadius:3 }}>
-                        <div><span style={{ color:C.white, fontSize:13 }}>{song.title}</span><span style={{ color:C.grayDim, fontSize:12 }}> · {song.artist}</span></div>
-                        <Btn size="sm" onClick={()=>addToSet(song, set)} disabled={saving}>+</Btn>
+                      <div key={song.id} onClick={()=>togglePick(song)} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"5px 8px", background: picked.some(s=>s.id===song.id)?"#071412":"#0d0d0d", border:"1px solid "+(picked.some(s=>s.id===song.id)?C.teal:"transparent"), borderRadius:3, cursor:"pointer" }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
+                          <div style={{ width:20, textAlign:"center", color:C.teal, fontSize:11, fontWeight:800, fontFamily:"'Space Mono',monospace" }}>{picked.findIndex(s=>s.id===song.id)>=0 ? picked.findIndex(s=>s.id===song.id)+1 : ""}</div>
+                          <div><span style={{ color:C.white, fontSize:13 }}>{song.title}</span><span style={{ color:C.grayDim, fontSize:12 }}> · {song.artist}</span></div>
+                        </div>
+                        <div onClick={e=>e.stopPropagation()}><Btn size="sm" onClick={()=>addToSet(song, set)} disabled={saving}>+</Btn></div>
                       </div>
                     ))}
+                    {picked.length>0 && (
+                      <div style={{ display:"flex", gap:6, marginTop:8 }}>
+                        <Btn size="sm" disabled={saving} onClick={()=>addManyToSet(picked, set)}>{picked.length} in {set} übernehmen</Btn>
+                        <Btn variant="ghost" size="sm" onClick={()=>setPicked([])}>Leeren</Btn>
+                      </div>
+                    )}
                   </div>}
               </div>
             )}
