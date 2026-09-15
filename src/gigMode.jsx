@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { C, SETS, dStyle, sb } from "./core";
 import { useIsNarrow, HeadToggle, Btn, Field, Modal } from "./ui";
 import { GigMetronome, BpmBadge } from "./gig";
@@ -35,11 +35,27 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
   const [editSong, setEditSong] = useState(null);
   const [editNotes, setEditNotes] = useState("");
   const [editSaving, setEditSaving] = useState(false);
+  const listRef = useRef(null);
+  const nowRef = useRef(null);
   useWakeLock(true);
 
   useEffect(() => {
     try { sessionStorage.setItem("sf_skip_" + playlist.id, JSON.stringify(skipped)); } catch (_) {}
   }, [skipped, playlist.id]);
+
+  useEffect(() => {
+    if (!currentSongId) return;
+    const list = listRef.current;
+    const el = nowRef.current;
+    if (!list || !el) return;
+    const pin = () => {
+      const top = list.getBoundingClientRect().top;
+      const y = el.getBoundingClientRect().top;
+      list.scrollTo({ top: list.scrollTop + (y - top) - 6, behavior: "smooth" });
+    };
+    const id = requestAnimationFrame(() => requestAnimationFrame(pin));
+    return () => cancelAnimationFrame(id);
+  }, [currentSongId]);
 
   const skipSet = new Set(skipped);
   const isSkipped = (song) => skipSet.has(song.ps_id);
@@ -150,7 +166,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           </div>
         )}
       </div>
-      <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:5,paddingBottom: showDock ? (showClickDock ? 180 : 140) : 10}}>
+      <div ref={listRef} style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:5,paddingBottom: showDock ? (showClickDock ? 180 : 140) : 10}}>
         {songsInSet.map((song,i)=>{
           const skippedRow = isSkipped(song);
           const isEncore = song.set_name === "Zugaben" || song.isEncore;
@@ -163,7 +179,6 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           const isNext = !skippedRow && currentSongId && !isCurrent && thisLiveIdx === currentLiveIdxRow + 1;
           const opacity = skippedRow ? 0.38 : !currentSongId ? 1 : isCurrent ? 1 : isNext ? 0.75 : 0.35;
           const dCol = drummerColor(song.drummer);
-          const ron = prefs.drummer && song.drummer==="Ron";
           const notes = songNotes(song);
           const chart = songChart(song);
           const notesOpen = !skippedRow && prefs.notes && gigNotesId === song.ps_id;
@@ -173,7 +188,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           const encoreIdx = isEncore ? songsInSet.filter((s,j)=>j<=i && (s.set_name==="Zugaben"||s.isEncore)).length : 0;
           const setNum = songsInSet.slice(0,i+1).filter(s=>s.set_name!=="Zugaben"&&!s.isEncore).length;
           return (
-            <div key={song.ps_id || song.id} style={{ display:"flex", flexDirection:"column" }}>
+            <div key={song.ps_id || song.id} ref={isCurrent ? nowRef : null} style={{ display:"flex", flexDirection:"column" }}>
               {showEncoreHead && (
                 <div style={{
                   margin:"10px 4px 6px",
@@ -193,7 +208,6 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                   chart={chart}
                   prefs={prefs}
                   narrow={narrow}
-                  ron={ron}
                   lyricsOpen={lyricsOpen}
                   canEdit={canEdit}
                   onPick={()=>pickSong(song)}
