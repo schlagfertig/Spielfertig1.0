@@ -1,5 +1,5 @@
 // SPIELFERTIG – Service Worker
-const CACHE = 'spielfertig-v50';
+const CACHE = 'spielfertig-v51';
 const PRECACHE = ['/', '/index.html', '/Logo-dark.png', '/Logo-light.png'];
 
 self.addEventListener('install', e => {
@@ -17,7 +17,7 @@ self.addEventListener('fetch', e => {
   try { url = new URL(req.url); } catch (_) { return; }
   if (url.origin !== self.location.origin) return;
   if (url.hostname.includes('supabase.co')) return;
-  const isDocOrScript = req.destination === 'document' || req.destination === 'script' || req.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html') || url.pathname.endsWith('.js') || url.pathname.endsWith('.jsx');
+  const isDocOrScript = req.destination === 'document' || req.destination === 'script' || req.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html') || url.pathname.endsWith('.jsx') || url.pathname.endsWith('.js');
   if (isDocOrScript) {
     e.respondWith(fetch(req).then(response => {
       if (response && response.ok) { const clone = response.clone(); caches.open(CACHE).then(c => c.put(req, clone)); }
