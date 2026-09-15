@@ -13,7 +13,7 @@ function BpmBadge({ bpm, size=44 }) {
   );
 }
 
-function GigMetronome({ bpm, autoStart, size=44 }) {
+function GigMetronome({ bpm, autoStart, size=44, now=false, accent }) {
   const { active, beat, toggle, start, stop } = useMetronome(bpm);
   const userMuted = useRef(false);
   const owned = useRef(false);
@@ -40,10 +40,17 @@ function GigMetronome({ bpm, autoStart, size=44 }) {
     toggle(e);
   };
   const large = size >= 72;
-  const on = active || beat;
-  const fill = beat ? "rgba(92,200,184,0.32)" : active ? "rgba(92,200,184,0.12)" : "transparent";
-  const ring = beat ? "#fff" : active ? C.teal : "#2a2a2a";
-  const num = beat ? "#fff" : active ? C.teal : C.grayDim;
+  const paint = accent || C.teal;
+  const fill = now
+    ? (beat ? "#fff" : paint)
+    : (beat ? "rgba(92,200,184,0.32)" : active ? "rgba(92,200,184,0.12)" : "transparent");
+  const ring = now
+    ? (beat ? "#fff" : paint)
+    : (beat ? "#fff" : active ? C.teal : "#2a2a2a");
+  const num = now
+    ? (beat ? paint : "#000")
+    : (beat ? "#fff" : active ? C.teal : C.grayDim);
+  const labelCol = now ? (beat ? paint : "#000") : (active || beat ? C.teal : C.grayDim);
   const bpmSize = Math.max(12, Math.round(size * (large ? 0.36 : 0.34)));
   const labelSize = Math.max(8, Math.round(size * 0.11));
   return (
@@ -60,10 +67,12 @@ function GigMetronome({ bpm, autoStart, size=44 }) {
         alignItems: "center",
         justifyContent: "center",
         boxShadow: beat
-          ? "0 0 24px 7px " + C.tealBorder
-          : active
-            ? "0 0 12px 3px " + C.tealBorder
-            : "none",
+          ? "0 0 24px 7px " + (now ? paint : C.tealBorder)
+          : now
+            ? "0 0 16px 3px " + paint
+            : active
+              ? "0 0 12px 3px " + C.tealBorder
+              : "none",
         transform: beat ? "scale(1.07)" : "scale(1)",
         transition: "transform .05s linear, background .05s linear, box-shadow .05s linear, border-color .05s linear",
         flexShrink: 0,
@@ -79,14 +88,14 @@ function GigMetronome({ bpm, autoStart, size=44 }) {
         }}>{bpm}</div>
         {large && (
           <div style={{
-            color: on ? C.teal : C.grayDim,
+            color: labelCol,
             fontSize: labelSize,
             fontWeight: 800,
             letterSpacing: "0.16em",
             textTransform: "uppercase",
             marginTop: 4,
-            opacity: beat ? 1 : 0.8,
-          }}>BPM</div>
+            opacity: 0.85,
+          }}>{now ? "Now" : "BPM"}</div>
         )}
       </div>
     </button>
