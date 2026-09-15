@@ -3,6 +3,7 @@ import { C, SETS, dStyle, sb } from "./core";
 import { useIsNarrow, HeadToggle, Btn, Field, Modal } from "./ui";
 import { GigMetronome, BpmBadge } from "./gig";
 import { GigDock } from "./gigDock";
+import { GigNowCard } from "./gigNow";
 import { SongFold, FoldBtn } from "./songPanels";
 import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
 import { ChartStrip, hasChart, songChart, songNotes, packSpecialties, chartSummary } from "./chart";
@@ -64,13 +65,11 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
       return;
     }
     setCurrentSongId(song.ps_id);
-    if (prefs.notes && songNotes(song)) setGigNotesId(song.ps_id);
   };
 
   const selectSong = (song) => {
     if (!song || isSkipped(song)) return;
     setCurrentSongId(song.ps_id);
-    if (prefs.notes && songNotes(song)) setGigNotesId(song.ps_id);
   };
 
   const switchSet = (set) => {
@@ -187,20 +186,33 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                   textAlign:"center"
                 }}>● ZUGABEN ●</div>
               )}
+              {isCurrent ? (
+                <GigNowCard
+                  song={song}
+                  notes={notes}
+                  chart={chart}
+                  prefs={prefs}
+                  narrow={narrow}
+                  ron={ron}
+                  lyricsOpen={lyricsOpen}
+                  canEdit={canEdit}
+                  onPick={()=>pickSong(song)}
+                  onLyrics={()=>setGigLyricsId(id=>id===song.ps_id?null:song.ps_id)}
+                  onEdit={(e)=>openNotesEdit(song,e)}
+                  onSkip={(e)=>toggleSkip(song,e)}
+                />
+              ) : (
               <div onClick={()=>pickSong(song)}
                 style={{
-                  background: skippedRow ? "#0a0a0a" : isCurrent ? (ron?C.redDim:C.tealDim) : isNext ? C.bgNext : "transparent",
-                  border: "2px solid " + (skippedRow ? "#2a2a2a" : isCurrent ? (ron?C.red:C.teal) : isNext ? C.borderNext : C.borderSong),
+                  background: skippedRow ? "#0a0a0a" : isNext ? C.bgNext : "transparent",
+                  border: "2px solid " + (skippedRow ? "#2a2a2a" : isNext ? C.borderNext : C.borderSong),
                   borderRadius: foldOpen ? "7px 7px 0 0" : 7,
                   padding:"9px 13px", display:"flex", alignItems:"center", gap:10,
-                  cursor: skippedRow ? "default" : "pointer", opacity, transition:"all .2s",
-                  boxShadow: isCurrent ? "0 0 16px 2px " + (ron?C.redBorder:C.tealBorder) : "none"
+                  cursor: skippedRow ? "default" : "pointer", opacity, transition:"all .2s"
                 }}>
                 <div style={{width:28,textAlign:"center",flexShrink:0}}>
                   {skippedRow
                     ? <div style={{color:C.grayDim,fontSize:11,letterSpacing:".04em"}}>⊘</div>
-                    : isCurrent
-                    ? <div style={{color:ron?C.red:C.teal,fontSize:16}}>▶</div>
                     : isNext
                       ? <div style={{color:C.textMute,fontSize:10,letterSpacing:".04em"}}>NEXT</div>
                       : <div style={{color:C.grayDim,fontSize:13,fontFamily:"'Space Mono',monospace"}}>{isEncore ? encoreIdx : setNum}</div>}
@@ -212,28 +224,27 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                 </div>
                 <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
                   <div style={{
-                    color: skippedRow ? C.grayDim : isCurrent?C.white:C.textDim,
+                    color: skippedRow ? C.grayDim : C.textDim,
                     fontFamily:"'Raleway',sans-serif", fontWeight:600,
-                    fontSize: isCurrent?24:isNext?19:21,
-                    lineHeight:1.15, transition:"font-size .2s",
+                    fontSize: isNext?19:21,
+                    lineHeight:1.15,
                     whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis",
                     textDecoration: skippedRow ? "line-through" : "none"
                   }}>{song.title}</div>
-                  <div style={{color:isCurrent?C.gray:C.textMute,fontSize:11,marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                  <div style={{color:C.textMute,fontSize:11,marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
                     {skippedRow ? "gestrichen" : song.artist}
                   </div>
                   {preview && !skippedRow && (
-                    <div style={{color:isCurrent?C.gray:C.textMute,fontSize:12,fontStyle:"italic",marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                    <div style={{color:C.textMute,fontSize:12,fontStyle:"italic",marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
                       {preview}
                     </div>
                   )}
-                  {prefs.chart && isCurrent && hasChart(chart) && <ChartStrip chart={chart}/>}
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0,marginLeft:"auto"}}>
                   {prefs.lyrics && song.lyrics && !skippedRow && <FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setGigLyricsId(id=>id===song.ps_id?null:song.ps_id)}/>}
                   {prefs.click && song.bpm>0 && !skippedRow && (
                     showClickDock
-                      ? (isCurrent ? null : <BpmBadge bpm={song.bpm} size={54}/>)
+                      ? <BpmBadge bpm={song.bpm} size={54}/>
                       : <GigMetronome bpm={song.bpm} autoStart={false} size={54}/>
                   )}
                   {prefs.drummer && song.drummer && !skippedRow && <div style={{
@@ -251,6 +262,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                   </button>
                 </div>
               </div>
+              )}
               <SongFold
                 notes={prefs.notes ? notes : ""}
                 lyrics={prefs.lyrics ? song.lyrics : ""}
