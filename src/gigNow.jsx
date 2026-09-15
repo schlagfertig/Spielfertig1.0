@@ -3,22 +3,21 @@ import { FoldBtn } from "./songPanels";
 import { ChartStrip, hasChart } from "./chart";
 
 export function GigNowCard({
-  song, notes, chart, prefs, narrow, ron,
+  song, notes, chart, prefs, narrow,
   lyricsOpen, canEdit, onPick, onLyrics, onEdit, onSkip,
 }) {
   const lines = notes ? notes.split(/\r?\n/).map(l => l.trim()).filter(Boolean).slice(0, 3) : [];
-  const fill = ron ? C.red : C.teal;
   return (
     <div onClick={onPick} style={{
-      background: fill,
-      border: "2px solid " + fill,
+      background: C.teal,
+      border: "2px solid " + C.teal,
       borderRadius: 12,
       padding: narrow ? "12px 14px" : "14px 18px",
       display: "flex",
       alignItems: "center",
       gap: narrow ? 12 : 20,
       cursor: "pointer",
-      boxShadow: "0 0 22px 2px " + (ron ? C.redBorder : C.tealBorder),
+      boxShadow: "0 0 22px 2px " + C.tealBorder,
       minHeight: narrow ? 96 : 112,
       color: "#000",
     }}>

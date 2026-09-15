@@ -8,7 +8,6 @@ export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChar
   const noteLines = nextSong
     ? songNotes(nextSong).split(/\r?\n/).map(l => l.trim()).filter(Boolean).slice(0, 3)
     : [];
-  const nowAccent = current && current.drummer === "Ron" ? C.red : C.teal;
   return (
     <div style={{
       flexShrink:0, background:"#071412", borderTop:"1px solid "+C.tealBorder,
@@ -17,7 +16,7 @@ export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChar
     }}>
       {showClick && current && (
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-          <GigMetronome bpm={current.bpm} autoStart size={clickSize} now accent={nowAccent}/>
+          <GigMetronome bpm={current.bpm} autoStart size={clickSize} now accent={C.teal}/>
         </div>
       )}
       <button
