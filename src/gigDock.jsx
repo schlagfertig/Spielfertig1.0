@@ -1,9 +1,13 @@
 import { C } from "./core";
 import { GigMetronome } from "./gig";
+import { songNotes } from "./chart";
 
 export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChartText, narrow, onNext, showClick }) {
   const disabled = !nextSong || (current && nextSong.ps_id === current.ps_id);
   const clickSize = narrow ? 112 : 148;
+  const nextNotes = nextSong
+    ? songNotes(nextSong).split(/\r?\n/).map(l => l.trim()).filter(Boolean).slice(0, 2).join(" \u00b7 ")
+    : "";
   return (
     <div style={{
       flexShrink:0, background:"#071412", borderTop:"1px solid "+C.tealBorder,
@@ -41,7 +45,12 @@ export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChar
             {bpmNow && bpmDelta ? (bpmNow + "  \u2192  " + bpmNext + (bpmDelta > 0 ? "  \u2191" : "  \u2193")) : ((bpmNext || bpmNow) + " BPM")}
           </div>
         ) : null}
-        {nextSong && nextChartText ? (
+        {nextNotes ? (
+          <div style={{ fontFamily:"'Raleway',sans-serif", fontWeight:600, fontStyle:"italic", fontSize: narrow ? 14 : 16, marginTop:6, lineHeight:1.25, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+            {nextNotes}
+          </div>
+        ) : null}
+        {!nextNotes && nextSong && nextChartText ? (
           <div style={{ fontFamily:"'Raleway',sans-serif", fontWeight:600, fontSize:12, marginTop:4, opacity:.7, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
             {nextChartText}
           </div>
