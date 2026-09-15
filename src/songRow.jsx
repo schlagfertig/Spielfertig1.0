@@ -3,7 +3,7 @@ import { C, sb, SETS, dStyle } from "./core";
 import { Btn, Badge } from "./ui";
 import { useMetronome } from "./audio";
 import { SongFold, FoldBtn } from "./songPanels";
-import { ChartLine, packSpecialties, songNotes, songChart } from "./chart";
+import { ChartLine, packSpecialties, songNotes, songChart, songDuration, formatDuration } from "./chart";
 
 function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, onDragOver, isDragging, dropActive, extra, showDrummer=true, onGripPointerDown }) {
   const st = dStyle(song.drummer);
@@ -38,6 +38,7 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
             <div style={{ color:C.gray, fontSize:12 }}>
               {song.artist}
               {song.bpm>0&&<span style={{ color:active?C.teal:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6, transition:"color .2s" }}>{song.bpm} BPM</span>}
+              {songDuration(song)>0&&<span style={{ color:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6 }}>{formatDuration(songDuration(song))}</span>}
             </div>
             <ChartLine chart={chart}/>
           </div>
@@ -81,7 +82,7 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
       for (let i=0;i<newOthers.length;i++) await sb.update("playlist_songs",{set_name:targetSet,position:i+1},"id=eq."+newOthers[i].id);
     }
     if (notes !== songNotes(song)) {
-      await sb.update("songs", { specialties: packSpecialties(notes, songChart(song)) }, "id=eq."+song.id);
+      await sb.update("songs", { specialties: packSpecialties(notes, songChart(song), songDuration(song)) }, "id=eq."+song.id);
     }
     await onRefresh(); setSaving(false);
   };
