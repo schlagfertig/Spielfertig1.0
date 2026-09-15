@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { C, SETS, dStyle, sb } from "./core";
 import { useIsNarrow, HeadToggle, Btn, Field, Modal } from "./ui";
 import { GigMetronome } from "./gig";
+import { GigDock } from "./gigDock";
 import { SongFold, FoldBtn } from "./songPanels";
 import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
 import { ChartStrip, hasChart, songChart, songNotes, packSpecialties, chartSummary } from "./chart";
@@ -104,10 +105,6 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
   const bpmNext = nextSong && nextSong.bpm > 0 ? nextSong.bpm : 0;
   const bpmDelta = bpmNow && bpmNext && bpmNow !== bpmNext ? bpmNext - bpmNow : 0;
 
-  const currentFoldOpen = !!(current && (
-    (prefs.notes && gigNotesId === current.ps_id && songNotes(current)) ||
-    (prefs.lyrics && gigLyricsId === current.ps_id && current.lyrics)
-  ));
   const showDock = !!(current || nextSong);
   const showClickDock = !!(current && prefs.click && current.bpm > 0);
 
@@ -154,7 +151,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           </div>
         )}
       </div>
-      <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:5,paddingBottom: showDock ? 108 : 10}}>
+      <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:5,paddingBottom: showDock ? (showClickDock ? 140 : 120) : 10}}>
         {songsInSet.map((song,i)=>{
           const skippedRow = isSkipped(song);
           const isEncore = song.set_name === "Zugaben" || song.isEncore;
@@ -234,7 +231,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0,marginLeft:"auto"}}>
                   {prefs.lyrics && song.lyrics && !skippedRow && <FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setGigLyricsId(id=>id===song.ps_id?null:song.ps_id)}/>}
-                  {prefs.click && song.bpm>0 && !skippedRow && !(isCurrent && currentFoldOpen) && <GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
+                  {prefs.click && song.bpm>0 && !skippedRow && !(isCurrent && showClickDock) && <GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
                   {prefs.drummer && song.drummer && !skippedRow && <div style={{
                     color:dCol, border:"1px solid "+dCol, borderRadius:4,
                     padding:"5px 12px", fontSize:13, fontWeight:700,
@@ -263,42 +260,17 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
         })}
       </div>
       {showDock && (
-        <div style={{
-          flexShrink:0, background:"#071412", borderTop:"1px solid "+C.tealBorder,
-          padding: narrow ? "10px 12px" : "12px 16px",
-          display:"flex", alignItems:"stretch", gap:10, zIndex:5
-        }}>
-          {showClickDock && (
-            <div style={{ display:"flex", alignItems:"center", flexShrink:0 }}>
-              <GigMetronome bpm={current.bpm} autoStart size={58}/>
-            </div>
-          )}
-          <button
-            type="button"
-            disabled={!nextSong || (current && nextSong.ps_id === current.ps_id)}
-            onClick={() => selectSong(nextSong)}
-            style={{
-              flex:1, minWidth:0, textAlign:"left",
-              background: nextSong ? C.teal : "#111",
-              color: nextSong ? "#000" : C.grayDim,
-              border:"none", borderRadius:8,
-              padding:"10px 14px",
-              cursor: nextSong ? "pointer" : "default",
-              fontFamily:"inherit"
-            }}
-          >
-            <div style={{ fontSize:11, fontWeight:800, letterSpacing:"0.16em", textTransform:"uppercase" }}>
-              {current ? (nextSong ? "Next" : "Letzter Song") : "Start"}
-            </div>
-            <div style={{ fontFamily:"'Bebas Neue',cursive", fontSize:22, letterSpacing:"0.04em", lineHeight:1.05, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
-              {nextSong ? nextSong.title : "—"}
-            </div>
-            <div style={{ fontSize:12, fontWeight:700, marginTop:2, opacity:.8, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
-              {nextSong && bpmNext ? (bpmNow && bpmDelta ? bpmNow + " → " + bpmNext + (bpmDelta > 0 ? " ↑" : " ↓") : bpmNext + " BPM") : ""}
-              {nextSong && nextChartText ? (bpmNext ? "  ·  " : "") + nextChartText : ""}
-            </div>
-          </button>
-        </div>
+        <GigDock
+          current={current}
+          nextSong={nextSong}
+          bpmNow={bpmNow}
+          bpmNext={bpmNext}
+          bpmDelta={bpmDelta}
+          nextChartText={nextChartText}
+          narrow={narrow}
+          showClick={showClickDock}
+          onNext={() => selectSong(nextSong)}
+        />
       )}
       {editSong && (
         <Modal title={"Notizen · " + editSong.title} onClose={()=>setEditSong(null)}>
