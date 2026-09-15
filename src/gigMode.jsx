@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { C, SETS, dStyle, sb } from "./core";
 import { useIsNarrow, HeadToggle, Btn, Field, Modal } from "./ui";
-import { GigMetronome } from "./gig";
+import { GigMetronome, BpmBadge } from "./gig";
 import { GigDock } from "./gigDock";
 import { SongFold, FoldBtn } from "./songPanels";
 import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
@@ -151,7 +151,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           </div>
         )}
       </div>
-      <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:5,paddingBottom: showDock ? (showClickDock ? 140 : 120) : 10}}>
+      <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:5,paddingBottom: showDock ? (showClickDock ? 180 : 140) : 10}}>
         {songsInSet.map((song,i)=>{
           const skippedRow = isSkipped(song);
           const isEncore = song.set_name === "Zugaben" || song.isEncore;
@@ -231,7 +231,11 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0,marginLeft:"auto"}}>
                   {prefs.lyrics && song.lyrics && !skippedRow && <FoldBtn on={lyricsOpen} title="Lyrics" icon="📓" onClick={()=>setGigLyricsId(id=>id===song.ps_id?null:song.ps_id)}/>}
-                  {prefs.click && song.bpm>0 && !skippedRow && !(isCurrent && showClickDock) && <GigMetronome bpm={song.bpm} autoStart={isCurrent} size={54}/>}
+                  {prefs.click && song.bpm>0 && !skippedRow && (
+                    showClickDock
+                      ? (isCurrent ? null : <BpmBadge bpm={song.bpm} size={54}/>)
+                      : <GigMetronome bpm={song.bpm} autoStart={false} size={54}/>
+                  )}
                   {prefs.drummer && song.drummer && !skippedRow && <div style={{
                     color:dCol, border:"1px solid "+dCol, borderRadius:4,
                     padding:"5px 12px", fontSize:13, fontWeight:700,
