@@ -25,9 +25,10 @@ export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChar
         onClick={onNext}
         style={{
           flex:1, minWidth:0, textAlign:"left",
-          background: nextSong ? C.teal : "#111",
-          color: nextSong ? "#000" : C.grayDim,
-          border:"none", borderRadius:12,
+          background: nextSong ? C.tealDim : "#111",
+          color: nextSong ? C.white : C.grayDim,
+          border: "2px solid " + (nextSong ? C.teal : "#222"),
+          borderRadius:12,
           padding: narrow ? "12px 16px" : "14px 20px",
           cursor: nextSong ? "pointer" : "default",
           fontFamily:"inherit",
@@ -36,26 +37,26 @@ export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChar
         }}
       >
         <div style={{ flex:"0 1 46%", minWidth:0 }}>
-          <div style={{ fontSize:11, fontWeight:800, letterSpacing:"0.18em", textTransform:"uppercase", opacity:.75 }}>
+          <div style={{ fontSize:11, fontWeight:800, letterSpacing:"0.18em", textTransform:"uppercase", color:C.teal }}>
             {current ? (nextSong ? "Next" : "Letzter Song") : "Start"}
           </div>
-          <div style={{ fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize: narrow ? 22 : 28, letterSpacing:"-0.02em", lineHeight:1.12, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", marginTop:2 }}>
+          <div style={{ fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize: narrow ? 22 : 28, letterSpacing:"-0.02em", lineHeight:1.12, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", marginTop:2, color:C.white }}>
             {nextSong ? nextSong.title : "\u2014"}
           </div>
           {nextSong && (bpmNext || bpmNow) ? (
-            <div style={{ fontFamily:"'Space Mono',monospace", fontWeight:700, fontSize: narrow ? 16 : 20, letterSpacing:"0.02em", marginTop:6, lineHeight:1 }}>
+            <div style={{ fontFamily:"'Space Mono',monospace", fontWeight:700, fontSize: narrow ? 16 : 20, letterSpacing:"0.02em", marginTop:6, lineHeight:1, color:C.teal }}>
               {bpmNow && bpmDelta ? (bpmNow + "  \u2192  " + bpmNext + (bpmDelta > 0 ? "  \u2191" : "  \u2193")) : ((bpmNext || bpmNow) + " BPM")}
             </div>
           ) : null}
           {nextSong && nextChartText ? (
-            <div style={{ fontFamily:"'Raleway',sans-serif", fontWeight:600, fontSize:12, marginTop:4, opacity:.65 }}>
+            <div style={{ fontFamily:"'Raleway',sans-serif", fontWeight:600, fontSize:12, marginTop:4, color:C.gray }}>
               {nextChartText}
             </div>
           ) : null}
         </div>
         <div style={{
           flex:1, minWidth:0, alignSelf:"stretch",
-          borderLeft: nextSong ? "1px solid rgba(0,0,0,0.18)" : "none",
+          borderLeft: nextSong ? "1px solid "+C.tealBorder : "none",
           paddingLeft: narrow ? 14 : 22,
           display:"flex", flexDirection:"column", justifyContent:"center"
         }}>
@@ -66,10 +67,11 @@ export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChar
               fontStyle:"italic",
               fontSize: narrow ? 15 : 18,
               lineHeight:1.3,
+              color: C.white,
               overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"
             }}>{line}</div>
           )) : (
-            <div style={{ fontFamily:"'Raleway',sans-serif", fontWeight:600, fontSize:13, opacity:.4 }}>
+            <div style={{ fontFamily:"'Raleway',sans-serif", fontWeight:600, fontSize:13, color:C.grayDim }}>
               {nextSong ? "Keine Notiz" : ""}
             </div>
           )}
