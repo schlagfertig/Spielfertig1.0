@@ -3,15 +3,16 @@ import { GigMetronome } from "./gig";
 
 export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChartText, narrow, onNext, showClick }) {
   const disabled = !nextSong || (current && nextSong.ps_id === current.ps_id);
+  const clickSize = narrow ? 112 : 148;
   return (
     <div style={{
       flexShrink:0, background:"#071412", borderTop:"1px solid "+C.tealBorder,
-      padding: narrow ? "12px 12px" : "14px 18px",
+      padding: narrow ? "10px 12px" : "12px 16px",
       display:"flex", alignItems:"center", gap:14, zIndex:5
     }}>
       {showClick && current && (
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, minWidth: narrow ? 86 : 108 }}>
-          <GigMetronome bpm={current.bpm} autoStart size={narrow ? 80 : 100}/>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+          <GigMetronome bpm={current.bpm} autoStart size={clickSize}/>
         </div>
       )}
       <button
@@ -22,11 +23,11 @@ export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChar
           flex:1, minWidth:0, textAlign:"left",
           background: nextSong ? C.teal : "#111",
           color: nextSong ? "#000" : C.grayDim,
-          border:"none", borderRadius:10,
-          padding: narrow ? "12px 14px" : "14px 18px",
+          border:"none", borderRadius:12,
+          padding: narrow ? "14px 16px" : "16px 20px",
           cursor: nextSong ? "pointer" : "default",
           fontFamily:"inherit",
-          minHeight: narrow ? 80 : 100
+          minHeight: clickSize
         }}
       >
         <div style={{ fontSize:11, fontWeight:800, letterSpacing:"0.18em", textTransform:"uppercase", opacity:.75 }}>
