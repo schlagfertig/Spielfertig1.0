@@ -48,13 +48,26 @@ function SongFold({ notes, lyrics, notesOpen, lyricsOpen, border, compact, onEdi
   );
 }
 
-function FoldBtn({ on, title, icon, onClick }) {
+function FoldBtn({ on, title, kind, icon, onClick }) {
+  const mark = kind === "lyrics" ? "Tx" : kind === "notes" ? "N" : (icon || "·");
   return (
     <button
       onClick={e=>{ e.stopPropagation(); onClick(); }}
       title={title}
-      style={{ background:"transparent", border:"none", color:on?C.teal:C.grayDim, cursor:"pointer", fontSize:22, padding:"2px 4px", flexShrink:0 }}
-    >{icon}</button>
+      style={{
+        background: on ? "rgba(0,0,0,0.12)" : "transparent",
+        border: "1px solid " + (on ? "rgba(0,0,0,0.35)" : "rgba(0,0,0,0.22)"),
+        borderRadius: 4,
+        color: on ? "#000" : "inherit",
+        cursor: "pointer",
+        fontSize: 12,
+        fontWeight: 800,
+        letterSpacing: "0.04em",
+        padding: "4px 7px",
+        flexShrink: 0,
+        fontFamily: "inherit",
+      }}
+    >{mark}</button>
   );
 }
 
