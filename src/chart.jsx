@@ -73,17 +73,16 @@ export function emptyChart() {
   return { meter: "", feel: "", countIn: "", open: "", form: [], ending: "" };
 }
 
-function feelLabel(k) {
+export function feelLabel(k) {
   return (CHART_FEELS.find(f => f.k === k) || {}).l || k || "";
 }
 
-function sectionLabel(id) {
+export function sectionLabel(id) {
   return (CHART_SECTIONS.find(s => s.id === id) || {}).label || id;
 }
 
 export function normalizeChart(raw) {
-  const base = emptyChart();
-  if (!raw || typeof raw !== "object") return base;
+  if (!raw || typeof raw !== "object") return emptyChart();
   const form = Array.isArray(raw.form) ? raw.form : [];
   return {
     meter:   String(raw.meter || ""),
@@ -91,13 +90,11 @@ export function normalizeChart(raw) {
     countIn: String(raw.countIn || ""),
     open:    String(raw.open || ""),
     ending:  String(raw.ending || ""),
-    form: form
-      .filter(b => b && b.id)
-      .map(b => ({
-        id: String(b.id),
-        bars: Math.max(0, parseInt(b.bars, 10) || 0),
-        cue: String(b.cue || ""),
-      })),
+    form: form.filter(b => b && b.id).map(b => ({
+      id: String(b.id),
+      bars: Math.max(0, parseInt(b.bars, 10) || 0),
+      cue: String(b.cue || ""),
+    })),
   };
 }
 
@@ -186,3 +183,5 @@ export function songDuration(song) {
   if (song && song.duration_sec) return Math.max(0, parseInt(song.duration_sec, 10) || 0);
   return unpackSpecialties(song && song.specialties).duration || 0;
 }
+
+export { ChartLine, ChartStrip, ChartEditor, chartPrintText } from "./chartUi";
