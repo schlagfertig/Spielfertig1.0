@@ -4,7 +4,7 @@ import { useIsNarrow, HeadToggle, Btn, Field, Modal } from "./ui";
 import { GigMetronome } from "./gig";
 import { SongFold, FoldBtn } from "./songPanels";
 import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
-import { ChartStrip, hasChart, songChart, songNotes, packSpecialties } from "./chart";
+import { ChartStrip, hasChart, songChart, songNotes, packSpecialties, chartSummary } from "./chart";
 import { useWakeLock } from "./wakeLock";
 
 const REGULAR_SETS = SETS.filter(s => s !== "Zugaben");
@@ -66,6 +66,12 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
     if (prefs.notes && songNotes(song)) setGigNotesId(song.ps_id);
   };
 
+  const selectSong = (song) => {
+    if (!song || isSkipped(song)) return;
+    setCurrentSongId(song.ps_id);
+    if (prefs.notes && songNotes(song)) setGigNotesId(song.ps_id);
+  };
+
   const switchSet = (set) => {
     onSetChange(set);
     setCurrentSongId(null);
@@ -88,12 +94,22 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
     setEditSaving(false);
   };
 
-  const current = songsInSet.find(s => s.ps_id === currentSongId && !isSkipped(s));
+  const live = songsInSet.filter(s => !skipSet.has(s.ps_id));
+  const current = live.find(s => s.ps_id === currentSongId) || null;
+  const currentLiveIdx = current ? live.findIndex(s => s.ps_id === current.ps_id) : -1;
+  const nextSong = currentLiveIdx >= 0 ? (live[currentLiveIdx + 1] || null) : (live[0] || null);
+  const nextChart = nextSong ? songChart(nextSong) : null;
+  const nextChartText = nextChart && hasChart(nextChart) ? chartSummary(nextChart) : "";
+  const bpmNow = current && current.bpm > 0 ? current.bpm : 0;
+  const bpmNext = nextSong && nextSong.bpm > 0 ? nextSong.bpm : 0;
+  const bpmDelta = bpmNow && bpmNext && bpmNow !== bpmNext ? bpmNext - bpmNow : 0;
+
   const currentFoldOpen = !!(current && (
     (prefs.notes && gigNotesId === current.ps_id && songNotes(current)) ||
     (prefs.lyrics && gigLyricsId === current.ps_id && current.lyrics)
   ));
-  const showClickDock = !!(current && prefs.click && current.bpm > 0 && currentFoldOpen);
+  const showDock = !!(current || nextSong);
+  const showClickDock = !!(current && prefs.click && current.bpm > 0);
 
   let encoreStarted = false;
 
@@ -138,7 +154,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           </div>
         )}
       </div>
-      <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:5,paddingBottom: showClickDock ? 88 : 10}}>
+      <div style={{flex:1,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:5,paddingBottom: showDock ? 108 : 10}}>
         {songsInSet.map((song,i)=>{
           const skippedRow = isSkipped(song);
           const isEncore = song.set_name === "Zugaben" || song.isEncore;
@@ -146,10 +162,9 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           if (isEncore) encoreStarted = true;
           const st = prefs.drummer ? dStyle(song.drummer) : { bg: C.bgCard, border: C.borderSong };
           const isCurrent = !skippedRow && currentSongId === song.ps_id;
-          const live = songsInSet.filter(s => !skipSet.has(s.ps_id));
-          const currentLiveIdx = live.findIndex(s=>s.ps_id===currentSongId);
+          const currentLiveIdxRow = live.findIndex(s=>s.ps_id===currentSongId);
           const thisLiveIdx = live.findIndex(s=>s.ps_id===song.ps_id);
-          const isNext = !skippedRow && currentSongId && !isCurrent && thisLiveIdx === currentLiveIdx + 1;
+          const isNext = !skippedRow && currentSongId && !isCurrent && thisLiveIdx === currentLiveIdxRow + 1;
           const opacity = skippedRow ? 0.38 : !currentSongId ? 1 : isCurrent ? 1 : isNext ? 0.75 : 0.35;
           const dCol = drummerColor(song.drummer);
           const ron = prefs.drummer && song.drummer==="Ron";
@@ -247,16 +262,42 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           );
         })}
       </div>
-      {showClickDock && (
+      {showDock && (
         <div style={{
           flexShrink:0, background:"#071412", borderTop:"1px solid "+C.tealBorder,
-          padding:"10px 16px", display:"flex", alignItems:"center", gap:12, zIndex:5
+          padding: narrow ? "10px 12px" : "12px 16px",
+          display:"flex", alignItems:"stretch", gap:10, zIndex:5
         }}>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{color:C.teal,fontSize:9,fontWeight:800,letterSpacing:"0.14em",textTransform:"uppercase"}}>Click</div>
-            <div style={{color:C.white,fontFamily:"'Raleway',sans-serif",fontWeight:700,fontSize:16,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{current.title}</div>
-          </div>
-          <GigMetronome bpm={current.bpm} autoStart size={58}/>
+          {showClickDock && (
+            <div style={{ display:"flex", alignItems:"center", flexShrink:0 }}>
+              <GigMetronome bpm={current.bpm} autoStart size={58}/>
+            </div>
+          )}
+          <button
+            type="button"
+            disabled={!nextSong || (current && nextSong.ps_id === current.ps_id)}
+            onClick={() => selectSong(nextSong)}
+            style={{
+              flex:1, minWidth:0, textAlign:"left",
+              background: nextSong ? C.teal : "#111",
+              color: nextSong ? "#000" : C.grayDim,
+              border:"none", borderRadius:8,
+              padding:"10px 14px",
+              cursor: nextSong ? "pointer" : "default",
+              fontFamily:"inherit"
+            }}
+          >
+            <div style={{ fontSize:11, fontWeight:800, letterSpacing:"0.16em", textTransform:"uppercase" }}>
+              {current ? (nextSong ? "Next" : "Letzter Song") : "Start"}
+            </div>
+            <div style={{ fontFamily:"'Bebas Neue',cursive", fontSize:22, letterSpacing:"0.04em", lineHeight:1.05, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+              {nextSong ? nextSong.title : "—"}
+            </div>
+            <div style={{ fontSize:12, fontWeight:700, marginTop:2, opacity:.8, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+              {nextSong && bpmNext ? (bpmNow && bpmDelta ? bpmNow + " → " + bpmNext + (bpmDelta > 0 ? " ↑" : " ↓") : bpmNext + " BPM") : ""}
+              {nextSong && nextChartText ? (bpmNext ? "  ·  " : "") + nextChartText : ""}
+            </div>
+          </button>
         </div>
       )}
       {editSong && (
