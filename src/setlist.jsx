@@ -21,6 +21,12 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
   const bandGigs   = gigs.filter(g=>g.band_id===band.id);
   const gigPls     = playlists.filter(p=>p.gig_id===selGig?.id);
 
+  const openEditor = (gig, pl) => {
+    setSelGig(gig);
+    setSelPl(pl);
+    setView("editor");
+  };
+
   if (view==="editor"&&selPl) return <PlaylistEditor playlist={selPl} allSongs={allSongs} playlistSongs={playlistSongs} canEdit={canEdit} onBack={()=>setView("playlists")} onRefresh={onRefresh} bandName={band.name} bandId={band.id} show={show} theme={theme} toggleTheme={toggleTheme}/>;
 
   if (view==="playlists"&&selGig) return (
@@ -32,10 +38,10 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
       <SealLine/>
       {canEdit&&(
       <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:14 }}>
-        <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Neue Playlist</div>
+        <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Weitere Playlist</div>
         <div style={{ display:"flex", gap:8 }}>
-          <Field value={plName} onChange={setPlName} placeholder="Playlist-Name…"/>
-          <Btn onClick={async()=>{ if(plName){ setSaving(true); await sb.insert("playlists",{gig_id:selGig.id,name:plName}); setPlName(""); await onRefresh(); show("Playlist erstellt!"); setSaving(false); }}} disabled={!plName||saving}>Erstellen</Btn>
+          <Field value={plName} onChange={setPlName} placeholder="z. B. Probe, Alternative…"/>
+          <Btn onClick={async()=>{ if(plName){ setSaving(true); const pl = await sb.insert("playlists",{gig_id:selGig.id,name:plName}); setPlName(""); await onRefresh(); if(pl?.id){ openEditor(selGig, pl); show("Playlist erstellt!"); } else { show("Playlist konnte nicht erstellt werden."); } setSaving(false); }}} disabled={!plName||saving}>Erstellen</Btn>
         </div>
       </div>
       )}
@@ -73,7 +79,11 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
             for (const ps of srcSongs) {
               await sb.insert("playlist_songs",{playlist_id:newPl.id,song_id:ps.song_id,set_name:ps.set_name,position:ps.position});
             }
-            await onRefresh(); show("Playlist kopiert!"); setTemplate(null); setCopying(false);
+            await onRefresh();
+            const targetGig = bandGigs.find(g=>String(g.id)===String(tmplGig)) || selGig;
+            setTemplate(null); setCopying(false);
+            if(newPl?.id){ openEditor(targetGig, newPl); show("Playlist kopiert!"); }
+            else show("Kopieren fehlgeschlagen.");
           }}>{copying?"Kopiere…":"Playlist erstellen ✓"}</Btn>
         </div>
       </Modal>}
@@ -93,15 +103,36 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-      <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Gig-Verwaltung</div>
+      <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Setlists</div>
       <SealLine/>
       {canEdit&&(
       <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:14 }}>
-        <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Neuer Gig</div>
+        <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Neue Setlist</div>
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-          <Field value={gigName} onChange={setGigName} placeholder="Gig-Name"/>
+          <Field value={gigName} onChange={setGigName} placeholder="Gig-Name (Venue / Anlass)"/>
           <Field value={gigDate} onChange={setGigDate} type="date" placeholder="Datum"/>
-          <Btn full disabled={!gigName||saving} onClick={async()=>{ setSaving(true); await sb.insert("gigs",{band_id:band.id,name:gigName,date:gigDate||null}); setGigName(""); setGigDate(""); await onRefresh(); show("Gig erstellt!"); setSaving(false); }}>Gig erstellen</Btn>
+          <div style={{ color:C.grayDim, fontSize:11 }}>Erste Playlist wird automatisch angelegt — direkt zum Editor.</div>
+          <Btn full disabled={!gigName||saving} onClick={async()=>{
+            setSaving(true);
+            const gig = await sb.insert("gigs",{band_id:band.id,name:gigName,date:gigDate||null});
+            if(!gig?.id){
+              show("Gig konnte nicht erstellt werden.");
+              setSaving(false);
+              return;
+            }
+            const pl = await sb.insert("playlists",{gig_id:gig.id,name:gigName});
+            setGigName(""); setGigDate("");
+            await onRefresh();
+            if(pl?.id){
+              openEditor(gig, pl);
+              show("Setlist angelegt!");
+            } else {
+              setSelGig(gig);
+              setView("playlists");
+              show("Gig erstellt — Playlist bitte manuell anlegen.");
+            }
+            setSaving(false);
+          }}>{saving?"Lege an…":"Setlist anlegen"}</Btn>
         </div>
       </div>
       )}
