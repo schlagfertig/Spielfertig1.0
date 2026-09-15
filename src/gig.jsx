@@ -2,21 +2,41 @@ import { useEffect, useRef } from "react";
 import { C } from "./core";
 import { useMetronome } from "./audio";
 
+function BpmBadge({ bpm, size=44 }) {
+  const n = Math.max(11, Math.round(size * 0.32));
+  return (
+    <div title={bpm + " BPM"} style={{
+      width: size, height: size, borderRadius: "50%", flexShrink: 0,
+      border: "2px solid #2a2a2a", display: "flex", alignItems: "center", justifyContent: "center",
+      color: C.grayDim, fontFamily: "'Space Mono',monospace", fontWeight: 700, fontSize: n, letterSpacing: "-0.04em",
+    }}>{bpm}</div>
+  );
+}
+
 function GigMetronome({ bpm, autoStart, size=44 }) {
   const { active, beat, toggle, start, stop } = useMetronome(bpm);
   const userMuted = useRef(false);
+  const owned = useRef(false);
   useEffect(() => {
     if (autoStart) {
-      if (!userMuted.current) start();
-    } else {
+      if (!userMuted.current) {
+        start();
+        owned.current = true;
+      }
+    } else if (owned.current) {
       userMuted.current = false;
       stop();
+      owned.current = false;
     }
   }, [autoStart]);
+  useEffect(() => () => {
+    if (owned.current) stop();
+  }, [stop]);
   const onToggle = (e) => {
     if (e && e.stopPropagation) e.stopPropagation();
     if (autoStart && active) userMuted.current = true;
     if (autoStart && !active) userMuted.current = false;
+    if (!active) owned.current = true;
     toggle(e);
   };
   const large = size >= 72;
@@ -73,4 +93,4 @@ function GigMetronome({ bpm, autoStart, size=44 }) {
   );
 }
 
-export { GigMetronome };
+export { GigMetronome, BpmBadge };
