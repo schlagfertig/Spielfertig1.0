@@ -205,7 +205,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
         {bands.length===0?(
           <div style={{ textAlign:"center", color:C.grayDim, padding:48, fontSize:14 }}>
             <div style={{ fontSize:32, marginBottom:12 }}>🎸</div>
-            Noch keine Bands. Lege deine erste Band an!
+            Noch keine Band — leg die erste an.
           </div>
         ):(
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:16 }}>
