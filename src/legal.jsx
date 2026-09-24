@@ -94,7 +94,7 @@ function Datenschutz() {
       <P>Konto: E-Mail-Adresse und Passwort-Hash (Passwort wird bei uns nicht im Klartext gespeichert). Die Anmeldung läuft über unseren Login-Dienst Supabase.</P>
       <P>App-Inhalte: Bands, Songs, BPM, Drummer, Notizen, Lyrics, Charts, Gigs, Playlists und geteilte Setlists, soweit du sie anlegst.</P>
       <P>Technik: Beim Aufruf speichern Hosting-Anbieter üblich Server-Logs (IP, Zeitpunkt, User-Agent) für kurze Zeit zur Betriebssicherheit.</P>
-      <P>Lokal auf deinem Gerät: Login-Token, Anzeige-Einstellungen und ein optionaler Offline-Cache in localStorage bzw. im Service Worker. Das sind keine Tracking-Cookies.</P>
+      <P>Lokal auf deinem Gerät: Anmelde-Infos, Anzeige-Einstellungen und optional ein Offline-Zwischenspeicher im Browser. Das sind keine Tracking-Cookies.</P>
       <H>3. Zwecke und Rechtsgrundlagen</H>
       <P>Vertrag bzw. vorvertragliche Nutzung der App (Art. 6 Abs. 1 lit. b DSGVO): Konto, Songs, Setlists.</P>
       <P>Berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO): sicherer Betrieb, Missbrauchsabwehr, Anzeige deiner eigenen Inhalte.</P>
