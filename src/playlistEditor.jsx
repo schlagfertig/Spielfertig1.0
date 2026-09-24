@@ -1,1 +1,1 @@
-FILE:/workspace/spielfertig-pr/playlistEditor.jsx
+@/workspace/spielfertig-pr/playlistEditor.jsx
