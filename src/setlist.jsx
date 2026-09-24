@@ -111,7 +111,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
           <Field value={gigName} onChange={setGigName} placeholder="Gig-Name (Venue / Anlass)"/>
           <Field value={gigDate} onChange={setGigDate} type="date" placeholder="Datum"/>
-          <div style={{ color:C.grayDim, fontSize:11 }}>Erste Playlist wird automatisch angelegt — direkt zum Editor.</div>
+          <div style={{ color:C.grayDim, fontSize:11 }}>Erste Playlist kommt automatisch — gleich zum Bearbeiten.</div>
           <Btn full disabled={!gigName||saving} onClick={async()=>{
             setSaving(true);
             const gig = await sb.insert("gigs",{band_id:band.id,name:gigName,date:gigDate||null});
