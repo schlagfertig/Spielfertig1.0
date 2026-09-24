@@ -98,7 +98,7 @@ function Datenschutz() {
       <H>3. Zwecke und Rechtsgrundlagen</H>
       <P>Vertrag bzw. vorvertragliche Nutzung der App (Art. 6 Abs. 1 lit. b DSGVO): Konto, Songs, Setlists.</P>
       <P>Berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO): sicherer Betrieb, Missbrauchsabwehr, Anzeige deiner eigenen Inhalte.</P>
-      <P>Einwilligung (Art. 6 Abs. 1 lit. a DSGVO): nur soweit du Inhalte über einen Share-Link bewusst öffentlich machst.</P>
+      <P>Einwilligung (Art. 6 Abs. 1 lit. a DSGVO): nur soweit du Inhalte über einen Freigabe-Link bewusst öffentlich machst.</P>
       <H>4. Teilen von Setlists</H>
       <P>
         Wenn du eine Playlist freigibst, kann jede Person mit dem Link Titel, Artist, BPM, Notizen, Chart und Lyrics dieser Setlist sehen — ohne Login.
