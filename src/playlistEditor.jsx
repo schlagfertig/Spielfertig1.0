@@ -225,7 +225,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           </div>
           {poolOpen && (<>
             <Field value={poolSearch} onChange={setPoolSearch} placeholder="Pool durchsuchen…"/>
-            <div style={{ color:C.grayDim, fontSize:11, margin:"6px 0 8px" }}>{orderEdit ? "Ziehen und auf ein Set legen — oder antippen zum Sammeln." : "Antippen sammelt in Tipp-Reihenfolge. Dann Set wählen."}</div>
+            <div style={{ color:C.grayDim, fontSize:11, margin:"6px 0 8px" }}>{orderEdit ? "Ziehen und auf ein Set legen — oder antippen zum Sammeln." : "Tippe Songs an — Reihenfolge wie du tippst. Dann ein Set wählen."}</div>
             {picked.length>0 && (
               <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:8, padding:"8px", background:"#071412", border:"1px solid "+C.tealBorder, borderRadius:6 }}>
                 <div style={{ color:C.teal, fontSize:11, fontWeight:800, letterSpacing:"0.08em", textTransform:"uppercase" }}>{picked.length} gewählt · Tipp-Reihenfolge</div>
