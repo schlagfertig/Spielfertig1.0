@@ -200,7 +200,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
       <main style={{ flex:1, maxWidth:720, margin:"0 auto", padding:"32px 20px", width:"100%", boxSizing:"border-box" }}>
         <div style={{ marginBottom:24 }}>
           <h2 style={{ color:C.white, fontSize:24, fontWeight:900, marginBottom:6, fontFamily:"'Space Mono',monospace" }}>Deine Bands</h2>
-          <p style={{ color:C.grayDim, fontSize:13 }}>Songdatenbank & Setlist-Manager</p>
+          <p style={{ color:C.grayDim, fontSize:13 }}>Songs und Setlists</p>
         </div>
         {bands.length===0?(
           <div style={{ textAlign:"center", color:C.grayDim, padding:48, fontSize:14 }}>
