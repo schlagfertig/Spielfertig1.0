@@ -54,7 +54,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
               <div style={{ color:C.grayDim, fontSize:11 }}>{playlistSongs.filter(ps=>ps.playlist_id===p.id).length} Songs</div>
             </div>
             <div style={{ display:"flex", gap:6 }}>
-              <Btn size="sm" onClick={()=>{setSelPl(p);setView("editor");}}>Oeffnen →</Btn>
+              <Btn size="sm" onClick={()=>{setSelPl(p);setView("editor");}}>Öffnen →</Btn>
               {canEdit&&<Btn variant="outline" size="sm" onClick={()=>{setTemplate(p);setTmplName(p.name+" (Kopie)");setTmplGig("");}}>⎘</Btn>}
               {canEdit&&<Btn variant="outline" size="sm" onClick={()=>{setRenaming(p);setRenameTxt(p.name);}}>✎</Btn>}
               {canEdit&&<Btn variant="danger" size="sm" onClick={()=>setConfirm({type:"pl",item:p})}>✕</Btn>}
