@@ -106,7 +106,7 @@ function Datenschutz() {
       </P>
       <H>5. Empfänger / Auftragsverarbeitung</H>
       <P>Hosting der Web-App: Vercel Inc., USA. Abruf über {LEGAL.site}.</P>
-      <P>Datenbank, Dateien und Login: Supabase (Postgres / Auth). Server können in der EU oder einem Drittland stehen; Übermittlungen erfolgen auf Grundlage von Standardvertragsklauseln, soweit erforderlich.</P>
+      <P>Datenbank, Dateien und Anmeldung: Supabase. Server können in der EU oder außerhalb stehen; Übermittlungen laufen über Standardvertragsklauseln, soweit nötig.</P>
       <P>Wir verkaufen keine Daten und schalten keine Werbung.</P>
       <H>6. Speicherdauer</H>
       <P>Kontodaten und App-Inhalte bleiben gespeichert, solange das Konto besteht bzw. die Band die Daten behält. Nach Löschung eines Songs, einer Band oder des Kontos entfernen wir die zugehörigen Datensätze, soweit keine gesetzlichen Aufbewahrungspflichten entgegenstehen. Server-Logs werden vom Hoster üblich nach wenigen Tagen bis Wochen gelöscht.</P>
