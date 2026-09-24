@@ -46,7 +46,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
       </div>
       )}
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-        {gigPls.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:28, fontSize:13 }}>Noch keine Playlists</div>
+        {gigPls.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:28, fontSize:13 }}>Noch keine Playlists — leg die erste an.</div>
         :gigPls.map(p=>(
           <div key={p.id} style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:5, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <div>
@@ -137,7 +137,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
       </div>
       )}
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-        {bandGigs.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:28, fontSize:13 }}>Noch keine Gigs</div>
+        {bandGigs.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:28, fontSize:13 }}>Noch keine Gigs — leg die erste Setlist an.</div>
         :bandGigs.map(gig=>(
           <div key={gig.id} onClick={()=>{setSelGig(gig);setView("playlists");}}
             style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:5, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"pointer" }}
