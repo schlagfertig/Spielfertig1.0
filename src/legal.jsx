@@ -91,7 +91,7 @@ function Datenschutz() {
         E-Mail: <a href={"mailto:"+LEGAL.email} style={{ color:C.teal }}>{LEGAL.email}</a>
       </P>
       <H>2. Welche Daten wir verarbeiten</H>
-      <P>Konto: E-Mail-Adresse und Passwort-Hash (kein Klartext-Passwort bei uns gespeichert). Das Login läuft über Supabase Auth.</P>
+      <P>Konto: E-Mail-Adresse und Passwort-Hash (Passwort wird bei uns nicht im Klartext gespeichert). Die Anmeldung läuft über unseren Login-Dienst Supabase.</P>
       <P>App-Inhalte: Bands, Songs, BPM, Drummer, Notizen, Lyrics, Charts, Gigs, Playlists und geteilte Setlists, soweit du sie anlegst.</P>
       <P>Technik: Beim Aufruf speichern Hosting-Anbieter üblich Server-Logs (IP, Zeitpunkt, User-Agent) für kurze Zeit zur Betriebssicherheit.</P>
       <P>Lokal auf deinem Gerät: Login-Token, Anzeige-Einstellungen und ein optionaler Offline-Cache in localStorage bzw. im Service Worker. Das sind keine Tracking-Cookies.</P>
