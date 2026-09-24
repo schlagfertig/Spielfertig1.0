@@ -44,7 +44,7 @@ function AuthScreen({ onAuth }) {
       }
     } catch(e) {
       if (e.name === "AbortError" || e.name === "TimeoutError") {
-        setError("Zeitüberschreitung – Verbindung zu Supabase klemmt. Einmal hart neu laden.");
+        setError("Dauert zu lang — einmal neu laden und nochmal anmelden.");
       } else {
         setError("Fehler: " + (e.message || e.name));
       }
