@@ -75,10 +75,28 @@ function Bang({ size=28, color }) {
   );
 }
 
+function LiveMark({ size=34 }) {
+  return (
+    <span aria-hidden="true" style={{
+      color: C.teal,
+      fontFamily: "'Caveat', cursive",
+      fontStyle: "italic",
+      fontWeight: 700,
+      fontSize: Math.round(size * 0.58),
+      lineHeight: 1,
+      display: "inline-block",
+      transform: "rotate(-16deg) translate(2px, -10px)",
+      marginLeft: 2,
+      letterSpacing: "0.01em",
+    }}>Live</span>
+  );
+}
+
 function BrandWordmark({ size=34 }) {
   return (
     <div style={{ color:C.white, fontWeight:400, fontSize:size, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em", lineHeight:1, display:"inline-flex", alignItems:"baseline" }}>
       SPIELFERTIG<Bang size={Math.round(size*0.88)}/>
+      <LiveMark size={size}/>
     </div>
   );
 }
@@ -117,7 +135,7 @@ function Confirm({ msg, onOk, onCancel }) {
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }}>
       <div style={{ background:C.bgCard, border:"1px solid #222", borderRadius:8, padding:28, maxWidth:340, width:"90%" }}>
-        <p style={{ color:C.white, fontSize:14, fontWeight:600, marginBottom:6 }}>Öschen bestätigen</p>
+        <p style={{ color:C.white, fontSize:14, fontWeight:600, marginBottom:6 }}Öschen bestätigen</p>
         <p style={{ color:C.gray, fontSize:13, marginBottom:20 }}>{msg}</p>
         <SealLine/><div style={{ display:"flex", gap:8, justifyContent:"flex-end", marginTop:14 }}>
           <Btn variant="ghost" onClick={onCancel}>Abbrechen</Btn>
@@ -171,4 +189,4 @@ function Spinner() {
   return <div style={{ width:20, height:20, border:"2px solid #222", borderTop:"2px solid "+C.teal, borderRadius:"50%", animation:"spin .7s linear infinite" }}/>;
 }
 
-export { useIsNarrow, HeadToggle, ToolTile, SealLine, Bang, BrandWordmark, Btn, Field, Sel, Badge, Toast, Confirm, Modal, SealIcon, Spinner };
+export { useIsNarrow, HeadToggle, ToolTile, SealLine, Bang, LiveMark, BrandWordmark, Btn, Field, Sel, Badge, Toast, Confirm, Modal, SealIcon, Spinner };
