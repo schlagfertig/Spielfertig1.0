@@ -115,8 +115,8 @@ function bandCardLogoStyle(name) {
   return bandLogoImgStyle({
     width: "auto",
     height: "auto",
-    maxWidth: hardys ? "76%" : "94%",
-    maxHeight: hardys ? 68 : 44,
+    maxWidth: hardys ? "80%" : "88%",
+    maxHeight: hardys ? 86 : 64,
   });
 }
 
@@ -153,19 +153,19 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
 
   return (
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column" }}>
-      <header style={{ borderBottom:"1px solid #111", padding:"12px 16px 12px 16px", paddingRight:56 }}>
-        <div style={{ maxWidth:720, margin:"0 auto", display:"flex", alignItems:"center", gap:10 }}>
-          <img src={getLogo()} alt="Spielfertig" style={{ height:46, width:"auto", objectFit:"contain", flexShrink:0 }}/>
-          <div style={{ flex:1, minWidth:0 }}>
-            <BrandWordmark size={20}/>
-            <div style={{ marginTop:4 }}><LiveMark size={22}/></div>
+      <header style={{ background:"#071412", borderBottom:"1px solid "+C.tealBorder, padding:"14px 56px 14px 16px" }}>
+        <div style={{ maxWidth:760, margin:"0 auto", display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
+          <img src={getLogo()} alt="" style={{ height:44, width:"auto", objectFit:"contain", flexShrink:0 }}/>
+          <div style={{ flex:1, minWidth:160 }}>
+            <BrandWordmark size={26}/>
+            <div style={{ marginTop:2, marginLeft:2 }}><LiveMark size={24}/></div>
           </div>
-          <div style={{ display:"flex", gap:6, alignItems:"center", flexShrink:0 }}>
+          <div style={{ display:"flex", gap:8, alignItems:"center", flexShrink:0 }}>
             <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}
-              style={{ padding:"4px 10px" }}>
-              <span style={{ fontSize:22, lineHeight:1, fontWeight:900 }}>+</span> Band
+              style={{ padding:"6px 12px" }}>
+              + Band
             </Btn>
-            <Btn variant="outline" size="sm" onClick={()=>{setShowAccount(true);setNewPw("");setNewPw2("");}}>⚙ Konto</Btn>
+            <Btn variant="outline" size="sm" onClick={()=>{setShowAccount(true);setNewPw("");setNewPw2("");}}>Konto</Btn>
           </div>
         </div>
       </header>
@@ -174,7 +174,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           <div style={{ color:C.grayDim, fontSize:12 }}>Angemeldet als</div>
           <div style={{ color:C.white, fontSize:14, fontWeight:600, wordBreak:"break-all" }}>{user.email}</div>
           <SealLine/>
-          <Btn full variant="outline" onClick={()=>{ setShowAccount(false); runBackup(); }}>⬇ Backup sichern</Btn>
+          <Btn full variant="outline" onClick={()=>{ setShowAccount(false); runBackup(); }}>Backup sichern</Btn>
           <SealLine/>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase" }}>Passwort ändern</div>
           <Field value={newPw} onChange={setNewPw} type="password" placeholder="Neues Passwort…"/>
@@ -196,36 +196,50 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           <Btn full variant="ghost" onClick={onLogout}>Abmelden</Btn>
         </div>
       </Modal>}
-      <SealLine/>
-      <main style={{ flex:1, maxWidth:720, margin:"0 auto", padding:"32px 20px", width:"100%", boxSizing:"border-box" }}>
-        <div style={{ marginBottom:24 }}>
-          <h2 style={{ color:C.white, fontSize:24, fontWeight:900, marginBottom:6, fontFamily:"'Space Mono',monospace" }}>Deine Bands</h2>
-          <p style={{ color:C.grayDim, fontSize:13 }}>Songs und Setlists</p>
+      <main style={{ flex:1, maxWidth:760, margin:"0 auto", padding:"28px 20px", width:"100%", boxSizing:"border-box" }}>
+        <div style={{ marginBottom:20 }}>
+          <div style={{ color:C.teal, fontSize:11, fontWeight:800, letterSpacing:"0.16em", textTransform:"uppercase", marginBottom:6 }}>Bands</div>
+          <h2 style={{ color:C.white, fontSize:22, fontWeight:800, margin:0, fontFamily:"'Raleway',sans-serif" }}>Welche Band spielst du?</h2>
         </div>
         {bands.length===0?(
-          <div style={{ textAlign:"center", color:C.grayDim, padding:48, fontSize:14 }}>
-            <div style={{ fontSize:32, marginBottom:12 }}>🎸</div>
-            Noch keine Band — leg die erste an.
+          <div style={{ textAlign:"center", color:C.grayDim, padding:"48px 16px", fontSize:14, border:"1px dashed #2a2a2a", borderRadius:12, background:"#0d0d0d" }}>
+            Noch keine Band — oben rechts anlegen.
           </div>
         ):(
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:16 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))", gap:14 }}>
             {bands.map(band=>{
               const count = songs.filter(s=>s.band_id===band.id).length;
               const logo = getBandLogo(band.name);
               return (
                 <div key={band.id} onClick={()=>onSelect(band)}
-                  style={{ background:"#111", border:"1px solid #1a1a1a", borderRadius:8, cursor:"pointer", position:"relative", overflow:"hidden", display:"flex", flexDirection:"column" }}
-                  onMouseEnter={e=>{e.currentTarget.style.borderColor=band.color+"88";e.currentTarget.style.transform="translateY(-2px)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.borderColor="#1a1a1a";e.currentTarget.style.transform="none";}}>
-                  <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:"linear-gradient(90deg,transparent,"+band.color+",transparent)", zIndex:2 }}/>
-                  <div style={{ flex:1, minHeight:118, background:"#0d0d0d", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px 18px" }}>
+                  style={{
+                    background:"#0d0d0d",
+                    border:"1px solid #1c1c1c",
+                    borderRadius:12,
+                    cursor:"pointer",
+                    position:"relative",
+                    overflow:"hidden",
+                    display:"flex",
+                    flexDirection:"column",
+                    boxShadow:"0 0 0 0 transparent",
+                    transition:"border-color .15s, transform .15s",
+                  }}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor=C.teal;e.currentTarget.style.transform="translateY(-2px)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor="#1c1c1c";e.currentTarget.style.transform="none";}}>
+                  <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background:band.color || C.teal }}/>
+                  <div style={{ minHeight:132, display:"flex", alignItems:"center", justifyContent:"center", padding:"28px 20px 16px" }}>
                     {logo
                       ? <img src={logo} alt={band.name} style={bandCardLogoStyle(band.name)}/>
-                      : <div style={{ fontSize:42 }}>{band.emoji}</div>}
+                      : <div style={{ fontSize:48 }}>{band.emoji}</div>}
                   </div>
-                  <div style={{ borderTop:"1px solid #1a1a1a", padding:"10px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", background:C.bgCard }}>
-                    <span style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase" }}>Songs & Setlist</span>
-                    <Badge color={band.color}>{count} Songs</Badge>
+                  <div style={{ borderTop:"1px solid #1a1a1a", padding:"12px 16px 14px", background:"#0a0a0a" }}>
+                    <div style={{ color:C.white, fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:16, letterSpacing:"-0.02em", marginBottom:6, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                      {band.name}
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                      <span style={{ color:C.grayDim, fontSize:11, letterSpacing:"0.08em", textTransform:"uppercase" }}>Songs & Setlist</span>
+                      <Badge color={band.color || C.teal}>{count} Songs</Badge>
+                    </div>
                   </div>
                 </div>
               );
@@ -250,7 +264,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
               if (navigator.clipboard&&navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(backupText).then(()=>show("Backup kopiert!")).catch(()=>show("Bitte manuell kopieren"));
               } else { show("Bitte manuell kopieren"); }
-            }}>📋 Kopieren</Btn>
+            }}>Kopieren</Btn>
           </div>
         </Modal>
       )}
