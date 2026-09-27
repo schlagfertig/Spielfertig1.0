@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C, sb, getBandLogo, bandLogoImgStyle, getLogo } from "./core";
-import { Btn, Field, Badge, Modal, SealLine, Spinner } from "./ui";
+import { Btn, Field, Badge, Modal, SealLine, Spinner, BrandWordmark, LiveMark } from "./ui";
 import { LegalLinks } from "./legal";
 
 const BAND_COLORS = [
@@ -157,8 +157,8 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
         <div style={{ maxWidth:720, margin:"0 auto", display:"flex", alignItems:"center", gap:10 }}>
           <img src={getLogo()} alt="Spielfertig" style={{ height:46, width:"auto", objectFit:"contain", flexShrink:0 }}/>
           <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ color:C.white, fontWeight:400, fontSize:20, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em" }}>SPIELFERTIG<span style={{ color:C.teal }}>‽</span></div>
-            <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.16em" }}>ZEIT FÜR GUTEN SOUND</div>
+            <BrandWordmark size={20}/>
+            <div style={{ marginTop:4 }}><LiveMark size={22}/></div>
           </div>
           <div style={{ display:"flex", gap:6, alignItems:"center", flexShrink:0 }}>
             <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}
