@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C, sb, getBandLogo, bandLogoImgStyle, getLogo } from "./core";
-import { Btn, Field, Badge, Modal, SealLine, Spinner, BrandWordmark, LiveMark } from "./ui";
+import { Btn, Field, Badge, Modal, SealLine, Spinner, BrandWordmark } from "./ui";
 import { LegalLinks } from "./legal";
 
 const BAND_COLORS = [
@@ -158,7 +158,6 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           <img src={getLogo()} alt="" style={{ height:44, width:"auto", objectFit:"contain", flexShrink:0 }}/>
           <div style={{ flex:1, minWidth:160 }}>
             <BrandWordmark size={26}/>
-            <div style={{ marginTop:2, marginLeft:2 }}><LiveMark size={24}/></div>
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center", flexShrink:0 }}>
             <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}
