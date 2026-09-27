@@ -66,11 +66,11 @@ function AuthScreen({ onAuth }) {
       <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"28px 20px 12px", position:"relative", zIndex:1 }}>
         <div style={{ width:"100%", maxWidth:400 }}>
           <div style={{ textAlign:"center", marginBottom:22 }}>
-            <div style={{ display:"flex", justifyContent:"center", marginBottom:10 }}>
+            <img src={getLogo()} alt="Schlagfertig"
+              style={{ width:168, height:"auto", objectFit:"contain", display:"block", margin:"0 auto 4px" }}/>
+            <div style={{ display:"flex", justifyContent:"center" }}>
               <BrandWordmark size={42}/>
             </div>
-            <img src={getLogo()} alt="Schlagfertig"
-              style={{ width:168, height:"auto", objectFit:"contain", display:"block", margin:"0 auto 10px" }}/>
           </div>
 
           <div style={{ background:"rgba(13,13,13,0.88)", border:"1px solid #1c1c1c", borderRadius:14, padding:"22px 20px 20px", backdropFilter:"blur(8px)" }}>
