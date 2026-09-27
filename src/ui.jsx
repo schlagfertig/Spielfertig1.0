@@ -135,11 +135,11 @@ function Confirm({ msg, onOk, onCancel }) {
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }}>
       <div style={{ background:C.bgCard, border:"1px solid #222", borderRadius:8, padding:28, maxWidth:340, width:"90%" }}>
-        <p style={{ color:C.white, fontSize:14, fontWeight:600, marginBottom:6 }}Öschen bestätigen</p>
+        <p style={{ color:C.white, fontSize:14, fontWeight:600, marginBottom:6 }}>Löschen bestätigen</p>
         <p style={{ color:C.gray, fontSize:13, marginBottom:20 }}>{msg}</p>
         <SealLine/><div style={{ display:"flex", gap:8, justifyContent:"flex-end", marginTop:14 }}>
           <Btn variant="ghost" onClick={onCancel}>Abbrechen</Btn>
-          <Btn variant="danger" onClick={onOk}>Öschen</Btn>
+          <Btn variant="danger" onClick={onOk}>Löschen</Btn>
         </div>
       </div>
     </div>
