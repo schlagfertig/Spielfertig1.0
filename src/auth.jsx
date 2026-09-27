@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C, sb, getLogo } from "./core";
-import { SealLine, Btn, Field, BrandWordmark, LiveMark } from "./ui";
+import { SealLine, Btn, Field, BrandWordmark } from "./ui";
 import { LegalLinks } from "./legal";
 
 function pickErr(res) {
@@ -71,9 +71,6 @@ function AuthScreen({ onAuth }) {
             </div>
             <img src={getLogo()} alt="Schlagfertig"
               style={{ width:168, height:"auto", objectFit:"contain", display:"block", margin:"0 auto 10px" }}/>
-            <div style={{ display:"flex", justifyContent:"center", marginTop:2 }}>
-              <LiveMark size={40}/>
-            </div>
           </div>
 
           <div style={{ background:"rgba(13,13,13,0.88)", border:"1px solid #1c1c1c", borderRadius:14, padding:"22px 20px 20px", backdropFilter:"blur(8px)" }}>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { C } from "./core";
+import { LOGO_SPIELFERTIG_LIVE } from "./logoSpielfertigLive";
 
 function useIsNarrow(max = 720) {
   const [narrow, setNarrow] = useState(() =>
@@ -93,11 +94,11 @@ function LiveMark({ size=34 }) {
   );
 }
 
+// App-Logo (SPIELFERTIG‽ LIVE) statt Text-Schriftzug; size = frühere Schriftgröße
 function BrandWordmark({ size=34 }) {
   return (
-    <div style={{ color:C.white, fontWeight:400, fontSize:size, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em", lineHeight:1, display:"inline-flex", alignItems:"baseline" }}>
-      SPIELFERTIG<Bang size={size} />
-    </div>
+    <img src={LOGO_SPIELFERTIG_LIVE} alt="Spielfertig‽ Live"
+      style={{ height:size*2, width:"auto", maxWidth:"100%", objectFit:"contain", display:"block", mixBlendMode:"lighten", userSelect:"none" }}/>
   );
 }
 
