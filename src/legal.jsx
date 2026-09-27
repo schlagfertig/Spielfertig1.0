@@ -8,7 +8,7 @@ export const LEGAL = {
   city: "Kaufering",
   country: "Deutschland",
   email: "thomas-schuster83@gmx.de",
-  brand: "SPIELFERTIG‽",
+  brand: "SPIELFERTIG‽ Live",
   studio: "SCHLAGFERTIG‽",
   site: "https://spielfertig7.vercel.app",
 };
@@ -125,7 +125,7 @@ export function LegalView({ page }) {
   const isPrivacy = page === "datenschutz";
   return (
     <div style={{ minHeight:"100vh", background:"#000", color:C.white, fontFamily:"'Raleway',sans-serif" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@500;600;700&family=Raleway:wght@400;500;600;700;800;900&display=swap');`}</style>
       <div style={{ maxWidth:640, margin:"0 auto", padding:"28px 20px 48px" }}>
         <a href="." style={{ color:C.grayDim, fontSize:12, textDecoration:"none", letterSpacing:"0.08em", textTransform:"uppercase" }}>← Zurück</a>
         <div style={{ textAlign:"center", margin:"22px 0 8px" }}>
