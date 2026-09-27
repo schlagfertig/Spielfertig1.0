@@ -65,28 +65,29 @@ const SealLine = ({ color = C.teal }) => (
 function Bang({ size=28, color }) {
   const fill = color || C.teal;
   return (
-    <svg width={Math.round(size*0.42)} height={size} viewBox="0 0 18 40" aria-hidden="true"
-      style={{ display:"inline-block", verticalAlign:"-0.08em", marginLeft:1 }}>
-      <path d="M4.2 9.2C4.2 4.6 7.6 2.2 11.4 2.2c3.6 0 6.2 2.2 6.2 5.6 0 2.6-1.4 4.2-4.2 6.2L12.2 16.2"
-        fill="none" stroke={fill} strokeWidth="3.1" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M8.6 2.8 L8.6 24.2" fill="none" stroke={fill} strokeWidth="3.1" strokeLinecap="round"/>
-      <circle cx="9.4" cy="35.4" r="3.05" fill={fill}/>
-    </svg>
+    <span aria-hidden="true" style={{
+      color: fill,
+      fontFamily: "'Bebas Neue', cursive",
+      fontWeight: 400,
+      fontSize: size,
+      lineHeight: 1,
+      letterSpacing: 0,
+      marginLeft: 1,
+    }}>‽</span>
   );
 }
 
 function LiveMark({ size=34 }) {
   return (
-    <span aria-hidden="true" style={{
+    <span style={{
       color: C.teal,
       fontFamily: "'Caveat', cursive",
       fontStyle: "italic",
       fontWeight: 700,
-      fontSize: Math.round(size * 0.58),
+      fontSize: Math.round(size * 0.72),
       lineHeight: 1,
       display: "inline-block",
-      transform: "rotate(-16deg) translate(2px, -10px)",
-      marginLeft: 2,
+      transform: "rotate(-14deg)",
       letterSpacing: "0.01em",
     }}>Live</span>
   );
@@ -95,8 +96,7 @@ function LiveMark({ size=34 }) {
 function BrandWordmark({ size=34 }) {
   return (
     <div style={{ color:C.white, fontWeight:400, fontSize:size, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em", lineHeight:1, display:"inline-flex", alignItems:"baseline" }}>
-      SPIELFERTIG<Bang size={Math.round(size*0.88)}/>
-      <LiveMark size={size}/>
+      SPIELFERTIG<Bang size={size} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C, sb, getLogo } from "./core";
-import { SealLine, Btn, Field, BrandWordmark } from "./ui";
+import { SealLine, Btn, Field, BrandWordmark, LiveMark } from "./ui";
 import { LegalLinks } from "./legal";
 
 function pickErr(res) {
@@ -54,7 +54,7 @@ function AuthScreen({ onAuth }) {
 
   return (
     <div style={{ minHeight:"100vh", background:"#000", display:"flex", flexDirection:"column", position:"relative", overflow:"hidden" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@500;600;700&family=Raleway:wght@400;500;600;700;800;900&display=swap');`}</style>
       <img src={getLogo()} alt="" aria-hidden="true"
         style={{
           position:"absolute", left:"50%", top:"38%",
@@ -71,8 +71,8 @@ function AuthScreen({ onAuth }) {
             </div>
             <img src={getLogo()} alt="Schlagfertig"
               style={{ width:168, height:"auto", objectFit:"contain", display:"block", margin:"0 auto 10px" }}/>
-            <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.22em", textTransform:"uppercase" }}>
-              Zeit für guten Sound
+            <div style={{ display:"flex", justifyContent:"center", marginTop:2 }}>
+              <LiveMark size={40}/>
             </div>
           </div>
 
