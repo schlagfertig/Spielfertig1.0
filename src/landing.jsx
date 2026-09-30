@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C, sb, getBandLogo, bandLogoImgStyle, getLogo } from "./core";
-import { Btn, Field, Badge, Modal, SealLine, Spinner, BrandWordmark } from "./ui";
+import { Btn, Field, Badge, Modal, SealLine, Spinner, BrandWordmark, LiveMark } from "./ui";
 import { LegalLinks } from "./legal";
 
 const BAND_COLORS = [
@@ -157,7 +157,8 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
         <div style={{ maxWidth:760, margin:"0 auto", display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
           <img src={getLogo()} alt="" style={{ height:44, width:"auto", objectFit:"contain", flexShrink:0 }}/>
           <div style={{ flex:1, minWidth:160 }}>
-            <BrandWordmark size={26}/>
+            <BrandWordmark size={22}/>
+            <div style={{ marginTop:2 }}><LiveMark size={22}/></div>
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center", flexShrink:0 }}>
             <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}
@@ -247,7 +248,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
         )}
       </main>
       <footer style={{ padding:"12px 24px 20px", textAlign:"center" }}>
-        <div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em", marginBottom:8 }}>THOMAS SCHUSTER · <span style={{ color:C.teal }}>SCHLAGFERTIG‽</span></div>
+        <div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em", marginBottom:8 }}>THOMAS SCHUSTER · <span style={{ color:C.teal }}>SCHLAGFERTIG‽ Live</span></div>
         <LegalLinks dim/>
       </footer>
       {showAddBand && <AddBandModal user={user} onClose={()=>setShowAddBand(false)} onRefresh={onRefresh} show={show}/>}
