@@ -81,15 +81,14 @@ function LiveMark({ size=34, hero }) {
   return (
     <span style={{
       color: C.teal,
-      fontFamily: "'Caveat', cursive",
-      fontStyle: "italic",
-      fontWeight: 700,
-      fontSize: hero ? Math.round(size * 0.9) : Math.round(size * 0.72),
-      lineHeight: 1,
+      fontFamily: "'Bebas Neue', cursive",
+      fontStyle: "normal",
+      fontWeight: 400,
+      fontSize: hero ? size : Math.round(size * 0.92),
+      lineHeight: 0.9,
       display: "inline-block",
-      transform: hero ? "rotate(-8deg)" : "rotate(-14deg)",
-      letterSpacing: hero ? "0.06em" : "0.01em",
-    }}>Live</span>
+      letterSpacing: "0.08em",
+    }}>LIVE</span>
   );
 }
 

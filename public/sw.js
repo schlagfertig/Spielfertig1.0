@@ -1,5 +1,5 @@
 // SCHLAGFERTIG LIVE – Service Worker
-const CACHE = 'spielfertig-v61';
+const CACHE = 'spielfertig-v62';
 const PRECACHE = ['/', '/index.html', '/Logo-dark.png', '/Logo-light.png'];
 
 self.addEventListener('install', e => {
