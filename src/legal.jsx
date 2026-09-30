@@ -1,5 +1,5 @@
 import { C, getLogo } from "./core";
-import { BrandWordmark, SealLine } from "./ui";
+import { BrandWordmark, LiveMark, SealLine } from "./ui";
 
 export const LEGAL = {
   name: "Thomas Schuster",
@@ -8,7 +8,7 @@ export const LEGAL = {
   city: "Kaufering",
   country: "Deutschland",
   email: "thomas-schuster83@gmx.de",
-  brand: "SPIELFERTIG‽ Live",
+  brand: "SCHLAGFERTIG‽ Live",
   studio: "SCHLAGFERTIG‽",
   site: "https://spielfertig7.vercel.app",
 };
@@ -129,8 +129,8 @@ export function LegalView({ page }) {
       <div style={{ maxWidth:640, margin:"0 auto", padding:"28px 20px 48px" }}>
         <a href="." style={{ color:C.grayDim, fontSize:12, textDecoration:"none", letterSpacing:"0.08em", textTransform:"uppercase" }}>← Zurück</a>
         <div style={{ textAlign:"center", margin:"22px 0 8px" }}>
-          <div style={{ display:"flex", justifyContent:"center", marginBottom:10 }}><BrandWordmark size={34}/></div>
-          <img src={getLogo()} alt="" style={{ width:72, height:"auto", opacity:0.9 }}/>
+          <img src={getLogo()} alt="" style={{ width:96, height:"auto", opacity:0.95, display:"block", margin:"0 auto 8px" }}/>
+          <LiveMark size={28} hero/>
         </div>
         <div style={{ color:C.white, fontFamily:"'Bebas Neue',cursive", fontSize:28, letterSpacing:"0.06em", textAlign:"center", marginBottom:6 }}>
           {isPrivacy ? "Datenschutz" : "Impressum"}

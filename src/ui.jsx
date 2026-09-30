@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { C } from "./core";
-import { LOGO_SPIELFERTIG_LIVE } from "./logoSpielfertigLive";
 
 function useIsNarrow(max = 720) {
   const [narrow, setNarrow] = useState(() =>
@@ -78,27 +77,27 @@ function Bang({ size=28, color }) {
   );
 }
 
-function LiveMark({ size=34 }) {
+function LiveMark({ size=34, hero }) {
   return (
     <span style={{
       color: C.teal,
       fontFamily: "'Caveat', cursive",
       fontStyle: "italic",
       fontWeight: 700,
-      fontSize: Math.round(size * 0.72),
+      fontSize: hero ? Math.round(size * 0.9) : Math.round(size * 0.72),
       lineHeight: 1,
       display: "inline-block",
-      transform: "rotate(-14deg)",
-      letterSpacing: "0.01em",
+      transform: hero ? "rotate(-8deg)" : "rotate(-14deg)",
+      letterSpacing: hero ? "0.06em" : "0.01em",
     }}>Live</span>
   );
 }
 
-// App-Logo (SPIELFERTIG‽ LIVE) statt Text-Schriftzug; size = frühere Schriftgröße
 function BrandWordmark({ size=34 }) {
   return (
-    <img src={LOGO_SPIELFERTIG_LIVE} alt="Spielfertig‽ Live"
-      style={{ height:size*2, width:"auto", maxWidth:"100%", objectFit:"contain", display:"block", mixBlendMode:"lighten", userSelect:"none" }}/>
+    <div style={{ color:C.white, fontWeight:400, fontSize:size, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em", lineHeight:1, display:"inline-flex", alignItems:"baseline" }}>
+      SCHLAGFERTIG<Bang size={size} />
+    </div>
   );
 }
 
