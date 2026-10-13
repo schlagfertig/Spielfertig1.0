@@ -241,6 +241,30 @@ const sb = {
     }, 20000);
     return parseJsonSafe(res);
   },
+  importBackup(payload) {
+    if (!sb._local) throw new Error("Import nur im lokalen Modus.");
+    const packs = Array.isArray(payload && payload.bands) ? payload.bands : null;
+    const next = emptyLocal();
+    if (packs) {
+      packs.forEach(p => {
+        if (p.band) next.bands.push(p.band);
+        (p.songs || []).forEach(s => next.songs.push(s));
+        (p.gigs || []).forEach(g => next.gigs.push(g));
+        (p.playlists || []).forEach(pl => next.playlists.push(pl));
+        (p.playlist_songs || []).forEach(ps => next.playlist_songs.push(ps));
+      });
+    } else if (payload && (payload.bands || payload.songs)) {
+      next.bands = payload.bands || [];
+      next.songs = payload.songs || [];
+      next.gigs = payload.gigs || [];
+      next.playlists = payload.playlists || payload.pls || [];
+      next.playlist_songs = payload.playlist_songs || payload.ps || [];
+    } else {
+      throw new Error("Kein gültiges Backup.");
+    }
+    saveLocal(next);
+    return { bands: next.bands.length, songs: next.songs.length };
+  },
   async delete(table, filter) {
     if (sb._local) {
       const db = loadLocal() || emptyLocal();
