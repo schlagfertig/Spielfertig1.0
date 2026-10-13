@@ -125,6 +125,9 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
   const [delBand, setDelBand] = useState(null);
   const [delSaving, setDelSaving] = useState(false);
   const [backupText, setBackupText] = useState(null);
+  const [importText, setImportText] = useState("");
+  const [showImport, setShowImport] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [newPw, setNewPw] = useState("");
   const [newPw2, setNewPw2] = useState("");
@@ -141,6 +144,23 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
     } catch(err) {
       show("Export-Fehler: " + (err&&err.message ? err.message : "unbekannt"));
     }
+  };
+
+  const runImport = async () => {
+    if (!importText.trim()) return;
+    setImporting(true);
+    try {
+      const payload = JSON.parse(importText);
+      const res = sb.importBackup(payload);
+      await onRefresh();
+      show("Import fertig: " + res.bands + " Bands, " + res.songs + " Songs.");
+      setShowImport(false);
+      setImportText("");
+      setShowAccount(false);
+    } catch(err) {
+      show("Import-Fehler: " + (err&&err.message ? err.message : "ungültiges Backup"), "error");
+    }
+    setImporting(false);
   };
 
   const handleDeleteBand = async () => {
@@ -175,6 +195,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           <div style={{ color:C.white, fontSize:14, fontWeight:600, wordBreak:"break-all" }}>{user.email}</div>
           <SealLine/>
           <Btn full variant="outline" onClick={()=>{ setShowAccount(false); runBackup(); }}>Backup sichern</Btn>
+          <Btn full variant="outline" onClick={()=>{ setShowAccount(false); setShowImport(true); setImportText(""); }}>Backup importieren</Btn>
           <SealLine/>
           {user && user.id === "local" ? (
             <div style={{ color:C.grayDim, fontSize:12, lineHeight:1.5 }}>Lokalmodus — Songs und Setlists bleiben auf diesem Gerät. Sichere sie über Backup.</div>
@@ -269,6 +290,25 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
                 navigator.clipboard.writeText(backupText).then(()=>show("Backup kopiert!")).catch(()=>show("Bitte manuell kopieren"));
               } else { show("Bitte manuell kopieren"); }
             }}>Kopieren</Btn>
+          </div>
+        </Modal>
+      )}
+      {showImport && (
+        <Modal title="Backup importieren" onClose={()=>setShowImport(false)}>
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            <div style={{ color:C.grayDim, fontSize:12, lineHeight:1.5 }}>
+              Füge das gesicherte JSON ein oder wähle die Datei. Vorhandene Daten auf diesem Gerät werden ersetzt.
+            </div>
+            <input type="file" accept="application/json,.json,.txt" onChange={(e)=>{
+              const file = e.target.files && e.target.files[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = () => setImportText(String(reader.result || ""));
+              reader.readAsText(file);
+            }} style={{ color:C.gray, fontSize:12 }}/>
+            <textarea value={importText} onChange={e=>setImportText(e.target.value)} placeholder="JSON hier einfügen…"
+              style={{ width:"100%", height:180, background:"#0a0a0a", border:"1px solid #222", borderRadius:4, color:"#cfcfcf", fontFamily:"monospace", fontSize:11, padding:10, boxSizing:"border-box" }}/>
+            <Btn full disabled={!importText.trim()||importing} onClick={runImport}>{importing ? "Importiere…" : "Importieren"}</Btn>
           </div>
         </Modal>
       )}
