@@ -1,5 +1,5 @@
 // SCHLAGFERTIG LIVE – Service Worker
-const CACHE = 'spielfertig-v66';
+const CACHE = 'spielfertig-v67';
 const PRECACHE = ['/', '/index.html', '/Logo-dark.png', '/Logo-light.png', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
