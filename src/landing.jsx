@@ -176,6 +176,9 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           <SealLine/>
           <Btn full variant="outline" onClick={()=>{ setShowAccount(false); runBackup(); }}>Backup sichern</Btn>
           <SealLine/>
+          {user && user.id === "local" ? (
+            <div style={{ color:C.grayDim, fontSize:12, lineHeight:1.5 }}>Lokalmodus — Songs und Setlists bleiben auf diesem Gerät. Sichere sie über Backup.</div>
+          ) : (<>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase" }}>Passwort ändern</div>
           <Field value={newPw} onChange={setNewPw} type="password" placeholder="Neues Passwort…"/>
           <Field value={newPw2} onChange={setNewPw2} type="password" placeholder="Passwort bestätigen…"/>
@@ -192,8 +195,9 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           }}>{pwSaving?"Speichere…":"Passwort speichern"}</Btn>
           {newPw&&newPw.length<6&&<div style={{ color:C.grayDim, fontSize:11 }}>Mindestens 6 Zeichen.</div>}
           {newPw&&newPw2&&newPw!==newPw2&&<div style={{ color:C.red, fontSize:11 }}>Passwörter stimmen nicht überein.</div>}
+          </>)}
           <SealLine/>
-          <Btn full variant="ghost" onClick={onLogout}>Abmelden</Btn>
+          <Btn full variant="ghost" onClick={onLogout}>{user && user.id === "local" ? "Lokal" : "Abmelden"}</Btn>
         </div>
       </Modal>}
       <main style={{ flex:1, maxWidth:760, margin:"0 auto", padding:"28px 20px", width:"100%", boxSizing:"border-box" }}>
