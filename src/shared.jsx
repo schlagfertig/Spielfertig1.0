@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { C, sb, SETS, dStyle, getBandLogo, getLogo, bandLogoImgStyle } from "./core";
+import { C, sb, SETS, dStyle, getBandLogo, getLogo, bandLogoImgStyle, decodeShareFromLocation } from "./core";
 import { SealIcon, Spinner, useIsNarrow, HeadToggle } from "./ui";
 import { GigMetronome, BpmBadge } from "./gig";
 import { GigDock } from "./gigDock";
@@ -41,6 +41,17 @@ function SharedView({ playlistId }) {
     let cancelled = false;
     (async()=>{
       try {
+        const packed = decodeShareFromLocation();
+        if (packed && packed.playlist) {
+          const psArr = Array.isArray(packed.ps) ? packed.ps : [];
+          const firstSet = SETS.find(s=>psArr.some(p=>p.set_name===s)) || "Set 1";
+          if (!cancelled) {
+            setActiveSet(firstSet);
+            setData({ playlist: packed.playlist, ps: psArr, songs: packed.songs || [], bandName: packed.bandName || "" });
+            setLoading(false);
+          }
+          return;
+        }
         const q = (table, options) => sb.query(table, { ...options, anon: true });
         const pls = await q("playlists", { select:"*", filter:"id=eq."+playlistId });
         const playlist = Array.isArray(pls)&&pls[0] ? pls[0] : null;
