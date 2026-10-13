@@ -80,6 +80,75 @@ function authHeaders() {
   };
 }
 
+
+const LOCAL_KEY = "sf_local";
+function emptyLocal() {
+  return { bands: [], songs: [], gigs: [], playlists: [], playlist_songs: [], invites: [], band_members: [] };
+}
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(LOCAL_KEY);
+    if (raw) {
+      const db = JSON.parse(raw);
+      const base = emptyLocal();
+      Object.keys(base).forEach(k => { if (!Array.isArray(db[k])) db[k] = []; });
+      return db;
+    }
+  } catch (_) {}
+  return null;
+}
+function saveLocal(db) {
+  try { localStorage.setItem(LOCAL_KEY, JSON.stringify(db)); } catch (_) {}
+}
+function localId() {
+  return "L" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+function matchFilter(row, filter) {
+  if (!filter) return true;
+  return String(filter).split("&").filter(Boolean).every(part => {
+    const inn = part.match(/^([A-Za-z0-9_]+)=in\.\((.*)\)$/);
+    if (inn) {
+      const vals = inn[2].split(",").map(s => decodeURIComponent(s.trim()));
+      return vals.includes(String(row[inn[1]]));
+    }
+    const eq = part.match(/^([A-Za-z0-9_]+)=eq\.(.*)$/);
+    if (eq) return String(row[eq[1]] ?? "") === decodeURIComponent(eq[2]);
+    return true;
+  });
+}
+function applyOrder(rows, order) {
+  if (!order) return rows;
+  const keys = String(order).split(",").map(k => {
+    const [field, dir] = k.split(".");
+    return { field, desc: dir === "desc" };
+  });
+  return [...rows].sort((a, b) => {
+    for (const k of keys) {
+      const av = a[k.field] == null ? "" : a[k.field];
+      const bv = b[k.field] == null ? "" : b[k.field];
+      if (av < bv) return k.desc ? 1 : -1;
+      if (av > bv) return k.desc ? -1 : 1;
+    }
+    return 0;
+  });
+}
+function encodeShare(obj) {
+  try { return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); }
+  catch (_) { return ""; }
+}
+function decodeShare(b64) {
+  try { return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(b64))))); }
+  catch (_) { return null; }
+}
+function decodeShareFromLocation() {
+  try {
+    const hash = (typeof window !== "undefined" && window.location.hash) || "";
+    const m = hash.match(/(?:^#|&)d=([^&]+)/);
+    if (!m) return null;
+    return decodeShare(m[1]);
+  } catch (_) { return null; }
+}
+
 const sb = {
   headers: () => {
     const t = sb._token || SUPABASE_KEY;
@@ -95,7 +164,34 @@ const sb = {
     Authorization: "Bearer " + SUPABASE_KEY,
   }),
   _token: null,
+  enableLocal() {
+    sb._local = true;
+    if (!loadLocal()) {
+      let seed = emptyLocal();
+      try {
+        const raw = localStorage.getItem("sf_cache");
+        if (raw) {
+          const c = JSON.parse(raw);
+          seed = {
+            bands: c.bands || [],
+            songs: c.songs || [],
+            gigs: c.gigs || [],
+            playlists: c.pls || [],
+            playlist_songs: c.ps || [],
+            invites: [],
+            band_members: [],
+          };
+        }
+      } catch (_) {}
+      saveLocal(seed);
+    }
+  },
   async query(table, options = {}) {
+    if (sb._local) {
+      const db = loadLocal() || emptyLocal();
+      const rows = applyOrder((db[table] || []).filter(r => matchFilter(r, options.filter)), options.order);
+      return rows;
+    }
     let url = SUPABASE_URL + "/rest/v1/" + table + "?";
     if (options.select)  url += "select=" + encodeURIComponent(options.select) + "&";
     if (options.filter)  url += options.filter + "&";
@@ -108,6 +204,14 @@ const sb = {
     return parseJsonSafe(res);
   },
   async insert(table, data) {
+    if (sb._local) {
+      const db = loadLocal() || emptyLocal();
+      if (!Array.isArray(db[table])) db[table] = [];
+      const row = { ...data, id: data.id || localId(), created_at: data.created_at || new Date().toISOString() };
+      db[table].push(row);
+      saveLocal(db);
+      return row;
+    }
     const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table, {
       method: "POST",
       headers: { ...sb.headers(), Prefer: "return=representation" },
@@ -117,6 +221,19 @@ const sb = {
     return Array.isArray(json) ? json[0] : json;
   },
   async update(table, data, filter) {
+    if (sb._local) {
+      const db = loadLocal() || emptyLocal();
+      const list = db[table] || [];
+      const updated = [];
+      db[table] = list.map(row => {
+        if (!matchFilter(row, filter)) return row;
+        const next = { ...row, ...data };
+        updated.push(next);
+        return next;
+      });
+      saveLocal(db);
+      return updated;
+    }
     const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
       method: "PATCH",
       headers: { ...sb.headers(), Prefer: "return=representation" },
@@ -125,6 +242,12 @@ const sb = {
     return parseJsonSafe(res);
   },
   async delete(table, filter) {
+    if (sb._local) {
+      const db = loadLocal() || emptyLocal();
+      db[table] = (db[table] || []).filter(row => !matchFilter(row, filter));
+      saveLocal(db);
+      return;
+    }
     await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
       method: "DELETE",
       headers: sb.headers(),
@@ -159,6 +282,7 @@ const sb = {
       localStorage.removeItem("sf_user");
     },
     async updateUser(data) {
+      if (sb._local) throw new Error("Kein Konto im lokalen Modus.");
       const res = await fetchWithTimeout(SUPABASE_URL + "/auth/v1/user", {
         method: "PUT",
         headers: sb.headers(),
@@ -213,6 +337,7 @@ const dStyle = d => {
 
 export {
   SUPABASE_URL, SUPABASE_KEY, LOGO_DARK, LOGO_LIGHT, LOGO_FULL, getLogo, getBandLogo, bandLogoImgStyle,
+  encodeShare, decodeShare, decodeShareFromLocation,
   LOGO_HARDYS_DATA, fetchWithTimeout, sb, THEMES, C, applyTheme, SETS, DRUMMER_COLORS,
   EXTRA_DRUMMER_PALETTE, dStyle
 };
