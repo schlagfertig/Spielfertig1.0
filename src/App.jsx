@@ -39,14 +39,12 @@ export default function App() {
 
   useEffect(()=>{
     if (shareId || legalPage) { setLoading(false); return; }
-    const token = localStorage.getItem("sf_token");
-    const u     = localStorage.getItem("sf_user");
-    if (token && u) { sb._token = token; setUser(JSON.parse(u)); }
-    else setLoading(false);
+    sb.enableLocal();
+    setUser({ id: "local", email: "Lokal" });
   },[shareId, legalPage]);
 
   const loadAll = useCallback(async () => {
-    if (!sb._token) return;
+    if (!sb._local && !sb._token) return;
     try {
       const [b,s,g,pl,ps] = await Promise.all([
         sb.query("bands",         { select:"*", order:"created_at.asc" }),
@@ -81,7 +79,7 @@ export default function App() {
   useEffect(()=>{ if(user && !shareId && !legalPage) { joinPendingInvites().then(loadAll); } },[user,loadAll,joinPendingInvites,shareId,legalPage]);
 
   const handleAuth = (u) => { setUser(u); };
-  const handleLogout = async () => { await sb.auth.signOut(); setUser(null); setBands([]); setSongs([]); setGigs([]); setPls([]); setPS([]); };
+  const handleLogout = async () => { show("Lokalmodus — Daten bleiben auf diesem Gerät. Nichts abzumelden."); };
 
   if (legalPage === "impressum" || legalPage === "datenschutz") return <LegalView page={legalPage}/>;
   if (shareId) return <SharedView playlistId={shareId}/>;
