@@ -76,16 +76,16 @@ function AddBandModal({ user, onClose, onRefresh, show }) {
 
 function downloadJSON(filename, dataObj) {
   try {
-    const json = JSON.stringify(dataObj, null, 2);
-    const w = window.open("", "_blank");
-    if (!w) return false;
-    w.document.open();
-    w.document.write(
-      "<!DOCTYPE html><html><head><meta charset='utf-8'><title>" + filename + "</title></head>" +
-      "<body style='margin:0;background:#0a0a0a;color:#cfcfcf;font-family:monospace;'>" +
-      "<pre style='padding:16px;white-space:pre-wrap;'>" + json.replace(/</g,"<") + "</pre></body></html>"
-    );
-    w.document.close();
+    const json = typeof dataObj === "string" ? dataObj : JSON.stringify(dataObj, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename.endsWith(".json") ? filename : filename + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
     return true;
   } catch(e) { return false; }
 }
@@ -140,7 +140,10 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
         version: 1,
         bands: (bands||[]).map(b=>buildBandExport(b, songs, gigs, playlists, playlistSongs))
       };
-      setBackupText(JSON.stringify(payload, null, 2));
+      const json = JSON.stringify(payload, null, 2);
+      setBackupText(json);
+      const ok = downloadJSON("schlagfertig-live-" + todayStamp() + ".json", json);
+      show(ok ? "Backup-Datei gespeichert." : "Datei konnte nicht gespeichert werden.");
     } catch(err) {
       show("Export-Fehler: " + (err&&err.message ? err.message : "unbekannt"));
     }
@@ -281,11 +284,15 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
         <Modal title="Backup – Daten sichern" onClose={()=>setBackupText(null)}>
           <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
             <div style={{ color:C.grayDim, fontSize:12, lineHeight:1.5 }}>
-              Markiere den Text und kopiere ihn. So hast du ein Backup aller Bands, Songs und Setlists.
+              Die Datei sollte gerade heruntergeladen worden sein. Sonst hier nochmal speichern oder den Text kopieren.
             </div>
-            <textarea readOnly value={backupText} onFocus={e=>e.target.select()}
-              style={{ width:"100%", height:240, background:"#0a0a0a", border:"1px solid #222", borderRadius:4, color:"#cfcfcf", fontFamily:"monospace", fontSize:11, padding:10, whiteSpace:"pre", boxSizing:"border-box" }}/>
             <Btn full onClick={()=>{
+              const ok = downloadJSON("schlagfertig-live-" + todayStamp() + ".json", backupText);
+              show(ok ? "Datei gespeichert." : "Bitte manuell kopieren");
+            }}>Datei speichern</Btn>
+            <textarea readOnly value={backupText} onFocus={e=>e.target.select()}
+              style={{ width:"100%", height:180, background:"#0a0a0a", border:"1px solid #222", borderRadius:4, color:"#cfcfcf", fontFamily:"monospace", fontSize:11, padding:10, whiteSpace:"pre", boxSizing:"border-box" }}/>
+            <Btn full variant="outline" onClick={()=>{
               if (navigator.clipboard&&navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(backupText).then(()=>show("Backup kopiert!")).catch(()=>show("Bitte manuell kopieren"));
               } else { show("Bitte manuell kopieren"); }
