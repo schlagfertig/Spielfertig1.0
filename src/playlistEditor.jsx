@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { C, sb, SETS } from "./core";
+import { C, sb, SETS, encodeShare } from "./core";
 import { Btn, Field, SealLine, Spinner, useIsNarrow, ToolTile } from "./ui";
 import { SongRowMove } from "./songRow";
 import { exportPDF } from "./songPdf";
@@ -182,7 +182,11 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const sharePl = async (e) => {
     if (e) { e.stopPropagation(); e.preventDefault(); }
     await sb.update("playlists", { is_shared: true }, "id=eq." + playlist.id);
-    const url = window.location.origin + "/?share=" + playlist.id;
+    const ps = playlistSongs.filter(p => p.playlist_id === playlist.id);
+    const ids = new Set(ps.map(p => p.song_id));
+    const songs = allSongs.filter(s => ids.has(s.id));
+    const packed = encodeShare({ playlist: { ...playlist, is_shared: true }, ps, songs, bandName: bandName || "" });
+    const url = window.location.origin + "/?share=" + playlist.id + (packed ? "#d=" + encodeURIComponent(packed) : "");
     if (navigator.clipboard&&navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(()=>show("Link kopiert! An Putzerfische senden 🐟")).catch(()=>show(url,"success"));
     } else { show(url,"success"); }
