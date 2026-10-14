@@ -125,6 +125,8 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
   const [delBand, setDelBand] = useState(null);
   const [delSaving, setDelSaving] = useState(false);
   const [backupText, setBackupText] = useState(null);
+  const [showBackupPick, setShowBackupPick] = useState(false);
+  const [backupIds, setBackupIds] = useState([]);
   const [importText, setImportText] = useState("");
   const [showImport, setShowImport] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -133,17 +135,28 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
   const [newPw2, setNewPw2] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
 
+  const openBackup = () => {
+    setBackupIds((bands||[]).map(b => b.id));
+    setShowAccount(false);
+    setShowBackupPick(true);
+  };
+  const toggleBackupId = (id) => {
+    setBackupIds(list => list.includes(id) ? list.filter(x => x !== id) : [...list, id]);
+  };
   const runBackup = () => {
     try {
+      const chosen = (bands||[]).filter(b => backupIds.includes(b.id));
+      if (!chosen.length) { show("Keine Band ausgewählt.", "error"); return; }
       const payload = {
         exported_at: new Date().toISOString(),
         version: 1,
-        bands: (bands||[]).map(b=>buildBandExport(b, songs, gigs, playlists, playlistSongs))
+        bands: chosen.map(b=>buildBandExport(b, songs, gigs, playlists, playlistSongs))
       };
       const json = JSON.stringify(payload, null, 2);
       setBackupText(json);
+      setShowBackupPick(false);
       const ok = downloadJSON("schlagfertig-live-" + todayStamp() + ".json", json);
-      show(ok ? "Backup-Datei gespeichert." : "Datei konnte nicht gespeichert werden.");
+      show(ok ? "Backup-Datei gespeichert (" + chosen.length + ")." : "Datei konnte nicht gespeichert werden.");
     } catch(err) {
       show("Export-Fehler: " + (err&&err.message ? err.message : "unbekannt"));
     }
@@ -197,7 +210,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           <div style={{ color:C.grayDim, fontSize:12 }}>Angemeldet als</div>
           <div style={{ color:C.white, fontSize:14, fontWeight:600, wordBreak:"break-all" }}>{user.email}</div>
           <SealLine/>
-          <Btn full variant="outline" onClick={()=>{ setShowAccount(false); runBackup(); }}>Backup sichern</Btn>
+          <Btn full variant="outline" onClick={openBackup}>Backup sichern</Btn>
           <Btn full variant="outline" onClick={()=>{ setShowAccount(false); setShowImport(true); setImportText(""); }}>Backup importieren</Btn>
           <SealLine/>
           {user && user.id === "local" ? (
@@ -280,6 +293,35 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
         <LegalLinks dim/>
       </footer>
       {showAddBand && <AddBandModal user={user} onClose={()=>setShowAddBand(false)} onRefresh={onRefresh} show={show}/>}
+      {showBackupPick && (
+        <Modal title="Backup – Bands wählen" onClose={()=>setShowBackupPick(false)}>
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            <div style={{ color:C.grayDim, fontSize:12, lineHeight:1.5 }}>
+              Wähle die Bands, die in die Datei sollen.
+            </div>
+            <div style={{ display:"flex", gap:8 }}>
+              <Btn size="sm" variant="outline" onClick={()=>setBackupIds((bands||[]).map(b=>b.id))}>Alle</Btn>
+              <Btn size="sm" variant="ghost" onClick={()=>setBackupIds([])}>Keine</Btn>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:6, maxHeight:280, overflowY:"auto" }}>
+              {(bands||[]).length===0 && <div style={{ color:C.grayDim, fontSize:13 }}>Noch keine Band.</div>}
+              {(bands||[]).map(band => {
+                const on = backupIds.includes(band.id);
+                const count = (songs||[]).filter(s=>s.band_id===band.id).length;
+                return (
+                  <button key={band.id} onClick={()=>toggleBackupId(band.id)}
+                    style={{ display:"flex", alignItems:"center", gap:10, textAlign:"left", background:on?C.tealDim:"#0a0a0a", border:"1px solid "+(on?C.tealBorder:"#222"), borderRadius:6, padding:"10px 12px", color:C.white, cursor:"pointer", fontFamily:"inherit" }}>
+                    <span style={{ width:18, height:18, borderRadius:4, border:"1px solid "+(on?C.teal:"#444"), background:on?C.teal:"transparent", color:"#000", fontSize:12, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{on?"✓":""}</span>
+                    <span style={{ flex:1, fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{band.emoji ? band.emoji + " " : ""}{band.name}</span>
+                    <span style={{ color:C.grayDim, fontSize:11, flexShrink:0 }}>{count} Songs</span>
+                  </button>
+                );
+              })}
+            </div>
+            <Btn full disabled={!backupIds.length} onClick={runBackup}>Datei speichern ({backupIds.length})</Btn>
+          </div>
+        </Modal>
+      )}
       {backupText!==null && (
         <Modal title="Backup – Daten sichern" onClose={()=>setBackupText(null)}>
           <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
