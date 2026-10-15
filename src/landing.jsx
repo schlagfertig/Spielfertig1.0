@@ -197,10 +197,6 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
             <div style={{ marginTop:2 }}><LiveMark size={22}/></div>
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center", flexShrink:0 }}>
-            <Btn variant="outline" size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setShowAddBand(true);}}
-              style={{ padding:"6px 12px" }}>
-              + Band
-            </Btn>
             <Btn variant="outline" size="sm" onClick={()=>{setShowAccount(true);setNewPw("");setNewPw2("");}}>Konto</Btn>
           </div>
         </div>
@@ -242,12 +238,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           <div style={{ color:C.teal, fontSize:11, fontWeight:800, letterSpacing:"0.16em", textTransform:"uppercase", marginBottom:6 }}>Bands</div>
           <h2 style={{ color:C.white, fontSize:22, fontWeight:800, margin:0, fontFamily:"'Raleway',sans-serif" }}>Welche Band spielst du?</h2>
         </div>
-        {bands.length===0?(
-          <div style={{ textAlign:"center", color:C.grayDim, padding:"48px 16px", fontSize:14, border:"1px dashed #3a454b", borderRadius:12, background:"#1c2226" }}>
-            Noch keine Band — oben rechts anlegen.
-          </div>
-        ):(
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))", gap:14 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))", gap:14 }}>
             {bands.map(band=>{
               const count = songs.filter(s=>s.band_id===band.id).length;
               const logo = getBandLogo(band.name);
@@ -283,8 +274,26 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
                 </div>
               );
             })}
+            <button type="button" onClick={()=>setShowAddBand(true)}
+              style={{
+                ...glassStyle({ borderRadius: 22, background: "rgba(92,200,184,0.08)" }),
+                cursor:"pointer",
+                minHeight: 188,
+                display:"flex",
+                flexDirection:"column",
+                alignItems:"center",
+                justifyContent:"center",
+                gap:10,
+                color:C.teal,
+                fontFamily:"inherit",
+                padding:"28px 16px",
+              }}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor=C.teal;e.currentTarget.style.transform="translateY(-2px)";}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.22)";e.currentTarget.style.transform="none";}}>
+              <div style={{ fontSize:42, fontWeight:300, lineHeight:1 }}>+</div>
+              <div style={{ fontWeight:800, fontSize:15, letterSpacing:"0.02em" }}>Neue Band anlegen</div>
+            </button>
           </div>
-        )}
       </main>
       <footer style={{ padding:"12px 24px 20px", textAlign:"center" }}>
         <div style={{ color:"#1e1e1e", fontSize:10, letterSpacing:"0.15em", marginBottom:8 }}>THOMAS SCHUSTER · <span style={{ color:C.teal }}>SCHLAGFERTIG‽ Live</span></div>
