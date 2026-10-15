@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { C, SETS, dStyle, sb } from "./core";
-import { useIsNarrow, HeadToggle, Btn, Field, Modal } from "./ui";
+import { useIsNarrow, useSwipeBack, HeadToggle, Btn, Field, Modal } from "./ui";
 import { GigMetronome, BpmBadge } from "./gig";
 import { GigDock } from "./gigDock";
 import { GigNowCard } from "./gigNow";
@@ -24,6 +24,7 @@ function readSkipped(playlistId) {
 }
 
 function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, theme, toggleTheme, onClose, canEdit, onRefresh }) {
+  useSwipeBack(onClose);
   const [currentSongId, setCurrentSongId] = useState(null);
   const [gigLyricsId, setGigLyricsId] = useState(null);
   const [gigNotesId, setGigNotesId] = useState(null);
