@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { C } from "./core";
+import { C, glassStyle } from "./core";
 
 function useIsNarrow(max = 720) {
   const [narrow, setNarrow] = useState(() =>
@@ -42,10 +42,10 @@ function ToolTile({ icon, label, onClick, active, primary }) {
     <button type="button" onClick={onClick} style={{
       flex: "1 1 0", minWidth: 0, display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center", gap: 4, padding: "8px 2px",
-      background: on ? C.teal : "transparent",
-      color: on ? "#000" : C.teal,
-      border: "1px solid " + (on ? C.teal : C.tealBorder),
-      borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontWeight: 700,
+      ...(on ? { background: C.teal } : glassStyle({ background: "rgba(92,200,184,0.12)" })),
+      color: on ? "#06120f" : C.teal,
+      border: "1px solid " + (on ? C.teal : "rgba(255,255,255,0.22)"),
+      borderRadius: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 700,
       fontSize: 9, letterSpacing: "0.05em", textTransform: "uppercase",
     }}>
       <span style={{ fontSize: 18, lineHeight: 1 }}>{icon}</span>
@@ -104,7 +104,7 @@ function Btn({ children, onClick, variant="primary", size="md", disabled, full, 
   const sz = { sm:{padding:"5px 11px",fontSize:11}, md:{padding:"8px 18px",fontSize:12}, lg:{padding:"12px 28px",fontSize:13} };
   const vr = {
     primary: { background:C.teal, color:"#000", border:"none" },
-    outline: { background:"transparent", color:C.teal, border:"1px solid "+C.tealBorder },
+    outline: { ...glassStyle({ background: "rgba(92,200,184,0.12)" }), color:C.teal, border:"1px solid rgba(255,255,255,0.22)" },
     danger:  { background:C.redDim, color:C.red, border:"1px solid "+C.redBorder },
     ghost:   { background:"transparent", color:C.gray, border:"none" },
   };
@@ -133,7 +133,7 @@ function Toast({ msg, type, onClose }) {
 function Confirm({ msg, onOk, onCancel }) {
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <div style={{ background:C.bgCard, border:"1px solid #222", borderRadius:8, padding:28, maxWidth:340, width:"90%" }}>
+      <div style={{ ...glassStyle(), borderRadius:22, padding:28, maxWidth:340, width:"90%" }}>
         <p style={{ color:C.white, fontSize:14, fontWeight:600, marginBottom:6 }}>Löschen bestätigen</p>
         <p style={{ color:C.gray, fontSize:13, marginBottom:20 }}>{msg}</p>
         <SealLine/><div style={{ display:"flex", gap:8, justifyContent:"flex-end", marginTop:14 }}>
@@ -158,7 +158,7 @@ function Modal({ title, onClose, children }) {
     >
       <div
         onClick={e=>e.stopPropagation()}
-        style={{ background:C.bgCard, border:"1px solid "+C.grayDim, borderRadius:8, width:"100%", maxWidth:440, maxHeight:"92dvh", display:"flex", flexDirection:"column", overflow:"hidden" }}
+        style={{ ...glassStyle(), borderRadius:22, width:"100%", maxWidth:440, maxHeight:"92dvh", display:"flex", flexDirection:"column", overflow:"hidden" }}
       >
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"16px 18px 10px", flexShrink:0 }}>
           <span style={{ color:C.teal, fontWeight:700, fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase" }}>{title}</span>
