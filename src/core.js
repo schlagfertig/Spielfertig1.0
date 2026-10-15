@@ -319,6 +319,18 @@ const sb = {
   },
 };
 
+
+const glass = {
+  background: "rgba(22, 30, 34, 0.42)",
+  backgroundImage: "linear-gradient(165deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.04) 36%, transparent 62%)",
+  border: "1px solid rgba(255,255,255,0.22)",
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.42), inset 0 -1px 0 rgba(0,0,0,0.12), 0 12px 36px rgba(0,0,0,0.22)",
+  backdropFilter: "blur(42px) saturate(200%) brightness(1.08)",
+  WebkitBackdropFilter: "blur(42px) saturate(200%) brightness(1.08)",
+};
+function glassStyle(extra = {}) { return { ...glass, ...extra }; }
+const pageWash = "radial-gradient(1200px 700px at 12% -10%, rgba(92,200,184,0.22), transparent 55%), radial-gradient(900px 600px at 110% 8%, rgba(232,184,75,0.08), transparent 50%), #161a1d";
+
 const THEMES = {
   dark: {
     bg: "#161a1d", bgCard: "#1c2226",
@@ -362,6 +374,7 @@ const dStyle = d => {
 export {
   SUPABASE_URL, SUPABASE_KEY, LOGO_DARK, LOGO_LIGHT, LOGO_FULL, getLogo, getBandLogo, bandLogoImgStyle,
   encodeShare, decodeShare, decodeShareFromLocation,
+  glass, glassStyle, pageWash,
   LOGO_HARDYS_DATA, fetchWithTimeout, sb, THEMES, C, applyTheme, SETS, DRUMMER_COLORS,
   EXTRA_DRUMMER_PALETTE, dStyle
 };
