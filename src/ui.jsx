@@ -1,6 +1,58 @@
 import { useEffect, useState } from "react";
 import { C, glassStyle } from "./core";
 
+
+const swipeBackStack = [];
+let swipeBackBound = false;
+function bindSwipeBack() {
+  if (swipeBackBound || typeof window === "undefined") return;
+  swipeBackBound = true;
+  let startX = 0, startY = 0, tracking = false;
+  const start = (x, y, target) => {
+    const tag = (target && target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (x > 32) return;
+    startX = x; startY = y; tracking = true;
+  };
+  const end = (x, y) => {
+    if (!tracking) return;
+    tracking = false;
+    const dx = x - startX;
+    const dy = Math.abs(y - startY);
+    if (dx > 72 && dy < 56 && swipeBackStack.length) {
+      const fn = swipeBackStack[swipeBackStack.length - 1];
+      if (fn) fn();
+    }
+  };
+  window.addEventListener("touchstart", (e) => {
+    const t = e.touches && e.touches[0];
+    if (t) start(t.clientX, t.clientY, e.target);
+  }, { passive: true });
+  window.addEventListener("touchend", (e) => {
+    const t = e.changedTouches && e.changedTouches[0];
+    if (t) end(t.clientX, t.clientY);
+  }, { passive: true });
+  window.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "touch") return;
+    start(e.clientX, e.clientY, e.target);
+  });
+  window.addEventListener("pointerup", (e) => {
+    if (e.pointerType === "touch") return;
+    end(e.clientX, e.clientY);
+  });
+}
+function useSwipeBack(onBack) {
+  useEffect(() => {
+    if (!onBack) return;
+    bindSwipeBack();
+    swipeBackStack.push(onBack);
+    return () => {
+      const i = swipeBackStack.lastIndexOf(onBack);
+      if (i >= 0) swipeBackStack.splice(i, 1);
+    };
+  }, [onBack]);
+}
+
 function useIsNarrow(max = 720) {
   const [narrow, setNarrow] = useState(() =>
     typeof window !== "undefined" && window.matchMedia("(max-width:" + max + "px)").matches
@@ -188,4 +240,4 @@ function Spinner() {
   return <div style={{ width:20, height:20, border:"2px solid #222", borderTop:"2px solid "+C.teal, borderRadius:"50%", animation:"spin .7s linear infinite" }}/>;
 }
 
-export { useIsNarrow, HeadToggle, ToolTile, SealLine, Bang, LiveMark, BrandWordmark, Btn, Field, Sel, Badge, Toast, Confirm, Modal, SealIcon, Spinner };
+export { useIsNarrow, useSwipeBack, HeadToggle, ToolTile, SealLine, Bang, LiveMark, BrandWordmark, Btn, Field, Sel, Badge, Toast, Confirm, Modal, SealIcon, Spinner };
