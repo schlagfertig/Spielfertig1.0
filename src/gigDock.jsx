@@ -1,4 +1,4 @@
-import { C } from "./core";
+import { C, glassStyle } from "./core";
 import { GigMetronome } from "./gig";
 import { songNotes } from "./chart";
 
