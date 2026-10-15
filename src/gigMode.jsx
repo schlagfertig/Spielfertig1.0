@@ -137,7 +137,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           {narrow && <HeadToggle open={headOpen} onClick={()=>setHeadOpen(o=>!o)}/>}
         </div>
         <div style={{
-          background:"#071412",
+          background:"#161a1d",
           borderTop:"1px solid "+C.tealBorder,
           borderBottom:"1px solid "+C.tealBorder,
           padding: narrow ? "8px 12px" : "8px 16px",
@@ -160,7 +160,7 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           })}
         </div>
         {showExtra && (
-          <div style={{ padding: narrow ? "8px 12px 10px" : "8px 16px 10px", background:"#0a0a0a", borderBottom:"1px solid #151515" }}>
+          <div style={{ padding: narrow ? "8px 12px 10px" : "8px 16px 10px", background:"#161a1d", borderBottom:"1px solid #151515" }}>
             <div style={{ color:C.grayDim, fontSize:9, fontWeight:700, letterSpacing:"0.14em", textTransform:"uppercase", marginBottom:6 }}>Anzeige</div>
             <ViewPrefBar prefs={prefs} toggle={togglePref} />
           </div>
@@ -218,8 +218,8 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
               ) : (
               <div onClick={()=>pickSong(song)}
                 style={{
-                  background: skippedRow ? "#0a0a0a" : isNext ? C.bgNext : "transparent",
-                  border: "2px solid " + (skippedRow ? "#2a2a2a" : isNext ? C.borderNext : C.borderSong),
+                  background: skippedRow ? "#161a1d" : isNext ? C.bgNext : "transparent",
+                  border: "2px solid " + (skippedRow ? "#3a454b" : isNext ? C.borderNext : C.borderSong),
                   borderRadius: foldOpen ? "7px 7px 0 0" : 7,
                   padding:"9px 13px", display:"flex", alignItems:"center", gap:10,
                   cursor: skippedRow ? "default" : "pointer", opacity, transition:"all .2s"
