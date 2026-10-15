@@ -17,8 +17,12 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
   return (
     <div style={{ minHeight:"100vh", background:C.bg, overflowX:"hidden" }}>
       <header style={{ borderBottom:"1px solid #111", background:"rgba(0,0,0,.97)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:50 }}>
-        <div style={{ maxWidth:720, margin:"0 auto", padding: narrow ? "8px 56px 0 12px" : "8px 16px 0", display:"flex", alignItems:"center", gap:8 }}>
+        <div style={{ maxWidth:720, margin:"0 auto", padding: narrow ? "8px 12px 0 12px" : "8px 16px 0", display:"flex", alignItems:"center", gap:8 }}>
           <Btn variant="outline" size="md" onClick={onBack} style={{fontSize: narrow?18:20, padding: narrow?"6px 10px":"6px 18px", flexShrink:0}}>{narrow ? "←" : "← Zurück"}</Btn>
+          <button type="button" onClick={toggleTheme} title="Hell/Dunkel umschalten"
+            style={{ width:36, height:36, borderRadius:"50%", background:"rgba(92,200,184,0.12)", border:"1px solid rgba(255,255,255,0.22)", color:C.teal, fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginLeft:"auto" }}>
+            {theme==="dark" ? "☀️" : "🌙"}
+          </button>
           {narrow && !showBrand && (
             <div style={{ flex:1, minWidth:0, color:C.white, fontFamily:"'Bebas Neue',cursive", fontSize:18, letterSpacing:"0.06em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
               {band.name}
