@@ -102,7 +102,7 @@ export default function App() {
         input::placeholder,textarea::placeholder{color:${C.grayDim};}
         @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
         @keyframes spin{to{transform:rotate(360deg)}}
-        ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0a0a0a}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
+        ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#161a1d}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
         input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.3)}
       `}</style>
 
