@@ -153,12 +153,12 @@ function SharedView({ playlistId }) {
   const bandLogo = getBandLogo(data.bandName);
 
   return (
-    <div style={{ position:"fixed", inset:0, background:"#000", display:"flex", flexDirection:"column", overflow:"hidden", fontFamily:"'Raleway',sans-serif" }}>
-      <style>{"@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#000}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}" }</style>
+    <div style={{ position:"fixed", inset:0, background:"#161a1d", display:"flex", flexDirection:"column", overflow:"hidden", fontFamily:"'Raleway',sans-serif" }}>
+      <style>{"@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#161a1d}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#222;border-radius:2px}" }</style>
       <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", display:"flex", alignItems:"center", justifyContent:"center" }}>
         <img src={getLogo()} alt="" style={{ width:340, height:"auto", objectFit:"contain", opacity:0.07, userSelect:"none" }}/>
       </div>
-      <div style={{ background:"#0a0a0a", borderBottom:"1px solid #1a1a1a", flexShrink:0, position:"relative", zIndex:1 }}>
+      <div style={{ background:"#161a1d", borderBottom:"1px solid #2f383d", flexShrink:0, position:"relative", zIndex:1 }}>
         {bandLogo && showExtra && (
           <div style={{ padding:"16px 18px 8px", display:"flex", justifyContent:"center", borderBottom:"1px solid #111" }}>
             <img src={bandLogo} alt={data.bandName} style={bandLogoImgStyle({ height:100, maxWidth:"85%" })}/>
@@ -171,7 +171,7 @@ function SharedView({ playlistId }) {
             {narrow && <HeadToggle open={headOpen} onClick={()=>setHeadOpen(o=>!o)}/>}
           </div>
         </div>
-        <div style={{ background:"#071412", borderTop:"1px solid "+C.tealBorder, borderBottom:"1px solid "+C.tealBorder, padding:"8px 14px", display:"flex", gap:6, flexWrap:"wrap", alignItems:"center" }}>
+        <div style={{ background:"#161a1d", borderTop:"1px solid "+C.tealBorder, borderBottom:"1px solid "+C.tealBorder, padding:"8px 14px", display:"flex", gap:6, flexWrap:"wrap", alignItems:"center" }}>
           <div style={{ color:C.teal, fontSize:9, fontWeight:800, letterSpacing:"0.16em", textTransform:"uppercase" }}>Sets</div>
           {SETS.filter(set => (setCounts[set]||0) > 0 || set === activeSet).map(set=>(
             <button key={set} onClick={()=>switchSet(set)} style={{
@@ -184,7 +184,7 @@ function SharedView({ playlistId }) {
           ))}
         </div>
         {showExtra && (
-          <div style={{ padding:"8px 14px 10px", background:"#0a0a0a" }}>
+          <div style={{ padding:"8px 14px 10px", background:"#161a1d" }}>
             <div style={{ color:C.grayDim, fontSize:9, fontWeight:700, letterSpacing:"0.14em", textTransform:"uppercase", marginBottom:6 }}>Anzeige</div>
             <ViewPrefBar prefs={prefs} toggle={togglePref} />
           </div>
@@ -201,7 +201,7 @@ function SharedView({ playlistId }) {
               const thisLiveIdx = live.findIndex(s=>rowId(s)===id);
               const isNext = !skippedRow && currentId && !isCurrent && thisLiveIdx === currentLiveIdxRow + 1;
               const opacity = skippedRow ? 0.38 : !currentId ? 1 : isCurrent ? 1 : isNext ? 0.75 : 0.35;
-              const st = prefs.drummer ? dStyle(song.drummer) : { bg:"#0d0d0d", border:"#1a1a1a" };
+              const st = prefs.drummer ? dStyle(song.drummer) : { bg:"#1c2226", border:"#2f383d" };
               const dCol = drummerColor(song.drummer);
               const notes = songNotes(song);
               const chart = songChart(song);
@@ -228,7 +228,7 @@ function SharedView({ playlistId }) {
                     onSkip={(e)=>toggleSkip(id,e)}
                   />
                 ) : (
-                <div onClick={()=>pickSong(song)} style={{ background:skippedRow?"#0a0a0a":(isNext?C.bgNext:st.bg), border:"2px solid "+(skippedRow?"#2a2a2a":isNext?C.borderNext:st.border), borderRadius: foldOpen?"7px 7px 0 0":7, padding:"9px 13px", display:"flex", alignItems:"center", gap:10, opacity, cursor: skippedRow?"default":"pointer" }}>
+                <div onClick={()=>pickSong(song)} style={{ background:skippedRow?"#161a1d":(isNext?C.bgNext:st.bg), border:"2px solid "+(skippedRow?"#3a454b":isNext?C.borderNext:st.border), borderRadius: foldOpen?"7px 7px 0 0":7, padding:"9px 13px", display:"flex", alignItems:"center", gap:10, opacity, cursor: skippedRow?"default":"pointer" }}>
                   <div style={{ color:C.grayDim, fontSize: isNext?10:13, fontFamily:"'Space Mono',monospace", width:28, textAlign:"center", flexShrink:0 }}>{skippedRow?"⊘":isNext?"NEXT":song.position}</div>
                   <div style={{width:36,minWidth:36,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                     {notes && !skippedRow && <FoldBtn on={notesOpen} title={notesOpen?"Notiz schließen":"Notiz hinterlegt"} kind="notes" onClick={()=>setNotesId(x=>x===id?null:id)}/>}
