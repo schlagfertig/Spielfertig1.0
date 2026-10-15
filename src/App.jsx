@@ -112,13 +112,6 @@ export default function App() {
       <div style={{ position:"fixed", bottom:12, right:12, zIndex:5, pointerEvents:"none" }}>
         <img src={getLogo()} alt="" style={{ width:56, height:56, objectFit:"contain", opacity:0.85, userSelect:"none" }}/>
       </div>
-      {selBand && (
-      <button onClick={toggleTheme} title="Hell/Dunkel umschalten"
-        style={{ position:"fixed", top:12, right:12, zIndex:10, width:40, height:40, borderRadius:"50%", background:C.bgCard, border:"1px solid "+C.tealBorder, color:C.teal, fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-        {theme==="dark" ? "☀️" : "🌙"}
-      </button>
-      )}
-
       {selBand ? (
         <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={bands} user={user}
           onBack={()=>setSelBand(null)} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme}/>
