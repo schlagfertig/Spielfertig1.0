@@ -321,12 +321,12 @@ const sb = {
 
 const THEMES = {
   dark: {
-    bg: "#000", bgCard: "#0d0d0d",
-    teal: "#5cc8b8", tealDim: "rgba(92,200,184,0.12)", tealBorder: "rgba(92,200,184,0.32)",
-    white: "#fff", gray: "#888", grayDim: "#444",
+    bg: "#161a1d", bgCard: "#1c2226",
+    teal: "#5cc8b8", tealDim: "rgba(92,200,184,0.14)", tealBorder: "rgba(92,200,184,0.36)",
+    white: "#f4f7f6", gray: "#8a969c", grayDim: "#5a666c",
     red: "#e05555", redDim: "rgba(224,85,85,0.12)", redBorder: "rgba(224,85,85,0.32)",
-    bgNext: "#0d0d0d", borderSong: "#1a1a1a", borderNext: "#2a2a2a",
-    textDim: "#bbb", textMute: "#555", lyricsBg: "#070707", lyricsText: "#d8d8d8",
+    bgNext: "#22282c", borderSong: "#2f383d", borderNext: "#3a454b",
+    textDim: "#c9d3d6", textMute: "#5a666c", lyricsBg: "#121618", lyricsText: "#e7eeef",
   },
   light: {
     bg: "#f4f4f2", bgCard: "#fff",
