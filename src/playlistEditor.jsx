@@ -212,7 +212,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         </div>
       </div>
       <SealLine/>
-      <div style={{ background:"#071412", border:"1px solid "+C.tealBorder, borderRadius:6, padding:"8px 10px", display:"flex", gap:5, flexWrap:"nowrap", alignItems:"center", overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
+      <div style={{ background:"#161a1d", border:"1px solid "+C.tealBorder, borderRadius:6, padding:"8px 10px", display:"flex", gap:5, flexWrap:"nowrap", alignItems:"center", overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
         <div style={{ color:C.teal, fontSize:9, fontWeight:800, letterSpacing:"0.16em", textTransform:"uppercase", flexShrink:0 }}>Sets</div>
         {SETS.map(set=>(
           <button key={set} onClick={()=>{ const el = document.getElementById("set-block-"+set.replace(/\s+/g,"-")); if (el) el.scrollIntoView({ behavior:"smooth", block:"start" }); setActiveSet(set); }} style={{ background:activeSet===set?C.teal:"transparent", color:activeSet===set?"#000":C.gray, border:"1px solid "+(activeSet===set?C.teal:"#222"), borderRadius:3, padding:"5px 12px", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit", flexShrink:0 }}>
@@ -222,7 +222,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
       </div>
       <Field value={search} onChange={setSearch} placeholder="In der Playlist suchen…"/>
       {canEdit && (
-        <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:12 }}>
+        <div style={{ background:C.bgCard, border:"1px solid #2f383d", borderRadius:6, padding:12 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginBottom: poolOpen?8:0 }}>
             <div style={{ color:C.teal, fontSize:12, fontWeight:800, letterSpacing:"0.1em", textTransform:"uppercase" }}>Songpool <span style={{ color:C.grayDim, fontWeight:600, letterSpacing:0 }}>({available.length} frei)</span></div>
             <Btn variant="outline" size="sm" onClick={()=>setPoolOpen(o=>!o)}>{poolOpen?"Einklappen":"Aufklappen"}</Btn>
@@ -231,11 +231,11 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
             <Field value={poolSearch} onChange={setPoolSearch} placeholder="Pool durchsuchen…"/>
             <div style={{ color:C.grayDim, fontSize:11, margin:"6px 0 8px" }}>{orderEdit ? "Ziehen und auf ein Set legen — oder antippen zum Sammeln." : "Tippe Songs an — Reihenfolge wie du tippst. Dann ein Set wählen."}</div>
             {picked.length>0 && (
-              <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:8, padding:"8px", background:"#071412", border:"1px solid "+C.tealBorder, borderRadius:6 }}>
+              <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:8, padding:"8px", background:"#161a1d", border:"1px solid "+C.tealBorder, borderRadius:6 }}>
                 <div style={{ color:C.teal, fontSize:11, fontWeight:800, letterSpacing:"0.08em", textTransform:"uppercase" }}>{picked.length} gewählt · Tipp-Reihenfolge</div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>
                   {picked.map((s,i)=>(
-                    <button key={s.id} type="button" onClick={()=>togglePick(s)} style={{ background:"#0d0d0d", border:"1px solid "+C.tealBorder, color:C.white, borderRadius:4, padding:"3px 7px", fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>{i+1}. {s.title}</button>
+                    <button key={s.id} type="button" onClick={()=>togglePick(s)} style={{ background:"#1c2226", border:"1px solid "+C.tealBorder, color:C.white, borderRadius:4, padding:"3px 7px", fontSize:11, cursor:"pointer", fontFamily:"inherit" }}>{i+1}. {s.title}</button>
                   ))}
                 </div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:5, alignItems:"center" }}>
@@ -249,7 +249,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
             {available.length===0 ? <div style={{ color:C.grayDim, fontSize:12, padding:"8px 0" }}>Keine freien Songs{pq?" für diese Suche":" — alle sind schon in der Playlist"}.</div>
             : <div style={{ display:"flex", flexDirection:"column", gap:4, maxHeight:220, overflowY:"auto" }}>
                 {available.map(song=>(
-                  <div key={song.id} onClick={()=>{ if (!orderEdit) togglePick(song); }} onPointerDown={orderEdit?(e)=>{ e.preventDefault(); beginDrag({ kind:"pool", song }, e); setGhost({ x:e.clientX, y:e.clientY }); }:undefined} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"7px 8px", background: picked.some(s=>s.id===song.id)?"#071412":"#0d0d0d", borderRadius:4, border:"1px solid "+(dragId==="pool-"+song.id||picked.some(s=>s.id===song.id)?C.teal:"#1a1a1a"), opacity: dragId==="pool-"+song.id ? .45 : 1, cursor: orderEdit?"grab":"pointer", touchAction: orderEdit?"none":"auto", userSelect:"none" }}>
+                  <div key={song.id} onClick={()=>{ if (!orderEdit) togglePick(song); }} onPointerDown={orderEdit?(e)=>{ e.preventDefault(); beginDrag({ kind:"pool", song }, e); setGhost({ x:e.clientX, y:e.clientY }); }:undefined} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"7px 8px", background: picked.some(s=>s.id===song.id)?"#161a1d":"#1c2226", borderRadius:4, border:"1px solid "+(dragId==="pool-"+song.id||picked.some(s=>s.id===song.id)?C.teal:"#2f383d"), opacity: dragId==="pool-"+song.id ? .45 : 1, cursor: orderEdit?"grab":"pointer", touchAction: orderEdit?"none":"auto", userSelect:"none" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
                       <div style={{ width:22, height:22, borderRadius:11, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, fontFamily:"'Space Mono',monospace", background: picked.some(s=>s.id===song.id)?C.teal:"#151515", color: picked.some(s=>s.id===song.id)?"#000":C.grayDim }}>{picked.findIndex(s=>s.id===song.id)>=0 ? picked.findIndex(s=>s.id===song.id)+1 : ""}</div>
                       <div style={{ minWidth:0 }}><span style={{ color:C.white, fontSize:13 }}>{song.title}</span><span style={{ color:C.grayDim, fontSize:12 }}> · {song.artist}</span></div>
@@ -265,17 +265,17 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         const list = songsBySet[set] || [];
         const isOverSet = over && over.set === set;
         return (
-          <div key={set} id={"set-block-"+set.replace(/\s+/g,"-")} style={{ background:C.bgCard, border:"1px solid "+(isOverSet?C.teal:"#1a1a1a"), borderRadius:6, padding:12, transition:"border-color .15s" }}>
+          <div key={set} id={"set-block-"+set.replace(/\s+/g,"-")} style={{ background:C.bgCard, border:"1px solid "+(isOverSet?C.teal:"#2f383d"), borderRadius:6, padding:12, transition:"border-color .15s" }}>
             <div data-drop={set+"|"+(list.length+1)} onDragOver={e=>{ e.preventDefault(); setOver({ set, pos: list.length+1 }); }} onDrop={e=>{ e.preventDefault(); dropAt(set, list.length+1); }} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10, paddingBottom:8, borderBottom:"2px solid "+C.tealBorder }}>
               <div style={{ color:C.teal, fontSize:13, fontWeight:800, letterSpacing:"0.12em", textTransform:"uppercase" }}>{set} <span style={{ color:C.grayDim, fontWeight:600, letterSpacing:0, fontSize:11 }}>· {list.length} Songs</span></div>
               {canEdit&&<Btn variant="outline" size="sm" onClick={()=>setAddSet(addSet===set?null:set)}>{addSet===set?"✕ Schließen":"+ Liste"}</Btn>}
             </div>
             {addSet===set&&(
-              <div style={{ marginBottom:12, background:"#080808", border:"1px solid #1a1a1a", borderRadius:4, padding:10 }}>
+              <div style={{ marginBottom:12, background:"#080808", border:"1px solid #2f383d", borderRadius:4, padding:10 }}>
                 {available.length===0 ? <div style={{ color:C.grayDim, fontSize:12 }}>Keine freien Songs.</div>
                 : <div style={{ display:"flex", flexDirection:"column", gap:4, maxHeight:180, overflowY:"auto" }}>
                     {available.map(song=>(
-                      <div key={song.id} onClick={()=>togglePick(song)} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"5px 8px", background: picked.some(s=>s.id===song.id)?"#071412":"#0d0d0d", border:"1px solid "+(picked.some(s=>s.id===song.id)?C.teal:"transparent"), borderRadius:3, cursor:"pointer" }}>
+                      <div key={song.id} onClick={()=>togglePick(song)} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"5px 8px", background: picked.some(s=>s.id===song.id)?"#161a1d":"#1c2226", border:"1px solid "+(picked.some(s=>s.id===song.id)?C.teal:"transparent"), borderRadius:3, cursor:"pointer" }}>
                         <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
                           <div style={{ width:20, textAlign:"center", color:C.teal, fontSize:11, fontWeight:800, fontFamily:"'Space Mono',monospace" }}>{picked.findIndex(s=>s.id===song.id)>=0 ? picked.findIndex(s=>s.id===song.id)+1 : ""}</div>
                           <div><span style={{ color:C.white, fontSize:13 }}>{song.title}</span><span style={{ color:C.grayDim, fontSize:12 }}> · {song.artist}</span></div>
@@ -312,7 +312,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
           </div>
         );
       })}
-      {ghost && draggedTitle && (<div style={{ position:"fixed", left: ghost.x+12, top: ghost.y+12, pointerEvents:"none", zIndex:400, background:"#111", border:"1px solid "+C.teal, borderRadius:6, padding:"6px 10px", color:C.white, fontSize:13, fontWeight:600, boxShadow:"0 8px 24px rgba(0,0,0,.6)" }}>{draggedTitle}</div>)}
+      {ghost && draggedTitle && (<div style={{ position:"fixed", left: ghost.x+12, top: ghost.y+12, pointerEvents:"none", zIndex:400, background:"#1c2226", border:"1px solid "+C.teal, borderRadius:6, padding:"6px 10px", color:C.white, fontSize:13, fontWeight:600, boxShadow:"0 8px 24px rgba(0,0,0,.6)" }}>{draggedTitle}</div>)}
       {printOpen && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
           <div style={{ background:C.bgCard, border:"1px solid "+C.grayDim, borderRadius:8, padding:22, maxWidth:440, width:"100%" }}>
