@@ -72,12 +72,12 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
     <div style={{ display:"flex", flexDirection:"column", gap:13 }}>
       <div style={{ display:"flex", gap:8 }}>
         {band.drummers.map(d=>(
-          <div key={d} style={{ flex:1, background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:4, padding:"8px 12px", textAlign:"center" }}>
+          <div key={d} style={{ flex:1, background:C.bgCard, border:"1px solid #2f383d", borderRadius:4, padding:"8px 12px", textAlign:"center" }}>
             <div style={{ color:d==="Ron"?C.red:C.teal, fontSize:20, fontWeight:800, fontFamily:"'Space Mono',monospace" }}>{bandSongs.filter(s=>s.drummer===d).length}</div>
             <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase" }}>{d}</div>
           </div>
         ))}
-        <div style={{ flex:1, background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:4, padding:"8px 12px", textAlign:"center" }}>
+        <div style={{ flex:1, background:C.bgCard, border:"1px solid #2f383d", borderRadius:4, padding:"8px 12px", textAlign:"center" }}>
           <div style={{ color:C.gray, fontSize:20, fontWeight:800, fontFamily:"'Space Mono',monospace" }}>{bandSongs.length}</div>
           <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase" }}>Songs</div>
         </div>
@@ -110,7 +110,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
         ))}
       </div>
       {canEdit && (
-      <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding: addOpen ? 15 : "10px 15px" }}>
+      <div style={{ background:C.bgCard, border:"1px solid #2f383d", borderRadius:6, padding: addOpen ? 15 : "10px 15px" }}>
         <button type="button" onClick={()=>setAddOpen(o=>!o)} style={{
           width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:8,
           background:"transparent", border:"none", padding:0, cursor:"pointer", fontFamily:"inherit"
@@ -143,7 +143,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
             {selectMode && (
               <button onClick={(e)=>{e.stopPropagation();toggleSel(song.id);}}
                 style={{ flexShrink:0, width:38, borderRadius:4, cursor:"pointer",
-                  background: selected.includes(song.id) ? C.tealDim : "#0a0a0a",
+                  background: selected.includes(song.id) ? C.tealDim : "#161a1d",
                   border: "1px solid " + (selected.includes(song.id) ? C.tealBorder : "#222"),
                   color: selected.includes(song.id) ? C.teal : C.grayDim, fontSize:18 }}>
                 {selected.includes(song.id) ? "✓" : ""}
@@ -159,15 +159,15 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
                 onMouseEnter={e=>e.currentTarget.style.color=C.teal}
                 onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>➡️</button>):undefined}/>
             {addTarget?.id===song.id&&(
-              <div style={{background:"#1a1a1a",border:"1px solid "+C.tealBorder,borderRadius:8,padding:14,marginTop:4,display:"flex",flexDirection:"column",gap:8,zIndex:10}}>
+              <div style={{background:"#2f383d",border:"1px solid "+C.tealBorder,borderRadius:8,padding:14,marginTop:4,display:"flex",flexDirection:"column",gap:8,zIndex:10}}>
                 <div style={{color:C.teal,fontSize:11,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Zur Setlist hinzufügen</div>
                 <select value={atGig} onChange={e=>{setAtGig(e.target.value);setAtPl("");}}
-                  style={{background:"#0a0a0a",border:"1px solid #333",color:C.white,borderRadius:4,padding:"7px 8px",fontSize:12,fontFamily:"inherit"}}>
+                  style={{background:"#161a1d",border:"1px solid #333",color:C.white,borderRadius:4,padding:"7px 8px",fontSize:12,fontFamily:"inherit"}}>
                   <option value="">— Gig wählen —</option>
                   {(gigs||[]).filter(g=>g.band_id===band.id).map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
                 </select>
                 {atGig&&<select value={atPl} onChange={e=>setAtPl(e.target.value)}
-                  style={{background:"#0a0a0a",border:"1px solid #333",color:C.white,borderRadius:4,padding:"7px 8px",fontSize:12,fontFamily:"inherit"}}>
+                  style={{background:"#161a1d",border:"1px solid #333",color:C.white,borderRadius:4,padding:"7px 8px",fontSize:12,fontFamily:"inherit"}}>
                   <option value="">— Playlist wählen —</option>
                   {(playlists||[]).filter(p=>p.gig_id===parseInt(atGig)).map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>}
@@ -221,7 +221,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
           <div style={{ color:C.grayDim, fontSize:12 }}>Die markierten Songs werden als Kopie in der Ziel-Band angelegt. Das Original bleibt erhalten.</div>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase" }}>Ziel-Band</div>
           <select value={copyTarget} onChange={e=>setCopyTarget(e.target.value)}
-            style={{ background:"#0a0a0a", border:"1px solid #222", color:C.white, borderRadius:4, padding:"9px 12px", fontSize:13, fontFamily:"inherit" }}>
+            style={{ background:"#161a1d", border:"1px solid #222", color:C.white, borderRadius:4, padding:"9px 12px", fontSize:13, fontFamily:"inherit" }}>
             <option value="">— Band wählen —</option>
             {(allBands||[]).filter(b=>b.id!==band.id).map(b=><option key={b.id} value={b.id}>{b.emoji} {b.name}</option>)}
           </select>
