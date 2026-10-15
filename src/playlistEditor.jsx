@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { C, sb, SETS, encodeShare } from "./core";
-import { Btn, Field, SealLine, Spinner, useIsNarrow, ToolTile } from "./ui";
+import { Btn, Field, SealLine, Spinner, useIsNarrow, useSwipeBack, ToolTile } from "./ui";
 import { SongRowMove } from "./songRow";
 import { exportPDF } from "./songPdf";
 import { GigMode } from "./gigMode";
@@ -10,6 +10,7 @@ import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
 const REGULAR_SETS = SETS.filter(s => s !== "Zugaben");
 
 function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, bandId, canEdit, show, theme, toggleTheme }) {
+  useSwipeBack(onBack);
   const [activeSet, setActiveSet] = useState("Set 1");
   const [search, setSearch]       = useState("");
   const [poolSearch, setPoolSearch] = useState("");
