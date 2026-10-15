@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { C, getBandLogo, bandLogoImgStyle } from "./core";
-import { Btn, SealLine, useIsNarrow, HeadToggle } from "./ui";
+import { Btn, SealLine, useIsNarrow, useSwipeBack, HeadToggle } from "./ui";
 import { SongDatabase } from "./songs";
 import { SetlistManager } from "./setlist";
 import { MemberManager } from "./members";
 
 function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, user, onBack, onRefresh, show, theme, toggleTheme }) {
   const [tab, setTab] = useState("songs");
+  useSwipeBack(onBack);
   const narrow = useIsNarrow();
   const [headOpen, setHeadOpen] = useState(false);
   const showBrand = !narrow || headOpen;
