@@ -9,7 +9,7 @@ function Chip({ on, label, onClick, title }) {
     <button type="button" onClick={onClick} title={title || label} style={{
       background: on ? C.tealDim : "transparent",
       color: on ? C.teal : C.gray,
-      border: "1px solid " + (on ? C.tealBorder : "#2a2a2a"),
+      border: "1px solid " + (on ? C.tealBorder : "#3a454b"),
       borderRadius: 4,
       padding: "5px 10px",
       fontSize: 11,
@@ -109,7 +109,7 @@ export function ChartEditor({ value, onChange }) {
   const removeBlock = (i) => set({ form: chart.form.filter((_, idx) => idx !== i) });
 
   const fieldStyle = {
-    background: "#0a0a0a",
+    background: "#161a1d",
     border: "1px solid #222",
     color: C.white,
     borderRadius: 4,
