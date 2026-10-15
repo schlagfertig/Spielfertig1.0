@@ -15,11 +15,11 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
   const foldOpen = (showNotes && notes) || (showLyrics && song.lyrics);
   const pulseColor  = beat?"#fff":active?C.teal:C.grayDim;
   const pulseGlow   = beat?`0 0 10px 4px ${C.teal}`:active?`0 0 4px 1px ${C.tealBorder}`:"none";
-  const pulseBorder = active?`1px solid ${beat?"#fff":C.teal}`:"1px solid #2a2a2a";
+  const pulseBorder = active?`1px solid ${beat?"#fff":C.teal}`:"1px solid #3a454b";
   return (
     <div style={{ display:"flex", flexDirection:"column" }}>
       <div draggable={!!draggable} onDragStart={onDragStart} onDragOver={e=>{ e.preventDefault(); onDragOver && onDragOver(e); }} onDrop={onDrop}
-        style={{ background:isDragging?"#0a0a0a":st.bg, border:`1px solid ${isDragging?C.teal:dropActive?C.teal:st.border}`, borderRadius: foldOpen?"6px 6px 0 0":6, padding:"9px 13px", display:"flex", flexDirection:"column", gap:6, opacity:isDragging?.4:1, transition:"background .1s,border-color .1s", cursor:draggable?"grab":"default" }}>
+        style={{ background:isDragging?"#161a1d":st.bg, border:`1px solid ${isDragging?C.teal:dropActive?C.teal:st.border}`, borderRadius: foldOpen?"6px 6px 0 0":6, padding:"9px 13px", display:"flex", flexDirection:"column", gap:6, opacity:isDragging?.4:1, transition:"background .1s,border-color .1s", cursor:draggable?"grab":"default" }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
           {pos!==undefined&&<div style={{ color:C.grayDim, fontSize:11, width:18, textAlign:"right", flexShrink:0, fontFamily:"'Space Mono',monospace" }}>{pos}</div>}
           {draggable&&<div
@@ -93,26 +93,26 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
         isDragging={isDragging} dropActive={dropActive} onGripPointerDown={onGripPointerDown}
         onEdit={canEdit?(()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setNotes(songNotes(song)); setOpen(!open); }):undefined}/>
       {open&&(
-        <div style={{ position:"absolute", right:0, top:"100%", zIndex:100, background:"#1a1a1a", border:"1px solid "+C.tealBorder, borderRadius:8, padding:14, minWidth:220, boxShadow:"0 8px 32px rgba(0,0,0,.8)" }}>
+        <div style={{ position:"absolute", right:0, top:"100%", zIndex:100, background:"#2f383d", border:"1px solid "+C.tealBorder, borderRadius:8, padding:14, minWidth:220, boxShadow:"0 8px 32px rgba(0,0,0,.8)" }}>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:10 }}>Verschieben nach</div>
           <div style={{ display:"flex", gap:8, marginBottom:10 }}>
             <div style={{ flex:1 }}>
               <div style={{ color:C.grayDim, fontSize:10, marginBottom:4 }}>SET</div>
               <select value={newSet} onChange={e=>setNewSet(e.target.value)}
-                style={{ background:"#0a0a0a", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:12, fontFamily:"inherit", width:"100%" }}>
+                style={{ background:"#161a1d", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:12, fontFamily:"inherit", width:"100%" }}>
                 {SETS.map(s=><option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div style={{ width:64 }}>
               <div style={{ color:C.grayDim, fontSize:10, marginBottom:4 }}>PLATZ</div>
               <input type="number" min="1" value={newPos} onChange={e=>setNewPos(e.target.value)}
-                style={{ background:"#0a0a0a", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:13, fontFamily:"'Space Mono',monospace", width:"100%", textAlign:"center" }}/>
+                style={{ background:"#161a1d", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:13, fontFamily:"'Space Mono',monospace", width:"100%", textAlign:"center" }}/>
             </div>
           </div>
           <div style={{ marginBottom:10 }}>
             <div style={{ color:C.grayDim, fontSize:10, marginBottom:4 }}>NOTIZEN</div>
             <textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder={"z.B. Count-In\nBD auf 1\nSchluss: Keys"} rows={5}
-              style={{ background:"#0a0a0a", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:12, fontFamily:"inherit", width:"100%", resize:"vertical", lineHeight:1.5 }}/>
+              style={{ background:"#161a1d", border:"1px solid #333", color:C.white, borderRadius:4, padding:"7px 8px", fontSize:12, fontFamily:"inherit", width:"100%", resize:"vertical", lineHeight:1.5 }}/>
           </div>
           <div style={{ display:"flex", gap:6 }}>
             <Btn variant="ghost" size="sm" onClick={()=>setOpen(false)}>Abbrechen</Btn>
