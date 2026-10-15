@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" width="640" height="220" role="img" aria-label="Hardy's Band">
-  <g fill="none" stroke="#111" stroke-width="7" stroke-linejoin="round">
+  <g fill="none" stroke="#ffffff" stroke-width="7" stroke-linejoin="round">
     <ellipse cx="320" cy="108" rx="292" ry="92"/>
     <ellipse cx="320" cy="108" rx="276" ry="78"/>
   </g>
-  <polygon points="36,108 58,98 58,118" fill="#111"/>
-  <polygon points="604,108 582,98 582,118" fill="#111"/>
-  <text x="78" y="128" font-family="Arial Black, Helvetica, sans-serif" font-size="72" font-weight="900" letter-spacing="6" fill="#111">HARDY</text>
-  <g transform="translate(392,38)" fill="#111">
+  <polygon points="36,108 58,98 58,118" fill="#ffffff"/>
+  <polygon points="604,108 582,98 582,118" fill="#ffffff"/>
+  <text x="78" y="128" font-family="Arial Black, Helvetica, sans-serif" font-size="72" font-weight="900" letter-spacing="6" fill="#ffffff">HARDY</text>
+  <g transform="translate(392,38)" fill="#ffffff">
     <circle cx="28" cy="14" r="8"/>
     <path d="M28 22 L28 48 L18 78 L24 78 L32 54 L40 86 L46 84 L34 50 L42 48 L50 62 L56 58 L42 38 L42 28 Z"/>
     <path d="M20 30 L8 22 L10 18 L24 28"/>
     <path d="M36 30 L52 18 L56 22 L38 34"/>
   </g>
-  <text x="468" y="128" font-family="Arial Black, Helvetica, sans-serif" font-size="72" font-weight="900" letter-spacing="4" fill="#111">S</text>
-  <path d="M170 148 C 210 132, 250 126, 320 126 C 390 126, 430 132, 470 148 L 448 160 C 410 146, 370 142, 320 142 C 270 142, 230 146, 192 160 Z" fill="#111"/>
+  <text x="468" y="128" font-family="Arial Black, Helvetica, sans-serif" font-size="72" font-weight="900" letter-spacing="4" fill="#ffffff">S</text>
+  <path d="M170 148 C 210 132, 250 126, 320 126 C 390 126, 430 132, 470 148 L 448 160 C 410 146, 370 142, 320 142 C 270 142, 230 146, 192 160 Z" fill="#ffffff"/>
   <text x="320" y="156" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="10" fill="#fff">BAND</text>
 </svg>
