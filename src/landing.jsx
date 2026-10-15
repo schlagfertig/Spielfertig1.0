@@ -188,8 +188,8 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
   };
 
   return (
-    <div style={{ minHeight:"100vh", background:pageWash, backgroundAttachment:"fixed", display:"flex", flexDirection:"column" }}>
-      <header style={{ ...glassStyle({ background: "rgba(22,30,34,0.55)", borderRadius: 0, border: "none", borderBottom: "1px solid rgba(255,255,255,0.16)" }), padding:"14px 56px 14px 16px" }}>
+    <div style={{ height:"100vh", background:pageWash, backgroundAttachment:"fixed", display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <header style={{ ...glassStyle({ background: "rgba(22,30,34,0.62)", borderRadius: 0, border: "none", borderBottom: "1px solid rgba(255,255,255,0.16)" }), padding:"14px 56px 14px 16px", flexShrink:0, zIndex:20 }}>
         <div style={{ maxWidth:760, margin:"0 auto", display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
           <img src={getLogo()} alt="" style={{ height:44, width:"auto", objectFit:"contain", flexShrink:0 }}/>
           <div style={{ flex:1, minWidth:160 }}>
@@ -233,7 +233,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           <Btn full variant="ghost" onClick={onLogout}>{user && user.id === "local" ? "Lokal" : "Abmelden"}</Btn>
         </div>
       </Modal>}
-      <main style={{ flex:1, maxWidth:760, margin:"0 auto", padding:"28px 20px", width:"100%", boxSizing:"border-box" }}>
+      <main style={{ flex:1, minHeight:0, overflowY:"auto", WebkitOverflowScrolling:"touch", maxWidth:760, margin:"0 auto", padding:"28px 20px", width:"100%", boxSizing:"border-box" }}>
         <div style={{ marginBottom:20 }}>
           <div style={{ color:C.teal, fontSize:11, fontWeight:800, letterSpacing:"0.16em", textTransform:"uppercase", marginBottom:6 }}>Bands</div>
           <h2 style={{ color:C.white, fontSize:22, fontWeight:800, margin:0, fontFamily:"'Raleway',sans-serif" }}>Welche Band spielst du?</h2>
