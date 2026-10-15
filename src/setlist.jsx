@@ -37,7 +37,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
       </div>
       <SealLine/>
       {canEdit&&(
-      <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:14 }}>
+      <div style={{ background:C.bgCard, border:"1px solid #2f383d", borderRadius:6, padding:14 }}>
         <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Weitere Playlist</div>
         <div style={{ display:"flex", gap:8 }}>
           <Field value={plName} onChange={setPlName} placeholder="z. B. Probe, Alternative…"/>
@@ -48,7 +48,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
         {gigPls.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:28, fontSize:13 }}>Noch keine Playlists — leg die erste an.</div>
         :gigPls.map(p=>(
-          <div key={p.id} style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:5, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+          <div key={p.id} style={{ background:C.bgCard, border:"1px solid #2f383d", borderRadius:5, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <div>
               <div style={{ color:C.white, fontWeight:600, fontSize:14 }}>{p.name}</div>
               <div style={{ color:C.grayDim, fontSize:11 }}>{playlistSongs.filter(ps=>ps.playlist_id===p.id).length} Songs</div>
@@ -68,7 +68,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
           <Field value={tmplName} onChange={setTmplName} placeholder="Name der neuen Playlist"/>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase" }}>Ziel-Gig</div>
           <select value={tmplGig} onChange={e=>setTmplGig(e.target.value)}
-            style={{ background:"#0a0a0a", border:"1px solid #222", color:C.white, borderRadius:4, padding:"9px 12px", fontSize:13, fontFamily:"inherit" }}>
+            style={{ background:"#161a1d", border:"1px solid #222", color:C.white, borderRadius:4, padding:"9px 12px", fontSize:13, fontFamily:"inherit" }}>
             <option value="">— Gig wählen —</option>
             {bandGigs.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
           </select>
@@ -106,7 +106,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
       <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Setlists</div>
       <SealLine/>
       {canEdit&&(
-      <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:14 }}>
+      <div style={{ background:C.bgCard, border:"1px solid #2f383d", borderRadius:6, padding:14 }}>
         <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Neue Setlist</div>
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
           <Field value={gigName} onChange={setGigName} placeholder="Gig-Name (Venue / Anlass)"/>
@@ -140,8 +140,8 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
         {bandGigs.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:28, fontSize:13 }}>Noch keine Gigs — leg die erste Setlist an.</div>
         :bandGigs.map(gig=>(
           <div key={gig.id} onClick={()=>{setSelGig(gig);setView("playlists");}}
-            style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:5, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"pointer" }}
-            onMouseEnter={e=>e.currentTarget.style.borderColor="#2a2a2a"} onMouseLeave={e=>e.currentTarget.style.borderColor="#1a1a1a"}>
+            style={{ background:C.bgCard, border:"1px solid #2f383d", borderRadius:5, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"pointer" }}
+            onMouseEnter={e=>e.currentTarget.style.borderColor="#3a454b"} onMouseLeave={e=>e.currentTarget.style.borderColor="#2f383d"}>
             <div>
               <div style={{ color:C.white, fontWeight:600, fontSize:14 }}>{gig.name}</div>
               {gig.date&&<div style={{ color:C.grayDim, fontSize:11 }}>{new Date(gig.date+"T12:00:00").toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"})}</div>}
