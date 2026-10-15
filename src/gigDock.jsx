@@ -59,7 +59,7 @@ export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChar
   );
   return (
     <div style={{
-      flexShrink:0, background:"#071412", borderTop:"1px solid "+C.tealBorder,
+      flexShrink:0, background:"#161a1d", borderTop:"1px solid "+C.tealBorder,
       padding: stack ? "10px 12px 12px" : (narrow ? "10px 12px" : "12px 16px"),
       display:"flex", flexDirection: stack ? "column" : "row", alignItems:"center", gap: stack ? 10 : 14, zIndex:5
     }}>
