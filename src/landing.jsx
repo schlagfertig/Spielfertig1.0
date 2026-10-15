@@ -120,7 +120,7 @@ function bandCardLogoStyle(name) {
   });
 }
 
-function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect, onLogout, onRefresh, show }) {
+function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect, onLogout, onRefresh, show, theme, toggleTheme }) {
   const [showAddBand, setShowAddBand] = useState(false);
   const [delBand, setDelBand] = useState(null);
   const [delSaving, setDelSaving] = useState(false);
@@ -189,7 +189,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
 
   return (
     <div style={{ height:"100vh", background:pageWash, backgroundAttachment:"fixed", display:"flex", flexDirection:"column", overflow:"hidden" }}>
-      <header style={{ ...glassStyle({ background: "rgba(22,30,34,0.62)", borderRadius: 0, border: "none", borderBottom: "1px solid rgba(255,255,255,0.16)" }), padding:"14px 56px 14px 16px", flexShrink:0, zIndex:20 }}>
+      <header style={{ ...glassStyle({ background: "rgba(22,30,34,0.62)", borderRadius: 0, border: "none", borderBottom: "1px solid rgba(255,255,255,0.16)" }), padding:"14px 16px", flexShrink:0, zIndex:20 }}>
         <div style={{ maxWidth:760, margin:"0 auto", display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
           <img src={getLogo()} alt="" style={{ height:44, width:"auto", objectFit:"contain", flexShrink:0 }}/>
           <div style={{ flex:1, minWidth:160 }}>
@@ -197,6 +197,10 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
             <div style={{ marginTop:2 }}><LiveMark size={22}/></div>
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center", flexShrink:0 }}>
+            <button type="button" onClick={toggleTheme} title="Hell/Dunkel umschalten"
+              style={{ width:36, height:36, borderRadius:"50%", background:"rgba(92,200,184,0.12)", border:"1px solid rgba(255,255,255,0.22)", color:C.teal, fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              {theme==="dark" ? "☀️" : "🌙"}
+            </button>
             <Btn variant="outline" size="sm" onClick={()=>{setShowAccount(true);setNewPw("");setNewPw2("");}}>Konto</Btn>
           </div>
         </div>
