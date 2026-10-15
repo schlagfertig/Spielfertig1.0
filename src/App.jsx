@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { C, sb, applyTheme, getLogo } from "./core";
+import { C, sb, applyTheme, getLogo, pageWash } from "./core";
 import { SealIcon, Spinner, Toast } from "./ui";
 import { AuthScreen } from "./auth";
 import { BandDetail, Landing } from "./bands";
@@ -98,7 +98,7 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        body{font-family:'Raleway',sans-serif;background:${C.bg};color:${C.white};-webkit-font-smoothing:antialiased;}
+        body{font-family:'Raleway',sans-serif;background:${pageWash};background-attachment:fixed;color:${C.white};-webkit-font-smoothing:antialiased;}
         input::placeholder,textarea::placeholder{color:${C.grayDim};}
         @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
         @keyframes spin{to{transform:rotate(360deg)}}
