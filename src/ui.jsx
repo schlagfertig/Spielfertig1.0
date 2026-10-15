@@ -112,13 +112,13 @@ function Btn({ children, onClick, variant="primary", size="md", disabled, full, 
 }
 
 function Field({ value, onChange, placeholder, type="text", rows, style:s={} }) {
-  const base = { background:"#0a0a0a", border:"1px solid #2a2a2a", color:C.white, borderRadius:6, padding:"12px 14px", fontSize:15, fontFamily:"inherit", outline:"none", width:"100%", boxSizing:"border-box", ...s };
-  if (rows) return <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows} onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor="#2a2a2a"} style={{...base,resize:"vertical",lineHeight:1.6}}/>;
-  return <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoCapitalize="none" autoCorrect="off" onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor="#2a2a2a"} style={base}/>;
+  const base = { background:"#161a1d", border:"1px solid #3a454b", color:C.white, borderRadius:6, padding:"12px 14px", fontSize:15, fontFamily:"inherit", outline:"none", width:"100%", boxSizing:"border-box", ...s };
+  if (rows) return <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows} onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor="#3a454b"} style={{...base,resize:"vertical",lineHeight:1.6}}/>;
+  return <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoCapitalize="none" autoCorrect="off" onFocus={e=>e.target.style.borderColor=C.tealBorder} onBlur={e=>e.target.style.borderColor="#3a454b"} style={base}/>;
 }
 
 function Sel({ value, onChange, options, style:s={} }) {
-  return <select value={value} onChange={e=>onChange(e.target.value)} style={{ background:"#0a0a0a", border:"1px solid #222", color:C.white, borderRadius:4, padding:"9px 12px", fontSize:13, fontFamily:"inherit", width:"100%", ...s }}>{options.map(o=><option key={o} value={o}>{o}</option>)}</select>;
+  return <select value={value} onChange={e=>onChange(e.target.value)} style={{ background:"#161a1d", border:"1px solid #222", color:C.white, borderRadius:4, padding:"9px 12px", fontSize:13, fontFamily:"inherit", width:"100%", ...s }}>{options.map(o=><option key={o} value={o}>{o}</option>)}</select>;
 }
 
 function Badge({ children, color }) {
