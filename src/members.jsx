@@ -51,7 +51,7 @@ function MemberManager({ band, canEdit, show }) {
     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
       <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Team einladen</div>
       <SealLine/>
-      <div style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:6, padding:14 }}>
+      <div style={{ background:C.bgCard, border:"1px solid #2f383d", borderRadius:6, padding:14 }}>
         <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Neue Einladung</div>
         <div style={{ display:"flex", gap:8 }}>
           <Field value={email} onChange={setEmail} placeholder="E-Mail-Adresse…"/>
@@ -65,7 +65,7 @@ function MemberManager({ band, canEdit, show }) {
         {loading?<div style={{ textAlign:"center", padding:20 }}><Spinner/></div>
         :invites.length===0?<div style={{ textAlign:"center", color:C.grayDim, padding:28, fontSize:13 }}>Keine offenen Einladungen</div>
         :invites.map(inv=>(
-          <div key={inv.id} style={{ background:C.bgCard, border:"1px solid #1a1a1a", borderRadius:5, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+          <div key={inv.id} style={{ background:C.bgCard, border:"1px solid #2f383d", borderRadius:5, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <div style={{ color:C.white, fontSize:14 }}>{inv.email}</div>
             <Btn variant="danger" size="sm" onClick={()=>revokeInvite(inv)} disabled={saving}>✕</Btn>
           </div>
