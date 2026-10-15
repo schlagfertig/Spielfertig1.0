@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C, sb } from "./core";
-import { Btn, Field, SealLine, Modal, Confirm } from "./ui";
+import { Btn, Field, SealLine, Modal, Confirm, useSwipeBack } from "./ui";
 import { PlaylistEditor } from "./playlistEditor";
 
 function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdit, onRefresh, show, theme, toggleTheme }) {
