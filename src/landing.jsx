@@ -188,7 +188,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
   };
 
   return (
-    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column" }}>
+    <div style={{ minHeight:"100vh", background:pageWash, backgroundAttachment:"fixed", display:"flex", flexDirection:"column" }}>
       <header style={{ ...glassStyle({ background: "rgba(22,30,34,0.55)", borderRadius: 0, border: "none", borderBottom: "1px solid rgba(255,255,255,0.16)" }), padding:"14px 56px 14px 16px" }}>
         <div style={{ maxWidth:760, margin:"0 auto", display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
           <img src={getLogo()} alt="" style={{ height:44, width:"auto", objectFit:"contain", flexShrink:0 }}/>
@@ -254,9 +254,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
               return (
                 <div key={band.id} onClick={()=>onSelect(band)}
                   style={{
-                    background:"#1c2226",
-                    border:"1px solid #1c1c1c",
-                    borderRadius:12,
+                    ...glassStyle({ borderRadius: 22 }),
                     cursor:"pointer",
                     position:"relative",
                     overflow:"hidden",
