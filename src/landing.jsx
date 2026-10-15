@@ -245,7 +245,11 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
               return (
                 <div key={band.id} onClick={()=>onSelect(band)}
                   style={{
-                    ...glassStyle({ borderRadius: 22 }),
+                    ...glassStyle({
+                      borderRadius: 22,
+                      background: "rgba(22, 30, 34, 0.16)",
+                      backgroundImage: "linear-gradient(165deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.04) 36%, transparent 62%)",
+                    }),
                     cursor:"pointer",
                     position:"relative",
                     overflow:"hidden",
@@ -262,7 +266,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
                       ? <img src={logo} alt={band.name} style={bandCardLogoStyle(band.name)}/>
                       : <div style={{ fontSize:48 }}>{band.emoji}</div>}
                   </div>
-                  <div style={{ borderTop:"1px solid #2f383d", padding:"12px 16px 14px", background:"#161a1d" }}>
+                  <div style={{ borderTop:"1px solid rgba(255,255,255,0.12)", padding:"12px 16px 14px", background:"transparent" }}>
                     <div style={{ color:C.white, fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:16, letterSpacing:"-0.02em", marginBottom:6, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
                       {band.name}
                     </div>
@@ -276,7 +280,11 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
             })}
             <button type="button" onClick={()=>setShowAddBand(true)}
               style={{
-                ...glassStyle({ borderRadius: 22, background: "rgba(92,200,184,0.08)" }),
+                ...glassStyle({
+                borderRadius: 22,
+                background: "rgba(92,200,184,0.07)",
+                backgroundImage: "linear-gradient(165deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.03) 36%, transparent 62%)",
+              }),
                 cursor:"pointer",
                 minHeight: 188,
                 display:"flex",
