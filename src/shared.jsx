@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { C, sb, SETS, dStyle, getBandLogo, getLogo, bandLogoImgStyle, decodeShareFromLocation } from "./core";
+import { C, sb, SETS, dStyle, getBandLogo, getLogo, bandLogoImgStyle, decodeShareFromLocation, glassStyle } from "./core";
 import { SealIcon, Spinner, useIsNarrow, HeadToggle } from "./ui";
 import { GigMetronome, BpmBadge } from "./gig";
 import { GigDock } from "./gigDock";
@@ -158,7 +158,7 @@ function SharedView({ playlistId }) {
       <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", display:"flex", alignItems:"center", justifyContent:"center" }}>
         <img src={getLogo()} alt="" style={{ width:340, height:"auto", objectFit:"contain", opacity:0.07, userSelect:"none" }}/>
       </div>
-      <div style={{ background:"#161a1d", borderBottom:"1px solid #2f383d", flexShrink:0, position:"relative", zIndex:1 }}>
+      <div style={{ ...glassStyle({ background: "rgba(22,30,34,0.55)", borderRadius: 0, border: "none", borderBottom: "1px solid rgba(255,255,255,0.16)" }), flexShrink:0, position:"relative", zIndex:1 }}>
         {bandLogo && showExtra && (
           <div style={{ padding:"16px 18px 8px", display:"flex", justifyContent:"center", borderBottom:"1px solid #111" }}>
             <img src={bandLogo} alt={data.bandName} style={bandLogoImgStyle({ height:100, maxWidth:"85%" })}/>
