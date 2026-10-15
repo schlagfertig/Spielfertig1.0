@@ -59,7 +59,8 @@ export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChar
   );
   return (
     <div style={{
-      flexShrink:0, background:"#161a1d", borderTop:"1px solid "+C.tealBorder,
+      ...glassStyle({ background: "rgba(22,30,34,0.55)", borderRadius: 0, border: "none", borderTop: "1px solid rgba(255,255,255,0.16)" }),
+      flexShrink:0,
       padding: stack ? "10px 12px 12px" : (narrow ? "10px 12px" : "12px 16px"),
       display:"flex", flexDirection: stack ? "column" : "row", alignItems:"center", gap: stack ? 10 : 14, zIndex:5
     }}>
@@ -74,10 +75,9 @@ export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChar
         onClick={onNext}
         style={{
           flex:1, minWidth:0, width: stack ? "100%" : undefined, textAlign:"left",
-          background: nextSong ? C.tealDim : "#111",
+          ...(nextSong ? glassStyle({ background: "rgba(92,200,184,0.16)", borderRadius: 16 }) : glassStyle({ borderRadius: 16 })),
           color: nextSong ? C.white : C.grayDim,
-          border: "2px solid " + (nextSong ? C.teal : "#222"),
-          borderRadius:12,
+          border: "1px solid " + (nextSong ? "rgba(92,200,184,0.45)" : "rgba(255,255,255,0.16)"),
           padding: stack ? "10px 12px" : (narrow ? "12px 16px" : "14px 20px"),
           cursor: nextSong ? "pointer" : "default",
           fontFamily:"inherit",
