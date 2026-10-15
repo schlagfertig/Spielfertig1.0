@@ -59,7 +59,7 @@ function AddBandModal({ user, onClose, onRefresh, show }) {
           <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
             {BAND_EMOJIS.map(e=>(
               <button key={e} onClick={(ev)=>{ev.stopPropagation();setEmoji(e);}}
-                style={{ width:38, height:38, borderRadius:6, fontSize:20, cursor:"pointer", background: emoji===e ? C.tealDim : "#0a0a0a",
+                style={{ width:38, height:38, borderRadius:6, fontSize:20, cursor:"pointer", background: emoji===e ? C.tealDim : "#161a1d",
                   border: emoji===e ? "1px solid "+C.tealBorder : "1px solid #222" }}>{e}</button>
             ))}
           </div>
@@ -189,7 +189,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
 
   return (
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column" }}>
-      <header style={{ background:"#071412", borderBottom:"1px solid "+C.tealBorder, padding:"14px 56px 14px 16px" }}>
+      <header style={{ background:"#161a1d", borderBottom:"1px solid "+C.tealBorder, padding:"14px 56px 14px 16px" }}>
         <div style={{ maxWidth:760, margin:"0 auto", display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
           <img src={getLogo()} alt="" style={{ height:44, width:"auto", objectFit:"contain", flexShrink:0 }}/>
           <div style={{ flex:1, minWidth:160 }}>
@@ -243,7 +243,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           <h2 style={{ color:C.white, fontSize:22, fontWeight:800, margin:0, fontFamily:"'Raleway',sans-serif" }}>Welche Band spielst du?</h2>
         </div>
         {bands.length===0?(
-          <div style={{ textAlign:"center", color:C.grayDim, padding:"48px 16px", fontSize:14, border:"1px dashed #2a2a2a", borderRadius:12, background:"#0d0d0d" }}>
+          <div style={{ textAlign:"center", color:C.grayDim, padding:"48px 16px", fontSize:14, border:"1px dashed #3a454b", borderRadius:12, background:"#1c2226" }}>
             Noch keine Band — oben rechts anlegen.
           </div>
         ):(
@@ -254,7 +254,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
               return (
                 <div key={band.id} onClick={()=>onSelect(band)}
                   style={{
-                    background:"#0d0d0d",
+                    background:"#1c2226",
                     border:"1px solid #1c1c1c",
                     borderRadius:12,
                     cursor:"pointer",
@@ -273,7 +273,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
                       ? <img src={logo} alt={band.name} style={bandCardLogoStyle(band.name)}/>
                       : <div style={{ fontSize:48 }}>{band.emoji}</div>}
                   </div>
-                  <div style={{ borderTop:"1px solid #1a1a1a", padding:"12px 16px 14px", background:"#0a0a0a" }}>
+                  <div style={{ borderTop:"1px solid #2f383d", padding:"12px 16px 14px", background:"#161a1d" }}>
                     <div style={{ color:C.white, fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:16, letterSpacing:"-0.02em", marginBottom:6, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
                       {band.name}
                     </div>
@@ -310,7 +310,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
                 const count = (songs||[]).filter(s=>s.band_id===band.id).length;
                 return (
                   <button key={band.id} onClick={()=>toggleBackupId(band.id)}
-                    style={{ display:"flex", alignItems:"center", gap:10, textAlign:"left", background:on?C.tealDim:"#0a0a0a", border:"1px solid "+(on?C.tealBorder:"#222"), borderRadius:6, padding:"10px 12px", color:C.white, cursor:"pointer", fontFamily:"inherit" }}>
+                    style={{ display:"flex", alignItems:"center", gap:10, textAlign:"left", background:on?C.tealDim:"#161a1d", border:"1px solid "+(on?C.tealBorder:"#222"), borderRadius:6, padding:"10px 12px", color:C.white, cursor:"pointer", fontFamily:"inherit" }}>
                     <span style={{ width:18, height:18, borderRadius:4, border:"1px solid "+(on?C.teal:"#444"), background:on?C.teal:"transparent", color:"#000", fontSize:12, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{on?"✓":""}</span>
                     <span style={{ flex:1, fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{band.emoji ? band.emoji + " " : ""}{band.name}</span>
                     <span style={{ color:C.grayDim, fontSize:11, flexShrink:0 }}>{count} Songs</span>
@@ -333,7 +333,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
               show(ok ? "Datei gespeichert." : "Bitte manuell kopieren");
             }}>Datei speichern</Btn>
             <textarea readOnly value={backupText} onFocus={e=>e.target.select()}
-              style={{ width:"100%", height:180, background:"#0a0a0a", border:"1px solid #222", borderRadius:4, color:"#cfcfcf", fontFamily:"monospace", fontSize:11, padding:10, whiteSpace:"pre", boxSizing:"border-box" }}/>
+              style={{ width:"100%", height:180, background:"#161a1d", border:"1px solid #222", borderRadius:4, color:"#cfcfcf", fontFamily:"monospace", fontSize:11, padding:10, whiteSpace:"pre", boxSizing:"border-box" }}/>
             <Btn full variant="outline" onClick={()=>{
               if (navigator.clipboard&&navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(backupText).then(()=>show("Backup kopiert!")).catch(()=>show("Bitte manuell kopieren"));
@@ -356,7 +356,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
               reader.readAsText(file);
             }} style={{ color:C.gray, fontSize:12 }}/>
             <textarea value={importText} onChange={e=>setImportText(e.target.value)} placeholder="JSON hier einfügen…"
-              style={{ width:"100%", height:180, background:"#0a0a0a", border:"1px solid #222", borderRadius:4, color:"#cfcfcf", fontFamily:"monospace", fontSize:11, padding:10, boxSizing:"border-box" }}/>
+              style={{ width:"100%", height:180, background:"#161a1d", border:"1px solid #222", borderRadius:4, color:"#cfcfcf", fontFamily:"monospace", fontSize:11, padding:10, boxSizing:"border-box" }}/>
             <Btn full disabled={!importText.trim()||importing} onClick={runImport}>{importing ? "Importiere…" : "Importieren"}</Btn>
           </div>
         </Modal>
