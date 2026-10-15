@@ -53,7 +53,7 @@ function AuthScreen({ onAuth }) {
   };
 
   return (
-    <div style={{ minHeight:"100vh", background:"#000", display:"flex", flexDirection:"column", position:"relative", overflow:"hidden" }}>
+    <div style={{ minHeight:"100vh", background:"#161a1d", display:"flex", flexDirection:"column", position:"relative", overflow:"hidden" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@500;600;700&family=Raleway:wght@400;500;600;700;800;900&display=swap');`}</style>
       <img src={getLogo()} alt="" aria-hidden="true"
         style={{
@@ -79,7 +79,7 @@ function AuthScreen({ onAuth }) {
               {[{k:"login",l:"Anmelden"},{k:"register",l:"Registrieren"}].map(({k,l})=>(
                 <button key={k} onClick={()=>{ setMode(k); setError(""); }} style={{
                   flex:1, background:mode===k?C.teal:"transparent", color:mode===k?"#000":"#888",
-                  border:"1px solid "+(mode===k?C.teal:"#2a2a2a"), borderRadius:6, padding:"9px 0",
+                  border:"1px solid "+(mode===k?C.teal:"#3a454b"), borderRadius:6, padding:"9px 0",
                   fontSize:12, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase",
                   cursor:"pointer", fontFamily:"inherit"
                 }}>{l}</button>
