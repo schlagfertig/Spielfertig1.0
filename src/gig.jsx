@@ -7,7 +7,7 @@ function BpmBadge({ bpm, size=44 }) {
   return (
     <div title={bpm + " BPM"} style={{
       width: size, height: size, borderRadius: "50%", flexShrink: 0,
-      border: "2px solid #2a2a2a", display: "flex", alignItems: "center", justifyContent: "center",
+      border: "2px solid #3a454b", display: "flex", alignItems: "center", justifyContent: "center",
       color: C.grayDim, fontFamily: "'Space Mono',monospace", fontWeight: 700, fontSize: n, letterSpacing: "-0.04em",
     }}>{bpm}</div>
   );
@@ -46,7 +46,7 @@ function GigMetronome({ bpm, autoStart, size=44, now=false, accent }) {
     : (beat ? "rgba(92,200,184,0.32)" : active ? "rgba(92,200,184,0.12)" : "transparent");
   const ring = now
     ? (beat ? "#fff" : paint)
-    : (beat ? "#fff" : active ? C.teal : "#2a2a2a");
+    : (beat ? "#fff" : active ? C.teal : "#3a454b");
   const num = now
     ? (beat ? paint : "#000")
     : (beat ? "#fff" : active ? C.teal : C.grayDim);
