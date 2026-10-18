@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { C, SETS, dStyle, sb } from "./core";
+import { C, SETS, dStyle, sb, fmtDuration, sumDuration } from "./core";
 import { useIsNarrow, useSwipeBack, HeadToggle, Btn, Field, Modal } from "./ui";
 import { GigMetronome, BpmBadge } from "./gig";
 import { GigDock } from "./gigDock";
@@ -23,7 +23,7 @@ function readSkipped(playlistId) {
   } catch (_) { return []; }
 }
 
-function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, theme, toggleTheme, onClose, canEdit, onRefresh }) {
+function GigMode({ playlist, songsInSet, setCounts, setDurations, activeSet, onSetChange, theme, toggleTheme, onClose, canEdit, onRefresh }) {
   useSwipeBack(onClose);
   const [currentSongId, setCurrentSongId] = useState(null);
   const [gigLyricsId, setGigLyricsId] = useState(null);
@@ -148,7 +148,8 @@ function GigMode({ playlist, songsInSet, setCounts, activeSet, onSetChange, them
           {gigTabs.map(set=>{
             const n = setCounts[set]||0;
             const isLast = set === lastRegular && encoreCount > 0;
-            const label = isLast ? `${set} (${n}+${encoreCount})` : `${set} (${n})`;
+            const dur = setDurations && setDurations[set] ? " · " + fmtDuration(setDurations[set]) : "";
+            const label = isLast ? `${set} (${n}+${encoreCount}${dur})` : `${set} (${n}${dur})`;
             return (
               <button key={set} onClick={()=>switchSet(set)} style={{
                 background:viewSet===set?C.teal:"transparent",
