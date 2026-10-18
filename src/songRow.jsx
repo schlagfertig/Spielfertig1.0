@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { C, sb, SETS, dStyle } from "./core";
+import { C, fmtDuration, sb, SETS, dStyle } from "./core";
 import { Btn, Badge } from "./ui";
 import { useMetronome } from "./audio";
 import { SongFold, FoldBtn } from "./songPanels";
-import { ChartLine, packSpecialties, songNotes, songChart, songDuration, formatDuration } from "./chart";
+import { C, fmtDurationhartLine, packSpecialties, songNotes, songChart, songDuration, formatDuration } from "./chart";
 
 function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, onDragOver, isDragging, dropActive, extra, showDrummer=true, onGripPointerDown }) {
   const st = dStyle(song.drummer);
