@@ -5,8 +5,8 @@ import { SongDatabase } from "./songs";
 import { SetlistManager } from "./setlist";
 import { MemberManager } from "./members";
 
-function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, user, onBack, onRefresh, show, theme, toggleTheme }) {
-  const [tab, setTab] = useState("songs");
+function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, user, onBack, onRefresh, show, theme, toggleTheme, startGig, onGigConsumed }) {
+  const [tab, setTab] = useState(startGig ? "setlist" : "songs");
   useSwipeBack(onBack);
   const narrow = useIsNarrow();
   const [headOpen, setHeadOpen] = useState(false);
@@ -48,7 +48,7 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
       </header>
       <main style={{ maxWidth:720, margin:"0 auto", padding: narrow ? "14px 12px 28px" : "20px 16px", minWidth:0, overflowX:"hidden" }}>
         {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={allBands} canEdit={canEdit} onRefresh={onRefresh} show={show}/>}
-        {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} canEdit={canEdit} onRefresh={onRefresh} show={show} theme={theme} toggleTheme={toggleTheme}/>}
+        {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} canEdit={canEdit} onRefresh={onRefresh} show={show} theme={theme} toggleTheme={toggleTheme} startGig={startGig} onGigConsumed={onGigConsumed}/>}
         {tab==="members" &&<MemberManager band={band} canEdit={canEdit} show={show}/>}
       </main>
     </div>
