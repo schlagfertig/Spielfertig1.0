@@ -9,7 +9,7 @@ import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
 
 const REGULAR_SETS = SETS.filter(s => s !== "Zugaben");
 
-function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, bandId, canEdit, show, theme, toggleTheme }) {
+function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, bandId, canEdit, show, theme, toggleTheme, startInGig }) {
   useSwipeBack(onBack);
   const [activeSet, setActiveSet] = useState("Set 1");
   const [search, setSearch]       = useState("");
@@ -18,7 +18,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const [poolOpen, setPoolOpen]   = useState(() => typeof window === "undefined" || window.innerWidth > 720);
   const [addSet, setAddSet]       = useState(null);
   const [saving, setSaving]       = useState(false);
-  const [gigMode, setGigMode]     = useState(false);
+  const [gigMode, setGigMode]     = useState(!!startInGig);
   const [orderEdit, setOrderEdit] = useState(false);
   const [printOpen, setPrintOpen] = useState(false);
   const [printPrefs, togglePrintPref] = useViewPrefs();
