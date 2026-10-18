@@ -13,8 +13,8 @@ function BpmBadge({ bpm, size=44 }) {
   );
 }
 
-function GigMetronome({ bpm, autoStart, size=44, now=false, accent }) {
-  const { active, beat, toggle, start, stop } = useMetronome(bpm);
+function GigMetronome({ bpm, autoStart, size=44, now=false, accent, meter }) {
+  const { active, beat, beatIndex, accent: downbeat, toggle, start, stop } = useMetronome(bpm, meter || "4/4");
   const userMuted = useRef(false);
   const owned = useRef(false);
   useEffect(() => {
@@ -91,11 +91,11 @@ function GigMetronome({ bpm, autoStart, size=44, now=false, accent }) {
             color: labelCol,
             fontSize: labelSize,
             fontWeight: 800,
-            letterSpacing: "0.16em",
+            letterSpacing: "0.12em",
             textTransform: "uppercase",
             marginTop: 4,
             opacity: 0.85,
-          }}>{now ? "Now" : "BPM"}</div>
+          }}>{active && beatIndex ? (downbeat ? "1" : String(beatIndex)) + " · " + (meter || "4/4") : (meter || "4/4")}</div>
         )}
       </div>
     </button>
