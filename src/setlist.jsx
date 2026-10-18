@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { C, sb } from "./core";
 import { Btn, Field, SealLine, Modal, Confirm, useSwipeBack } from "./ui";
 import { PlaylistEditor } from "./playlistEditor";
 
-function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdit, onRefresh, show, theme, toggleTheme }) {
+function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdit, onRefresh, show, theme, toggleTheme, startGig, onGigConsumed }) {
   const [view, setView]         = useState("gigs");
   const [selGig, setSelGig]     = useState(null);
   const [selPl, setSelPl]       = useState(null);
@@ -21,13 +21,27 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
   const bandGigs   = gigs.filter(g=>g.band_id===band.id);
   const gigPls     = playlists.filter(p=>p.gig_id===selGig?.id);
 
-  const openEditor = (gig, pl) => {
+  const openEditor = (gig, pl, intoGig) => {
     setSelGig(gig);
     setSelPl(pl);
-    setView("editor");
+    setView(intoGig ? "gig" : "editor");
   };
+  useEffect(() => {
+    if (!startGig) return;
+    const pl = (playlists||[]).find(p => p.gig_id === startGig.id);
+    if (pl) {
+      setSelGig(startGig);
+      setSelPl(pl);
+      setView("gig");
+      if (onGigConsumed) onGigConsumed();
+    } else {
+      setSelGig(startGig);
+      setView("playlists");
+      if (onGigConsumed) onGigConsumed();
+    }
+  }, [startGig]);
 
-  if (view==="editor"&&selPl) return <PlaylistEditor playlist={selPl} allSongs={allSongs} playlistSongs={playlistSongs} canEdit={canEdit} onBack={()=>setView("playlists")} onRefresh={onRefresh} bandName={band.name} bandId={band.id} show={show} theme={theme} toggleTheme={toggleTheme}/>;
+  if ((view==="editor"||view==="gig")&&selPl) return <PlaylistEditor playlist={selPl} allSongs={allSongs} playlistSongs={playlistSongs} canEdit={canEdit} onBack={()=>setView("playlists")} onRefresh={onRefresh} bandName={band.name} bandId={band.id} show={show} theme={theme} toggleTheme={toggleTheme} startInGig={view==="gig"}/>;
 
   if (view==="playlists"&&selGig) return (
     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
