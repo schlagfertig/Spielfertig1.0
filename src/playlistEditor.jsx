@@ -44,6 +44,12 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
     return map;
   }, [mySongs, search, allSongs]);
   const setCounts = SETS.reduce((a,s)=>{a[s]=mySongs.filter(ps=>ps.set_name===s).length;return a;},{});
+  const setDurations = SETS.reduce((a,s)=>{
+    const list = mySongs.filter(ps=>ps.set_name===s).map(hydrate);
+    a[s] = sumDuration(list);
+    a[s+"_missing"] = list.filter(x=>!parseInt(x.duration,10)).length;
+    return a;
+  },{});
   const lastRegular = [...REGULAR_SETS].reverse().find(s => (setCounts[s]||0) > 0) || "Set 1";
   const encoreSongs = (songsBySet["Zugaben"] || []).map(s => ({...s, isEncore: true}));
   const gigActive = activeSet === "Zugaben" ? lastRegular : activeSet;
@@ -177,7 +183,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   }, [dragId]);
 
   if (gigMode) {
-    return <GigMode playlist={playlist} songsInSet={songsInSet} setCounts={setCounts} activeSet={gigActive} onSetChange={(set)=>{ setActiveSet(set === "Zugaben" ? lastRegular : set); setSearch(""); }} theme={theme} toggleTheme={toggleTheme} onClose={()=>setGigMode(false)} canEdit={canEdit} onRefresh={onRefresh} />;
+    return <GigMode playlist={playlist} songsInSet={songsInSet} setCounts={setCounts} setDurations={setDurations} activeSet={gigActive} onSetChange={(set)=>{ setActiveSet(set === "Zugaben" ? lastRegular : set); setSearch(""); }} theme={theme} toggleTheme={toggleTheme} onClose={()=>setGigMode(false)} canEdit={canEdit} onRefresh={onRefresh} />;
   }
 
   const sharePl = async (e) => {
@@ -217,7 +223,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         <div style={{ color:C.teal, fontSize:9, fontWeight:800, letterSpacing:"0.16em", textTransform:"uppercase", flexShrink:0 }}>Sets</div>
         {SETS.map(set=>(
           <button key={set} onClick={()=>{ const el = document.getElementById("set-block-"+set.replace(/\s+/g,"-")); if (el) el.scrollIntoView({ behavior:"smooth", block:"start" }); setActiveSet(set); }} style={{ background:activeSet===set?C.teal:"transparent", color:activeSet===set?"#000":C.gray, border:"1px solid "+(activeSet===set?C.teal:"#222"), borderRadius:3, padding:"5px 12px", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit", flexShrink:0 }}>
-            {set} <span style={{ opacity:.7 }}>({setCounts[set]})</span>
+            {set} <span style={{ opacity:.7 }}>({setCounts[set]}{setDurations[set] ? " · "+fmtDuration(setDurations[set]) : ""})</span>
           </button>
         ))}
       </div>
@@ -268,7 +274,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
         return (
           <div key={set} id={"set-block-"+set.replace(/\s+/g,"-")} style={{ background:C.bgCard, border:"1px solid "+(isOverSet?C.teal:"#2f383d"), borderRadius:6, padding:12, transition:"border-color .15s" }}>
             <div data-drop={set+"|"+(list.length+1)} onDragOver={e=>{ e.preventDefault(); setOver({ set, pos: list.length+1 }); }} onDrop={e=>{ e.preventDefault(); dropAt(set, list.length+1); }} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10, paddingBottom:8, borderBottom:"2px solid "+C.tealBorder }}>
-              <div style={{ color:C.teal, fontSize:13, fontWeight:800, letterSpacing:"0.12em", textTransform:"uppercase" }}>{set} <span style={{ color:C.grayDim, fontWeight:600, letterSpacing:0, fontSize:11 }}>· {list.length} Songs</span></div>
+              <div style={{ color:C.teal, fontSize:13, fontWeight:800, letterSpacing:"0.12em", textTransform:"uppercase" }}>{set} <span style={{ color:C.grayDim, fontWeight:600, letterSpacing:0, fontSize:11 }}>· {list.length} Songs{setDurations[set] ? " · "+fmtDuration(setDurations[set])+(setDurations[set+"_missing"] ? "+" : "") : ""}</span></div>
               {canEdit&&<Btn variant="outline" size="sm" onClick={()=>setAddSet(addSet===set?null:set)}>{addSet===set?"✕ Schließen":"+ Liste"}</Btn>}
             </div>
             {addSet===set&&(
