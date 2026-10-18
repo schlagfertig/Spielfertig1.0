@@ -1,13 +1,56 @@
+import { useRef, useState } from "react";
 import { C, glassStyle } from "./core";
 import { GigMetronome } from "./gig";
 import { songNotes } from "./chart";
+
+const METERS = ["4/4", "3/4", "6/8", "2/4", "5/4"];
+
+function TapTempo({ onBpm }) {
+  const taps = useRef([]);
+  const [flash, setFlash] = useState(false);
+  const [shown, setShown] = useState(null);
+  const tap = (e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    const now = performance.now();
+    taps.current = taps.current.filter(t => now - t < 2400);
+    taps.current.push(now);
+    setFlash(true);
+    setTimeout(() => setFlash(false), 90);
+    if (taps.current.length < 2) return;
+    const gaps = [];
+    for (let i = 1; i < taps.current.length; i++) gaps.push(taps.current[i] - taps.current[i - 1]);
+    const avg = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+    const bpm = Math.round(60000 / avg);
+    if (bpm >= 40 && bpm <= 240) {
+      setShown(bpm);
+      if (onBpm) onBpm(bpm);
+    }
+  };
+  return (
+    <button type="button" onPointerDown={tap} title="Tempo klopfen"
+      style={{
+        ...glassStyle({ borderRadius: 999, background: flash ? "rgba(92,200,184,0.45)" : "rgba(22,30,34,0.55)" }),
+        color: C.teal,
+        fontWeight: 800,
+        letterSpacing: "0.14em",
+        textTransform: "uppercase",
+        fontSize: 13,
+        padding: "8px 16px",
+        cursor: "pointer",
+        fontFamily: "inherit",
+        minWidth: 88,
+      }}>
+      {shown ? shown : "Tap"}
+    </button>
+  );
+}
 
 function rowId(song) {
   if (!song) return "";
   return song.ps_id || (String(song.id) + ":" + String(song.position || ""));
 }
 
-export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChartText, narrow, onNext, showClick, stack }) {
+export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChartText, narrow, onNext, showClick, stack, onTapBpm, onCycleMeter }) {
   const disabled = !nextSong || (current && rowId(nextSong) === rowId(current));
   const clickSize = stack ? 124 : (narrow ? 112 : 148);
   const noteLines = nextSong
@@ -65,8 +108,33 @@ export function GigDock({ current, nextSong, bpmNow, bpmNext, bpmDelta, nextChar
       display:"flex", flexDirection: stack ? "column" : "row", alignItems:"center", gap: stack ? 10 : 14, zIndex:5
     }}>
       {showClick && current && (
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-          <GigMetronome bpm={current.bpm} autoStart size={clickSize} now accent={C.teal}/>
+        <div style={{ position:"relative", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+          <div style={{
+            position:"absolute",
+            bottom:"calc(100% + 10px)",
+            left:"50%",
+            transform:"translateX(-50%)",
+            zIndex:12,
+            display:"flex",
+            alignItems:"center",
+            gap:8,
+          }}>
+            <TapTempo onBpm={onTapBpm}/>
+            <button type="button" onClick={(e)=>{ e.stopPropagation(); if (onCycleMeter) onCycleMeter(); }} title="Taktart"
+              style={{
+                ...glassStyle({ borderRadius: 999, background: "rgba(22,30,34,0.55)" }),
+                color: C.white,
+                fontWeight: 800,
+                fontSize: 13,
+                padding: "8px 12px",
+                cursor: "pointer",
+                fontFamily: "'Space Mono',monospace",
+                letterSpacing: "0.04em",
+              }}>
+              {current.meter || "4/4"}
+            </button>
+          </div>
+          <GigMetronome bpm={current.bpm} meter={current.meter || "4/4"} autoStart size={clickSize} now accent={C.teal}/>
         </div>
       )}
       <button
