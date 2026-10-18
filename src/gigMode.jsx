@@ -36,6 +36,8 @@ function GigMode({ playlist, songsInSet, setCounts, setDurations, activeSet, onS
   const [editSong, setEditSong] = useState(null);
   const [editNotes, setEditNotes] = useState("");
   const [editSaving, setEditSaving] = useState(false);
+  const [bpmOverride, setBpmOverride] = useState({});
+  const [meterOverride, setMeterOverride] = useState({});
   const listRef = useRef(null);
   const nowRef = useRef(null);
   useWakeLock(true);
@@ -293,8 +295,21 @@ function GigMode({ playlist, songsInSet, setCounts, setDurations, activeSet, onS
       </div>
       {showDock && (
         <GigDock
-          current={current}
+          current={current ? { ...current, bpm: bpmOverride[current.id] || current.bpm, meter: meterOverride[current.id] || current.meter || "4/4" } : current}
           nextSong={nextSong}
+          onTapBpm={async (bpm) => {
+            if (!current) return;
+            setBpmOverride(o => ({ ...o, [current.id]: bpm }));
+            try { await sb.update("songs", { bpm }, "id=eq." + current.id); if (onRefresh) onRefresh(); } catch (_) {}
+          }}
+          onCycleMeter={async () => {
+            if (!current) return;
+            const meters = ["4/4", "3/4", "6/8", "2/4", "5/4"];
+            const now = meterOverride[current.id] || current.meter || "4/4";
+            const next = meters[(meters.indexOf(now) + 1) % meters.length];
+            setMeterOverride(o => ({ ...o, [current.id]: next }));
+            try { await sb.update("songs", { meter: next }, "id=eq." + current.id); if (onRefresh) onRefresh(); } catch (_) {}
+          }}
           bpmNow={bpmNow}
           bpmNext={bpmNext}
           bpmDelta={bpmDelta}
