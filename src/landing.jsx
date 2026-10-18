@@ -120,7 +120,29 @@ function bandCardLogoStyle(name) {
   });
 }
 
-function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect, onLogout, onRefresh, show, theme, toggleTheme }) {
+function nextGigFor(band, gigs) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  return (gigs||[])
+    .filter(g => g.band_id === band.id && g.date)
+    .map(g => ({ ...g, t: new Date(g.date + "T00:00:00") }))
+    .filter(g => !isNaN(g.t) && g.t >= today)
+    .sort((a, b) => a.t - b.t)[0] || null;
+}
+function relDay(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  const today = new Date(); today.setHours(0,0,0,0);
+  const n = Math.round((d - today) / 86400000);
+  if (n === 0) return "Heute";
+  if (n === 1) return "Morgen";
+  return "in " + n + " Tagen";
+}
+function shortDate(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  if (isNaN(d)) return dateStr;
+  return String(d.getDate()).padStart(2,"0") + "." + String(d.getMonth()+1).padStart(2,"0");
+}
+
+function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect, onOpenNext, onLogout, onRefresh, show, theme, toggleTheme }) {
   const [showAddBand, setShowAddBand] = useState(false);
   const [delBand, setDelBand] = useState(null);
   const [delSaving, setDelSaving] = useState(false);
@@ -278,6 +300,25 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
                       <span style={{ color:C.grayDim, fontSize:11, letterSpacing:"0.08em", textTransform:"uppercase" }}>Songs & Setlist</span>
                       <Badge color={band.color || C.teal}>{count} Songs</Badge>
                     </div>
+                    {(() => {
+                      const next = nextGigFor(band, gigs);
+                      if (!next) return null;
+                      return (
+                        <button type="button" onClick={(e)=>{ e.stopPropagation(); if (onOpenNext) onOpenNext(band, next); else onSelect(band); }}
+                          style={{
+                            marginTop:10, width:"100%", textAlign:"left",
+                            background:"rgba(92,200,184,0.12)",
+                            border:"1px solid rgba(92,200,184,0.35)",
+                            borderRadius:12, padding:"8px 10px",
+                            color:C.white, cursor:"pointer", fontFamily:"inherit",
+                            display:"flex", alignItems:"center", gap:8,
+                          }}>
+                          <span style={{ color:C.teal, fontWeight:800, fontSize:11, letterSpacing:"0.08em", textTransform:"uppercase", flexShrink:0 }}>{relDay(next.date)}</span>
+                          <span style={{ flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontWeight:700, fontSize:13 }}>{next.name || "Gig"} · {shortDate(next.date)}</span>
+                          <span style={{ color:C.teal, fontWeight:800, fontSize:12, flexShrink:0 }}>▶</span>
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
               );
