@@ -371,10 +371,32 @@ const dStyle = d => {
   return EXTRA_DRUMMER_PALETTE[h % EXTRA_DRUMMER_PALETTE.length];
 };
 
+
+function parseDuration(v) {
+  if (v == null || v === "") return null;
+  const s = String(v).trim();
+  const m = s.match(/^(\d+)\s*:\s*(\d{1,2})$/);
+  if (m) return parseInt(m[1], 10) * 60 + Math.min(59, parseInt(m[2], 10));
+  const n = parseFloat(s.replace(",", "."));
+  if (!isNaN(n) && n > 0) return Math.round(n * 60);
+  return null;
+}
+function fmtDuration(sec) {
+  const n = parseInt(sec, 10);
+  if (!n || n <= 0) return "";
+  const m = Math.floor(n / 60);
+  const s = n % 60;
+  return m + ":" + String(s).padStart(2, "0");
+}
+function sumDuration(songs) {
+  return (songs || []).reduce((a, s) => a + (parseInt(s && s.duration, 10) || 0), 0);
+}
+
 export {
   SUPABASE_URL, SUPABASE_KEY, LOGO_DARK, LOGO_LIGHT, LOGO_FULL, getLogo, getBandLogo, bandLogoImgStyle,
   encodeShare, decodeShare, decodeShareFromLocation,
   glass, glassStyle, pageWash,
   LOGO_HARDYS_DATA, fetchWithTimeout, sb, THEMES, C, applyTheme, SETS, DRUMMER_COLORS,
-  EXTRA_DRUMMER_PALETTE, dStyle
+  EXTRA_DRUMMER_PALETTE, dStyle,
+  parseDuration, fmtDuration, sumDuration
 };
