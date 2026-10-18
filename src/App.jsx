@@ -20,6 +20,7 @@ export default function App() {
   const [playlists,     setPls]    = useState(_cache?.pls || []);
   const [playlistSongs, setPS]     = useState(_cache?.ps || []);
   const [selBand,       setSelBand]= useState(null);
+  const [gigIntent, setGigIntent] = useState(null);
   const [loading,       setLoading]= useState(!_cache);
   const [toast,         setToast]  = useState(null);
   const [theme, setTheme] = useState(localStorage.getItem("sf_theme") || "dark");
@@ -114,9 +115,9 @@ export default function App() {
       </div>
       {selBand ? (
         <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={bands} user={user}
-          onBack={()=>setSelBand(null)} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme}/>
+          onBack={()=>{setSelBand(null);setGigIntent(null);}} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme} startGig={gigIntent} onGigConsumed={()=>setGigIntent(null)}/>
       ) : (
-        <Landing bands={bands} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} user={user} onSelect={setSelBand} onLogout={handleLogout} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme}/>
+        <Landing bands={bands} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} user={user} onSelect={setSelBand} onOpenNext={(band,gig)=>{setGigIntent(gig);setSelBand(band);}} onLogout={handleLogout} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme}/>
       )}
 
       {toast&&<Toast msg={toast.msg} type={toast.type} onClose={()=>setToast(null)}/>}
