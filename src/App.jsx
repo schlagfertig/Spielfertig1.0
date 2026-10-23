@@ -5,6 +5,7 @@ import { AuthScreen } from "./auth";
 import { BandDetail, Landing } from "./bands";
 import { SharedView } from "./shared";
 import { LegalView } from "./legal";
+import { RolesPreview } from "./rolesPreview";
 
 function readCache() {
   try { const raw = localStorage.getItem("sf_cache"); return raw ? JSON.parse(raw) : null; }
@@ -31,18 +32,20 @@ export default function App() {
   const params = typeof window!=="undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
   const shareId = params.get("share");
   const legalPage = params.get("legal");
+  const previewRoles = params.get("vorschau") === "rollen";
 
   useEffect(()=>{
+    if (previewRoles) return;
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(()=>{});
     }
-  }, []);
+  }, [previewRoles]);
 
   useEffect(()=>{
-    if (shareId || legalPage) { setLoading(false); return; }
+    if (shareId || legalPage || previewRoles) { setLoading(false); return; }
     sb.enableLocal();
     setUser({ id: "local", email: "Lokal" });
-  },[shareId, legalPage]);
+  },[shareId, legalPage, previewRoles]);
 
   const loadAll = useCallback(async () => {
     if (!sb._local && !sb._token) return;
@@ -77,11 +80,12 @@ export default function App() {
     } catch(_) {}
   },[user]);
 
-  useEffect(()=>{ if(user && !shareId && !legalPage) { joinPendingInvites().then(loadAll); } },[user,loadAll,joinPendingInvites,shareId,legalPage]);
+  useEffect(()=>{ if(user && !shareId && !legalPage && !previewRoles) { joinPendingInvites().then(loadAll); } },[user,loadAll,joinPendingInvites,shareId,legalPage,previewRoles]);
 
   const handleAuth = (u) => { setUser(u); };
   const handleLogout = async () => { show("Lokalmodus — Daten bleiben auf diesem Gerät. Nichts abzumelden."); };
 
+  if (previewRoles) return <RolesPreview/>;
   if (legalPage === "impressum" || legalPage === "datenschutz") return <LegalView page={legalPage}/>;
   if (shareId) return <SharedView playlistId={shareId}/>;
 
