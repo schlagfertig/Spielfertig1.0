@@ -3,9 +3,9 @@ import { C, fmtDuration, sb, SETS, dStyle } from "./core";
 import { Btn, Badge } from "./ui";
 import { useMetronome } from "./audio";
 import { SongFold, FoldBtn } from "./songPanels";
-import { C, fmtDurationhartLine, packSpecialties, songNotes, songChart, songDuration, formatDuration } from "./chart";
+import { ChartLine, packSpecialties, songNotes, songChart, songDuration, formatDuration } from "./chart";
 
-function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, onDragOver, isDragging, dropActive, extra, showDrummer=true, onGripPointerDown }) {
+function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, onDragOver, isDragging, dropActive, extra, showDrummer=true, onGripPointerDown, columns }) {
   const st = dStyle(song.drummer);
   const { active, beat, toggle } = useMetronome(song.bpm);
   const [showLyrics, setShowLyrics] = useState(false);
@@ -16,47 +16,63 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
   const pulseColor  = beat?"#fff":active?C.teal:C.grayDim;
   const pulseGlow   = beat?`0 0 10px 4px ${C.teal}`:active?`0 0 4px 1px ${C.tealBorder}`:"none";
   const pulseBorder = active?`1px solid ${beat?"#fff":C.teal}`:"1px solid #3a454b";
+  const posEl = pos!==undefined&&<div style={{ color:C.grayDim, fontSize:11, width:18, textAlign:"right", flexShrink:0, fontFamily:"'Space Mono',monospace" }}>{pos}</div>;
+  const gripEl = draggable&&<div
+    onPointerDown={onGripPointerDown}
+    title="Ziehen zum Verschieben"
+    style={{ color:C.grayDim, fontSize:16, flexShrink:0, cursor:"grab", padding:"4px 2px", touchAction:"none", userSelect:"none" }}
+  >⠿</div>;
+  const bpmEl = song.bpm>0&&(
+    <button onClick={toggle} title={`${active?"Stop":"Start"} (${song.bpm} BPM)`}
+      style={{ background:"transparent", border:pulseBorder, borderRadius:"50%", width:32, height:32, flexShrink:0, cursor:"pointer", padding:0, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:pulseGlow, transition:"border-color .05s,box-shadow .05s" }}>
+      <div style={{ width:14, height:14, borderRadius:"50%", background:pulseColor, transition:"background .05s", boxShadow:beat?`0 0 6px 3px ${C.teal}`:"none"}}/>
+    </button>
+  );
+  const titleEl = (
+    <div style={{ flex:1, minWidth:0 }}>
+      <div style={{ fontWeight:600, color:C.white, fontSize:15, lineHeight:1.25, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{song.title}</div>
+      <div style={{ color:C.gray, fontSize:12, ...(columns ? { whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" } : null) }}>
+        {song.artist}
+        {song.bpm>0&&<span style={{ color:active?C.teal:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6, transition:"color .2s" }}>{song.bpm} BPM</span>}
+        {fmtDuration(song.duration)&&<span style={{ color:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6 }}>{fmtDuration(song.duration)}</span>}
+        {songDuration(song)>0&&<span style={{ color:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6 }}>{formatDuration(songDuration(song))}</span>}
+      </div>
+      <ChartLine chart={chart}/>
+    </div>
+  );
+  const badgeEl = song.drummer&&showDrummer&&<Badge color={st.badge}>{song.drummer}</Badge>;
+  const notesEl = notes&&<FoldBtn on={showNotes} title="Notizen" icon="📝" onClick={()=>setShowNotes(v=>!v)}/>;
+  const lyricsEl = song.lyrics&&<FoldBtn on={showLyrics} title="Lyrics" icon="📓" onClick={()=>setShowLyrics(v=>!v)}/>;
+  const editEl = onEdit&&<button onClick={e=>{e.stopPropagation();onEdit(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"4px 6px", fontSize:17, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.color=C.teal} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✎</button>;
+  const deleteEl = onDelete&&<button onClick={e=>{e.stopPropagation();onDelete(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"4px 6px", fontSize:17, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.color=C.red} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✕</button>;
+  const hasTools = !!(bpmEl || badgeEl || notesEl || lyricsEl || editEl || deleteEl || extra);
   return (
     <div style={{ display:"flex", flexDirection:"column" }}>
       <div draggable={!!draggable} onDragStart={onDragStart} onDragOver={e=>{ e.preventDefault(); onDragOver && onDragOver(e); }} onDrop={onDrop}
-        style={{ background:isDragging?"#161a1d":st.bg, border:`1px solid ${isDragging?C.teal:dropActive?C.teal:st.border}`, borderRadius: foldOpen?"6px 6px 0 0":6, padding:"9px 13px", display:"flex", flexDirection:"column", gap:6, opacity:isDragging?.4:1, transition:"background .1s,border-color .1s", cursor:draggable?"grab":"default" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          {pos!==undefined&&<div style={{ color:C.grayDim, fontSize:11, width:18, textAlign:"right", flexShrink:0, fontFamily:"'Space Mono',monospace" }}>{pos}</div>}
-          {draggable&&<div
-            onPointerDown={onGripPointerDown}
-            title="Ziehen zum Verschieben"
-            style={{ color:C.grayDim, fontSize:16, flexShrink:0, cursor:"grab", padding:"4px 2px", touchAction:"none", userSelect:"none" }}
-          >⠿</div>}
-          {song.bpm>0&&(
-            <button onClick={toggle} title={`${active?"Stop":"Start"} (${song.bpm} BPM)`}
-              style={{ background:"transparent", border:pulseBorder, borderRadius:"50%", width:32, height:32, flexShrink:0, cursor:"pointer", padding:0, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:pulseGlow, transition:"border-color .05s,box-shadow .05s" }}>
-              <div style={{ width:14, height:14, borderRadius:"50%", background:pulseColor, transition:"background .05s", boxShadow:beat?`0 0 6px 3px ${C.teal}`:"none"}}/>
-            </button>
-          )}
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontWeight:600, color:C.white, fontSize:15, lineHeight:1.25, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{song.title}</div>
-            <div style={{ color:C.gray, fontSize:12 }}>
-              {song.artist}
-              {song.bpm>0&&<span style={{ color:active?C.teal:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6, transition:"color .2s" }}>{song.bpm} BPM</span>}
-              {fmtDuration(song.duration)&&<span style={{ color:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6 }}>{fmtDuration(song.duration)}</span>}
-              {songDuration(song)>0&&<span style={{ color:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6 }}>{formatDuration(songDuration(song))}</span>}
+        style={{ background:isDragging?"#161a1d":st.bg, border:`1px solid ${isDragging?C.teal:dropActive?C.teal:st.border}`, borderRadius: foldOpen?"6px 6px 0 0":6, padding: columns?"8px":"9px 13px", display:"flex", flexDirection:"column", gap:6, opacity:isDragging?.4:1, transition:"background .1s,border-color .1s", cursor:draggable?"grab":"default" }}>
+        {columns ? (
+          <>
+            <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
+              {posEl}{gripEl}{titleEl}
             </div>
-            <ChartLine chart={chart}/>
+            {hasTools && (
+              <div style={{ display:"flex", alignItems:"center", gap:4, flexWrap:"wrap" }}>
+                {bpmEl}{badgeEl}{notesEl}{lyricsEl}{editEl}{deleteEl}{extra}
+              </div>
+            )}
+          </>
+        ) : (
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            {posEl}{gripEl}{bpmEl}{titleEl}{badgeEl}{notesEl}{lyricsEl}{editEl}{deleteEl}{extra}
           </div>
-          {song.drummer&&showDrummer&&<Badge color={st.badge}>{song.drummer}</Badge>}
-          {notes&&<FoldBtn on={showNotes} title="Notizen" icon="📝" onClick={()=>setShowNotes(v=>!v)}/>}
-          {song.lyrics&&<FoldBtn on={showLyrics} title="Lyrics" icon="📓" onClick={()=>setShowLyrics(v=>!v)}/>}
-          {onEdit&&<button onClick={e=>{e.stopPropagation();onEdit(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"4px 6px", fontSize:17, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.color=C.teal} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✎</button>}
-          {onDelete&&<button onClick={e=>{e.stopPropagation();onDelete(song);}} style={{ background:"transparent", border:"none", color:C.grayDim, cursor:"pointer", padding:"4px 6px", fontSize:17, flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.color=C.red} onMouseLeave={e=>e.currentTarget.style.color=C.grayDim}>✕</button>}
-          {extra&&extra}
-        </div>
+        )}
       </div>
       <SongFold notes={notes} lyrics={song.lyrics} notesOpen={showNotes} lyricsOpen={showLyrics} border={st.border} compact/>
     </div>
   );
 }
 
-function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, saving, showDrummer=true, canEdit=true, draggable, onDragStart, onDrop, onDragOver, isDragging, dropActive, onGripPointerDown }) {
+function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, saving, showDrummer=true, canEdit=true, draggable, onDragStart, onDrop, onDragOver, isDragging, dropActive, onGripPointerDown, columns }) {
   const [open, setOpen] = useState(false);
   const [newSet, setNewSet] = useState(song.set_name);
   const [newPos, setNewPos] = useState(String(song.position));
@@ -91,7 +107,7 @@ function SongRowMove({ song, mySongs, playlist, onDelete, onRefresh, setSaving, 
     <div style={{ position:"relative" }}>
       <SongRow song={song} pos={song.position} showDrummer={showDrummer} onDelete={onDelete}
         draggable={draggable} onDragStart={onDragStart} onDrop={onDrop} onDragOver={onDragOver}
-        isDragging={isDragging} dropActive={dropActive} onGripPointerDown={onGripPointerDown}
+        isDragging={isDragging} dropActive={dropActive} onGripPointerDown={onGripPointerDown} columns={columns}
         onEdit={canEdit?(()=>{ setNewSet(song.set_name); setNewPos(String(song.position)); setNotes(songNotes(song)); setOpen(!open); }):undefined}/>
       {open&&(
         <div style={{ position:"absolute", right:0, top:"100%", zIndex:100, background:"#2f383d", border:"1px solid "+C.tealBorder, borderRadius:8, padding:14, minWidth:220, boxShadow:"0 8px 32px rgba(0,0,0,.8)" }}>

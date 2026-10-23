@@ -3,7 +3,7 @@ import { C, sb } from "./core";
 import { Btn, Field, SealLine, Modal, Confirm, useSwipeBack } from "./ui";
 import { PlaylistEditor } from "./playlistEditor";
 
-function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdit, onRefresh, show, theme, toggleTheme, startGig, onGigConsumed }) {
+function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdit, onRefresh, show, theme, toggleTheme, startGig, onGigConsumed, onWideEditor }) {
   const [view, setView]         = useState("gigs");
   const [selGig, setSelGig]     = useState(null);
   const [selPl, setSelPl]       = useState(null);
@@ -41,7 +41,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
     }
   }, [startGig]);
 
-  if ((view==="editor"||view==="gig")&&selPl) return <PlaylistEditor playlist={selPl} allSongs={allSongs} playlistSongs={playlistSongs} canEdit={canEdit} onBack={()=>setView("playlists")} onRefresh={onRefresh} bandName={band.name} bandId={band.id} show={show} theme={theme} toggleTheme={toggleTheme} startInGig={view==="gig"}/>;
+  if ((view==="editor"||view==="gig")&&selPl) return <PlaylistEditor playlist={selPl} allSongs={allSongs} playlistSongs={playlistSongs} canEdit={canEdit} onBack={()=>setView("playlists")} onRefresh={onRefresh} bandName={band.name} bandId={band.id} show={show} theme={theme} toggleTheme={toggleTheme} startInGig={view==="gig"} onWideEditor={onWideEditor}/>;
 
   if (view==="playlists"&&selGig) return (
     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>

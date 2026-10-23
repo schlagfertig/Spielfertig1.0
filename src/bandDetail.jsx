@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useLayoutEffect, useRef } from "react";
 import { C, getBandLogo, bandLogoImgStyle } from "./core";
 import { Btn, SealLine, useIsNarrow, useSwipeBack, HeadToggle } from "./ui";
 import { SongDatabase } from "./songs";
@@ -10,14 +10,28 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
   useSwipeBack(onBack);
   const narrow = useIsNarrow();
   const [headOpen, setHeadOpen] = useState(false);
+  const [wideEditor, setWideEditor] = useState(false);
+  const onWideEditor = useCallback((on) => setWideEditor(!!on), []);
+  const headRef = useRef(null);
   const showBrand = !narrow || headOpen;
   const canEdit = band.user_id === user.id;
   const logo = getBandLogo(band.name);
   const hardys = /hardy/i.test(band.name || "");
+  const shellMax = wideEditor ? 1680 : 720;
+  useLayoutEffect(() => {
+    const el = headRef.current;
+    if (!el) return;
+    const apply = () => document.documentElement.style.setProperty("--sf-head", el.offsetHeight + "px");
+    apply();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [narrow, headOpen, showBrand, wideEditor, tab]);
   return (
-    <div style={{ minHeight:"100vh", background:C.bg, overflowX:"hidden" }}>
-      <header style={{ borderBottom:"1px solid #111", background:"rgba(0,0,0,.97)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:50 }}>
-        <div style={{ maxWidth:720, margin:"0 auto", padding: narrow ? "8px 12px 0 12px" : "8px 16px 0", display:"flex", alignItems:"center", gap:8 }}>
+    <div style={{ minHeight:"100vh", background:C.bg, overflowX: wideEditor ? "visible" : "hidden" }}>
+      <header ref={headRef} style={{ borderBottom:"1px solid #111", background:"rgba(0,0,0,.97)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:50 }}>
+        <div style={{ maxWidth:shellMax, margin:"0 auto", padding: narrow ? "8px 12px 0 12px" : "8px 16px 0", display:"flex", alignItems:"center", gap:8 }}>
           <Btn variant="outline" size="md" onClick={onBack} style={{fontSize: narrow?18:20, padding: narrow?"6px 10px":"6px 18px", flexShrink:0}}>{narrow ? "←" : "← Zurück"}</Btn>
           {narrow && !showBrand && (
             <div style={{ flex:1, minWidth:0, color:C.white, fontFamily:"'Bebas Neue',cursive", fontSize:18, letterSpacing:"0.06em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
@@ -33,22 +47,22 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
           </div>
         </div>
         {showBrand && (
-          <div style={{ maxWidth:720, margin:"0 auto", padding:"6px 16px 10px", display:"flex", justifyContent:"center" }}>
+          <div style={{ maxWidth:shellMax, margin:"0 auto", padding:"6px 16px 10px", display:"flex", justifyContent:"center" }}>
             {logo
               ? <img src={logo} alt={band.name} style={bandLogoImgStyle({ width:"auto", height:"auto", maxWidth: hardys ? "70%" : "86%", maxHeight: hardys ? 72 : 48 })}/>
               : <div style={{ color:C.white, fontWeight:400, fontSize:26, fontFamily:"'Bebas Neue',cursive", letterSpacing:"0.06em" }}>{band.name}</div>}
           </div>
         )}
-        <div style={{ maxWidth:720, margin:"0 auto", padding: showBrand ? "0 16px 10px" : "8px 12px 10px", display:"flex", gap:6 }}>
+        <div style={{ maxWidth:shellMax, margin:"0 auto", padding: showBrand ? "0 16px 10px" : "8px 12px 10px", display:"flex", gap:6 }}>
             {[{key:"songs",label:"🎶 Songs"},{key:"setlist",label:"📋 Setlist"},{key:"members",label:"👥 Team"}].map(({key,label})=>(
             <button key={key} onClick={()=>setTab(key)} style={{ flex:1, background:tab===key?C.teal:"transparent", color:tab===key?"#000":C.gray, border:`1px solid ${tab===key?C.teal:"#222"}`, borderRadius:4, padding:"8px 0", fontSize:12, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", cursor:"pointer", fontFamily:"inherit" }}>{label}</button>
             ))}
         </div>
         <SealLine color={band.color}/>
       </header>
-      <main style={{ maxWidth:720, margin:"0 auto", padding: narrow ? "14px 12px 28px" : "20px 16px", minWidth:0, overflowX:"hidden" }}>
+      <main style={{ maxWidth:shellMax, margin:"0 auto", padding: narrow ? "14px 12px 28px" : "20px 16px", minWidth:0, overflowX: wideEditor ? "visible" : "hidden" }}>
         {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={allBands} canEdit={canEdit} onRefresh={onRefresh} show={show}/>}
-        {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} canEdit={canEdit} onRefresh={onRefresh} show={show} theme={theme} toggleTheme={toggleTheme} startGig={startGig} onGigConsumed={onGigConsumed}/>}
+        {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} canEdit={canEdit} onRefresh={onRefresh} show={show} theme={theme} toggleTheme={toggleTheme} startGig={startGig} onGigConsumed={onGigConsumed} onWideEditor={onWideEditor}/>}
         {tab==="members" &&<MemberManager band={band} canEdit={canEdit} show={show}/>}
       </main>
     </div>
