@@ -10,7 +10,7 @@ import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
 
 const REGULAR_SETS = SETS.filter(s => s !== "Zugaben");
 
-function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, bandId, canEdit, show, theme, toggleTheme, startInGig, onWideEditor }) {
+function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, bandName, bandId, canEdit, canManage, show, theme, toggleTheme, startInGig, onWideEditor }) {
   useSwipeBack(onBack);
   const [activeSet, setActiveSet] = useState("Set 1");
   const [search, setSearch]       = useState("");
@@ -196,7 +196,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
 
   const sharePl = async (e) => {
     if (e) { e.stopPropagation(); e.preventDefault(); }
-    await sb.update("playlists", { is_shared: true }, "id=eq." + playlist.id);
+    if (canManage) await sb.update("playlists", { is_shared: true }, "id=eq." + playlist.id);
     const ps = playlistSongs.filter(p => p.playlist_id === playlist.id);
     const ids = new Set(ps.map(p => p.song_id));
     const songs = allSongs.filter(s => ids.has(s.id));
@@ -312,7 +312,7 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
               return (
                 <div key={song.ps_id} data-drop={set+"|"+dropPos} style={column ? { minWidth:0 } : undefined}>
                   {isOverHere && <div style={{ height:3, background:C.teal, borderRadius:2, margin:"0 8px 4px" }}/>}
-                  <SongRowMove song={song} mySongs={mySongs} playlist={playlist} showDrummer={showDrummer} canEdit={canEdit} onDelete={canEdit?(()=>removeFromSet(song)):undefined} onRefresh={onRefresh} setSaving={setSaving} saving={saving} draggable={canEdit && orderEdit} isDragging={dragId===song.ps_id} dropActive={isOverHere} onDragStart={(e)=>beginDrag({ kind:"set", song }, e)} onDragOver={(e)=>{ e.preventDefault(); setOver({ set, pos: dropPos }); }} onDrop={(e)=>{ e.preventDefault(); e.stopPropagation(); dropAt(set, dropPos); }} onGripPointerDown={orderEdit?(e)=>{ e.stopPropagation(); e.currentTarget.setPointerCapture?.(e.pointerId); beginDrag({ kind:"set", song }, e); setGhost({ x:e.clientX, y:e.clientY }); }:undefined} columns={column} />
+                  <SongRowMove song={song} mySongs={mySongs} playlist={playlist} showDrummer={showDrummer} canEdit={canEdit} onDelete={canManage?(()=>removeFromSet(song)):undefined} onRefresh={onRefresh} setSaving={setSaving} saving={saving} draggable={canEdit && orderEdit} isDragging={dragId===song.ps_id} dropActive={isOverHere} onDragStart={(e)=>beginDrag({ kind:"set", song }, e)} onDragOver={(e)=>{ e.preventDefault(); setOver({ set, pos: dropPos }); }} onDrop={(e)=>{ e.preventDefault(); e.stopPropagation(); dropAt(set, dropPos); }} onGripPointerDown={orderEdit?(e)=>{ e.stopPropagation(); e.currentTarget.setPointerCapture?.(e.pointerId); beginDrag({ kind:"set", song }, e); setGhost({ x:e.clientX, y:e.clientY }); }:undefined} columns={column} />
                 </div>
               );
             })}

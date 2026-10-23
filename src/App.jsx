@@ -20,6 +20,7 @@ export default function App() {
   const [gigs,          setGigs]   = useState(_cache?.gigs || []);
   const [playlists,     setPls]    = useState(_cache?.pls || []);
   const [playlistSongs, setPS]     = useState(_cache?.ps || []);
+  const [members,       setMembers]= useState([]);
   const [selBand,       setSelBand]= useState(null);
   const [gigIntent, setGigIntent] = useState(null);
   const [loading,       setLoading]= useState(!_cache);
@@ -68,15 +69,16 @@ export default function App() {
   const loadAll = useCallback(async () => {
     if (!sb._local && !sb._token) return;
     try {
-      const [b,s,g,pl,ps] = await Promise.all([
+      const [b,s,g,pl,ps,mem] = await Promise.all([
         sb.query("bands",         { select:"*", order:"created_at.asc" }),
         sb.query("songs",         { select:"*", order:"created_at.asc" }),
         sb.query("gigs",          { select:"*", order:"date.desc,created_at.desc" }),
         sb.query("playlists",     { select:"*", order:"created_at.asc" }),
         sb.query("playlist_songs",{ select:"*", order:"position.asc" }),
+        sb.query("band_members",  { select:"*", order:"created_at.asc" }),
       ]);
       const _b=Array.isArray(b)?b:[], _s=Array.isArray(s)?s:[], _g=Array.isArray(g)?g:[], _pl=Array.isArray(pl)?pl:[], _ps=Array.isArray(ps)?ps:[];
-      setBands(_b); setSongs(_s); setGigs(_g); setPls(_pl); setPS(_ps);
+      setBands(_b); setSongs(_s); setGigs(_g); setPls(_pl); setPS(_ps); setMembers(Array.isArray(mem)?mem:[]);
       try {
         localStorage.setItem("sf_cache", JSON.stringify({ bands:_b, songs:_s, gigs:_g, pls:_pl, ps:_ps, ts:Date.now() }));
       } catch(_) {}
@@ -91,8 +93,11 @@ export default function App() {
       const list = Array.isArray(inv) ? inv : [];
       for (const i of list) {
         try {
-          await sb.insert("band_members", { band_id: i.band_id, user_id: user.id, role: "member" });
-          await sb.delete("invites", "id=eq."+i.id);
+          const role = ["viewer", "editor", "manager"].includes(i.role) ? i.role : "editor";
+          const mail = (user.email || "").toLowerCase();
+          let row = await sb.insert("band_members", { band_id: i.band_id, user_id: user.id, role, email: mail });
+          if (row && row.code === "PGRST204") row = await sb.insert("band_members", { band_id: i.band_id, user_id: user.id, role });
+          if (row && row.id != null) await sb.delete("invites", "id=eq."+i.id);
         } catch(_) {}
       }
     } catch(_) {}
@@ -180,7 +185,7 @@ export default function App() {
         <img src={getLogo()} alt="" style={{ width:56, height:56, objectFit:"contain", opacity:0.85, userSelect:"none" }}/>
       </div>
       {selBand ? (
-        <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={bands} user={user}
+        <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={bands} members={members} user={user}
           onBack={()=>{setSelBand(null);setGigIntent(null);}} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme} startGig={gigIntent} onGigConsumed={()=>setGigIntent(null)}/>
       ) : (
         <Landing bands={bands} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} user={user} onSelect={setSelBand} onOpenNext={(band,gig)=>{setGigIntent(gig);setSelBand(band);}} onLogout={handleLogout} onLeaveLocal={leaveLocal} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme}/>

@@ -4,8 +4,9 @@ import { Btn, SealLine, useIsNarrow, useSwipeBack, HeadToggle } from "./ui";
 import { SongDatabase } from "./songs";
 import { SetlistManager } from "./setlist";
 import { MemberManager } from "./members";
+import { capsFor } from "./roles";
 
-function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, user, onBack, onRefresh, show, theme, toggleTheme, startGig, onGigConsumed }) {
+function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, members, user, onBack, onRefresh, show, theme, toggleTheme, startGig, onGigConsumed }) {
   const [tab, setTab] = useState(startGig ? "setlist" : "songs");
   useSwipeBack(onBack);
   const narrow = useIsNarrow();
@@ -14,7 +15,9 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
   const onWideEditor = useCallback((on) => setWideEditor(!!on), []);
   const headRef = useRef(null);
   const showBrand = !narrow || headOpen;
-  const canEdit = band.user_id === user.id;
+  const caps = capsFor(band, user, members);
+  const canEdit = caps.editSongs;
+  const canManage = caps.manage;
   const logo = getBandLogo(band.name);
   const hardys = /hardy/i.test(band.name || "");
   const shellMax = wideEditor ? 1680 : 720;
@@ -61,9 +64,9 @@ function BandDetail({ band, songs, gigs, playlists, playlistSongs, allBands, use
         <SealLine color={band.color}/>
       </header>
       <main style={{ maxWidth:shellMax, margin:"0 auto", padding: narrow ? "14px 12px 28px" : "20px 16px", minWidth:0, overflowX: wideEditor ? "visible" : "hidden" }}>
-        {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={allBands} canEdit={canEdit} onRefresh={onRefresh} show={show}/>}
-        {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} canEdit={canEdit} onRefresh={onRefresh} show={show} theme={theme} toggleTheme={toggleTheme} startGig={startGig} onGigConsumed={onGigConsumed} onWideEditor={onWideEditor}/>}
-        {tab==="members" &&<MemberManager band={band} canEdit={canEdit} show={show}/>}
+        {tab==="songs"   &&<SongDatabase band={band} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={allBands} canEdit={canEdit} canDelete={caps.deleteSongs} onRefresh={onRefresh} show={show}/>}
+        {tab==="setlist" &&<SetlistManager band={band} allSongs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} canEdit={canEdit} canManage={canManage} onRefresh={onRefresh} show={show} theme={theme} toggleTheme={toggleTheme} startGig={startGig} onGigConsumed={onGigConsumed} onWideEditor={onWideEditor}/>}
+        {tab==="members" &&<MemberManager band={band} user={user} members={members} canManage={canManage} canLeave={caps.leave} show={show} onRefresh={onRefresh}/>}
       </main>
     </div>
   );
