@@ -3,7 +3,7 @@ import { C, sb } from "./core";
 import { Btn, Field, SealLine, Modal, Confirm, useSwipeBack } from "./ui";
 import { PlaylistEditor } from "./playlistEditor";
 
-function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdit, onRefresh, show, theme, toggleTheme, startGig, onGigConsumed, onWideEditor }) {
+function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdit, canManage, onRefresh, show, theme, toggleTheme, startGig, onGigConsumed, onWideEditor }) {
   const [view, setView]         = useState("gigs");
   const [selGig, setSelGig]     = useState(null);
   const [selPl, setSelPl]       = useState(null);
@@ -41,7 +41,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
     }
   }, [startGig]);
 
-  if ((view==="editor"||view==="gig")&&selPl) return <PlaylistEditor playlist={selPl} allSongs={allSongs} playlistSongs={playlistSongs} canEdit={canEdit} onBack={()=>setView("playlists")} onRefresh={onRefresh} bandName={band.name} bandId={band.id} show={show} theme={theme} toggleTheme={toggleTheme} startInGig={view==="gig"} onWideEditor={onWideEditor}/>;
+  if ((view==="editor"||view==="gig")&&selPl) return <PlaylistEditor playlist={selPl} allSongs={allSongs} playlistSongs={playlistSongs} canEdit={canEdit} canManage={canManage} onBack={()=>setView("playlists")} onRefresh={onRefresh} bandName={band.name} bandId={band.id} show={show} theme={theme} toggleTheme={toggleTheme} startInGig={view==="gig"} onWideEditor={onWideEditor}/>;
 
   if (view==="playlists"&&selGig) return (
     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
@@ -50,7 +50,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
         <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>{selGig.name}</div>
       </div>
       <SealLine/>
-      {canEdit&&(
+      {canManage&&(
       <div style={{ background:C.bgCard, border:"1px solid #2f383d", borderRadius:6, padding:14 }}>
         <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Weitere Playlist</div>
         <div style={{ display:"flex", gap:8 }}>
@@ -69,9 +69,9 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
             </div>
             <div style={{ display:"flex", gap:6 }}>
               <Btn size="sm" onClick={()=>{setSelPl(p);setView("editor");}}>Öffnen →</Btn>
-              {canEdit&&<Btn variant="outline" size="sm" onClick={()=>{setTemplate(p);setTmplName(p.name+" (Kopie)");setTmplGig("");}}>⎘</Btn>}
-              {canEdit&&<Btn variant="outline" size="sm" onClick={()=>{setRenaming(p);setRenameTxt(p.name);}}>✎</Btn>}
-              {canEdit&&<Btn variant="danger" size="sm" onClick={()=>setConfirm({type:"pl",item:p})}>✕</Btn>}
+              {canManage&&<Btn variant="outline" size="sm" onClick={()=>{setTemplate(p);setTmplName(p.name+" (Kopie)");setTmplGig("");}}>⎘</Btn>}
+              {canManage&&<Btn variant="outline" size="sm" onClick={()=>{setRenaming(p);setRenameTxt(p.name);}}>✎</Btn>}
+              {canManage&&<Btn variant="danger" size="sm" onClick={()=>setConfirm({type:"pl",item:p})}>✕</Btn>}
             </div>
           </div>
         ))}
@@ -119,7 +119,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
       <div style={{ color:C.white, fontWeight:700, fontSize:15 }}>Setlists</div>
       <SealLine/>
-      {canEdit&&(
+      {canManage&&(
       <div style={{ background:C.bgCard, border:"1px solid #2f383d", borderRadius:6, padding:14 }}>
         <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:10 }}>+ Neue Setlist</div>
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
@@ -161,7 +161,7 @@ function SetlistManager({ band, allSongs, gigs, playlists, playlistSongs, canEdi
               {gig.date&&<div style={{ color:C.grayDim, fontSize:11 }}>{new Date(gig.date+"T12:00:00").toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"})}</div>}
               <div style={{ color:C.grayDim, fontSize:11 }}>{playlists.filter(p=>p.gig_id===gig.id).length} Playlists</div>
             </div>
-            {canEdit&&<div onClick={e=>e.stopPropagation()}>
+            {canManage&&<div onClick={e=>e.stopPropagation()}>
               <Btn variant="danger" size="sm" onClick={()=>setConfirm({item:gig})}>✕</Btn>
             </div>}
           </div>

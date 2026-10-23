@@ -4,7 +4,7 @@ import { Btn, Field, Sel, Modal, Confirm, Spinner } from "./ui";
 import { SongRow } from "./songRow";
 import { ChartEditor, emptyChart, packSpecialties, songNotes, songChart, songDuration, songMeter, formatDurationField } from "./chart";
 
-function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, canEdit, onRefresh, show }) {
+function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, canEdit, canDelete, onRefresh, show }) {
   const [search, setSearch]   = useState("");
   const [form, setForm]       = useState({ title:"", artist:"", bpm:"", duration:"", meter:"4/4", drummer:band.drummers[0]||"Tom", specialties:"", chart: emptyChart() });
   const [editSong, setEdit]   = useState(null);
@@ -86,7 +86,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
           <div style={{ color:C.grayDim, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase" }}>Songs</div>
         </div>
       </div>
-      <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+      {(canEdit || canDelete) && <div style={{ display:"flex", gap:8, alignItems:"center" }}>
         <Btn variant={selectMode?"primary":"outline"} size="sm" onClick={(e)=>{if(e){e.stopPropagation();e.preventDefault();}setSelectMode(m=>!m);setSelected([]);}}>
           {selectMode ? "✕ Auswahl beenden" : "☑ Auswählen"}
         </Btn>
@@ -95,11 +95,11 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
             <Btn variant="ghost" size="sm" onClick={(e)=>{if(e){e.stopPropagation();}setSelected(filtered.map(s=>s.id));}}>Alle</Btn>
             <Btn variant="ghost" size="sm" onClick={(e)=>{if(e){e.stopPropagation();}setSelected([]);}}>Keine</Btn>
             <span style={{ color:C.gray, fontSize:12, marginLeft:"auto" }}>{selected.length} gewählt</span>
-            <Btn variant="outline" size="sm" disabled={!selected.length} onClick={(e)=>{if(e){e.stopPropagation();}setShowCopy(true);}}>⎘ In Band</Btn>
-            <Btn variant="danger" size="sm" disabled={!selected.length} onClick={(e)=>{if(e){e.stopPropagation();}setBulkConfirm(true);}}>🗑 Löschen</Btn>
+            {canEdit && <Btn variant="outline" size="sm" disabled={!selected.length} onClick={(e)=>{if(e){e.stopPropagation();}setShowCopy(true);}}>⎘ In Band</Btn>}
+            {canDelete && <Btn variant="danger" size="sm" disabled={!selected.length} onClick={(e)=>{if(e){e.stopPropagation();}setBulkConfirm(true);}}>🗑 Löschen</Btn>}
           </>
         )}
-      </div>
+      </div>}
       <Field value={search} onChange={setSearch} placeholder="Suchen…"/>
       <div style={{display:"flex",gap:6}}>
         {[{k:"none",l:"Standard"},{k:"title",l:"A–Z Titel"},{k:"artist",l:"A–Z Interpret"}].map(({k,l})=>(
@@ -157,7 +157,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
             )}
             <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
             <SongRow song={song} showDrummer={(band.drummers||[]).length>1}
-              onDelete={canEdit?(s=>setConfirm(s)):undefined}
+              onDelete={canDelete?(s=>setConfirm(s)):undefined}
               onEdit={canEdit?(s=>setEdit({...s,bpm:String(s.bpm),duration:formatDurationField(songDuration(s)) || fmtDuration(s.duration),meter:songMeter(s)||s.meter||"4/4",specialties:songNotes(s),chart:songChart(s)})):undefined}
               extra={canEdit?(<button onClick={e=>{e.stopPropagation();setAddTarget(song);setAtGig("");setAtPl("");setAtSet("Set 1");}}
                 style={{background:"transparent",border:"none",color:C.grayDim,cursor:"pointer",padding:"6px 10px",fontSize:16}}
