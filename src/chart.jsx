@@ -180,8 +180,18 @@ export function songChart(song) {
 }
 
 export function songDuration(song) {
+  const packed = unpackSpecialties(song && song.specialties).duration || 0;
+  if (packed) return packed;
+  if (song && song.duration != null && song.duration !== "") return Math.max(0, parseInt(song.duration, 10) || 0);
   if (song && song.duration_sec) return Math.max(0, parseInt(song.duration_sec, 10) || 0);
-  return unpackSpecialties(song && song.specialties).duration || 0;
+  return 0;
+}
+
+export function songMeter(song) {
+  const fromChart = songChart(song).meter;
+  if (fromChart) return fromChart;
+  if (song && song.meter) return String(song.meter);
+  return "";
 }
 
 export { ChartLine, ChartStrip, ChartEditor, chartPrintText } from "./chartUi";

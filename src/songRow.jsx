@@ -34,7 +34,7 @@ function SongRow({ song, onDelete, onEdit, pos, draggable, onDragStart, onDrop, 
       <div style={{ color:C.gray, fontSize:12, ...(columns ? { whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" } : null) }}>
         {song.artist}
         {song.bpm>0&&<span style={{ color:active?C.teal:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6, transition:"color .2s" }}>{song.bpm} BPM</span>}
-        {fmtDuration(song.duration)&&<span style={{ color:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6 }}>{fmtDuration(song.duration)}</span>}
+        {fmtDuration(songDuration(song))&&<span style={{ color:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6 }}>{fmtDuration(songDuration(song))}</span>}
         {songDuration(song)>0&&<span style={{ color:C.grayDim, fontFamily:"'Space Mono',monospace", fontSize:11, marginLeft:6 }}>{formatDuration(songDuration(song))}</span>}
       </div>
       <ChartLine chart={chart}/>

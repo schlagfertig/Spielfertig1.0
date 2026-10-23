@@ -13,7 +13,7 @@ function pickErr(res) {
   return String(raw).substring(0, 220);
 }
 
-function AuthScreen({ onAuth }) {
+function AuthScreen({ onAuth, onLocal }) {
   const [mode, setMode]       = useState("login");
   const [email, setEmail]     = useState("");
   const [password, setPass]   = useState("");
@@ -92,6 +92,11 @@ function AuthScreen({ onAuth }) {
               <Btn full onClick={handle} disabled={loading} style={{ padding:"13px 18px", borderRadius:6, marginTop:4 }}>
                 {loading ? "Lädt…" : mode==="login" ? "Anmelden" : "Konto erstellen"}
               </Btn>
+              {onLocal && (
+                <button type="button" onClick={onLocal} style={{ background:"none", border:"none", color:"#5a666c", fontSize:13, marginTop:4, cursor:"pointer", textDecoration:"underline", fontFamily:"inherit" }}>
+                  nur auf diesem gerät weiter
+                </button>
+              )}
             </div>
           </div>
         </div>

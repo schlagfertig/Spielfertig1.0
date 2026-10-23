@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { C, sb, applyTheme, getLogo, pageWash } from "./core";
-import { SealIcon, Spinner, Toast } from "./ui";
+import { SealIcon, Spinner, Toast, Btn } from "./ui";
 import { AuthScreen } from "./auth";
 import { BandDetail, Landing } from "./bands";
 import { SharedView } from "./shared";
 import { LegalView } from "./legal";
+import { readDevicePack, fingerprint, alreadyTaken, markTaken, dismissedLater, dismissLater, packCounts, importPackIntoAccount } from "./takeover";
 
 function readCache() {
   try { const raw = localStorage.getItem("sf_cache"); return raw ? JSON.parse(raw) : null; }
@@ -23,6 +24,8 @@ export default function App() {
   const [gigIntent, setGigIntent] = useState(null);
   const [loading,       setLoading]= useState(!_cache);
   const [toast,         setToast]  = useState(null);
+  const [offer,         setOffer]  = useState(null);
+  const [taking,        setTaking] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem("sf_theme") || "dark");
   applyTheme(theme);
   const toggleTheme = () => { const t = theme==="dark"?"light":"dark"; localStorage.setItem("sf_theme",t); setTheme(t); };
@@ -38,10 +41,28 @@ export default function App() {
     }
   }, []);
 
-  useEffect(()=>{
-    if (shareId || legalPage) { setLoading(false); return; }
+  const startLocal = () => {
+    try { sessionStorage.setItem("sf_lokal", "1"); } catch (_) {}
     sb.enableLocal();
     setUser({ id: "local", email: "Lokal" });
+  };
+
+  useEffect(()=>{
+    if (shareId || legalPage) { setLoading(false); return; }
+    const lokal = params.get("lokal") === "1" || (() => { try { return sessionStorage.getItem("sf_lokal") === "1"; } catch (_) { return false; } })();
+    if (lokal) { startLocal(); return; }
+    try {
+      const token = localStorage.getItem("sf_token");
+      const raw = localStorage.getItem("sf_user");
+      const saved = raw ? JSON.parse(raw) : null;
+      if (token && saved && saved.id) {
+        sb._token = token;
+        sb._local = false;
+        setUser({ id: saved.id, email: saved.email || "" });
+        return;
+      }
+    } catch (_) {}
+    setLoading(false);
   },[shareId, legalPage]);
 
   const loadAll = useCallback(async () => {
@@ -79,8 +100,53 @@ export default function App() {
 
   useEffect(()=>{ if(user && !shareId && !legalPage) { joinPendingInvites().then(loadAll); } },[user,loadAll,joinPendingInvites,shareId,legalPage]);
 
+  useEffect(() => {
+    if (!user || user.id === "local" || shareId || legalPage) { setOffer(null); return; }
+    const pack = readDevicePack();
+    if (!pack) { setOffer(null); return; }
+    const hash = fingerprint(pack);
+    if (alreadyTaken(user.id, hash) || dismissedLater(user.id, hash)) { setOffer(null); return; }
+    setOffer({ pack, hash });
+  }, [user, shareId, legalPage]);
+
   const handleAuth = (u) => { setUser(u); };
-  const handleLogout = async () => { show("Lokalmodus — Daten bleiben auf diesem Gerät. Nichts abzumelden."); };
+  const handleLogout = async () => {
+    if (!user || user.id === "local") {
+      show("daten bleiben auf diesem gerät.");
+      return;
+    }
+    await sb.auth.signOut();
+    setUser(null);
+    setBands([]); setSongs([]); setGigs([]); setPls([]); setPS([]);
+    setSelBand(null);
+    setOffer(null);
+  };
+  const leaveLocal = () => {
+    try { sessionStorage.removeItem("sf_lokal"); } catch (_) {}
+    const url = new URL(window.location.href);
+    url.searchParams.delete("lokal");
+    window.location.href = url.toString();
+  };
+  const runTakeover = async () => {
+    if (!offer || !user || taking) return;
+    setTaking(true);
+    const result = await importPackIntoAccount(sb, offer.pack, user.id);
+    if (result.ok) {
+      markTaken(user.id, offer.hash);
+      setOffer(null);
+      show("liegt jetzt in deinem konto. auf dem gerät bleibt eine kopie.");
+      await loadAll();
+    } else if (result.leftover && result.leftover.length) {
+      show("hat nicht geklappt. ein teil liegt vielleicht noch im konto.", "error");
+    } else {
+      show("hat nicht geklappt. es wurde nichts halb gespeichert.", "error");
+    }
+    setTaking(false);
+  };
+  const offerLater = () => {
+    if (offer && user) dismissLater(user.id, offer.hash);
+    setOffer(null);
+  };
 
   if (legalPage === "impressum" || legalPage === "datenschutz") return <LegalView page={legalPage}/>;
   if (shareId) return <SharedView playlistId={shareId}/>;
@@ -92,7 +158,7 @@ export default function App() {
     </div>
   );
 
-  if (!user) return <AuthScreen onAuth={handleAuth}/>;
+  if (!user) return <AuthScreen onAuth={handleAuth} onLocal={startLocal}/>;
 
   return (
     <>
@@ -117,7 +183,35 @@ export default function App() {
         <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={bands} user={user}
           onBack={()=>{setSelBand(null);setGigIntent(null);}} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme} startGig={gigIntent} onGigConsumed={()=>setGigIntent(null)}/>
       ) : (
-        <Landing bands={bands} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} user={user} onSelect={setSelBand} onOpenNext={(band,gig)=>{setGigIntent(gig);setSelBand(band);}} onLogout={handleLogout} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme}/>
+        <Landing bands={bands} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} user={user} onSelect={setSelBand} onOpenNext={(band,gig)=>{setGigIntent(gig);setSelBand(band);}} onLogout={handleLogout} onLeaveLocal={leaveLocal} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme}/>
+      )}
+
+      {offer && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
+          <div style={{ background:C.bgCard, border:"1px solid "+C.tealBorder, borderRadius:14, padding:22, maxWidth:420, width:"100%" }}>
+            <p style={{ color:C.white, fontSize:16, fontWeight:700, lineHeight:1.45, marginBottom:10 }}>
+              daten von diesem gerät in dein konto übernehmen?
+            </p>
+            <p style={{ color:C.gray, fontSize:14, lineHeight:1.5, marginBottom:8 }}>
+              {(() => {
+                const n = packCounts(offer.pack);
+                const bits = [];
+                if (n.bands) bits.push(n.bands + (n.bands === 1 ? " band" : " bands"));
+                if (n.songs) bits.push(n.songs + (n.songs === 1 ? " song" : " songs"));
+                if (n.gigs) bits.push(n.gigs + (n.gigs === 1 ? " gig" : " gigs"));
+                if (n.playlists) bits.push(n.playlists + (n.playlists === 1 ? " setlist" : " setlists"));
+                return "hier liegen " + (bits.join(", ") || "ein paar sachen") + ".";
+              })()}
+            </p>
+            <p style={{ color:C.grayDim, fontSize:13, lineHeight:1.5, marginBottom:16 }}>
+              alles wird neu in deinem konto angelegt. auf dem gerät bleibt eine kopie.
+            </p>
+            <div style={{ display:"flex", gap:8, justifyContent:"flex-end", flexWrap:"wrap" }}>
+              <Btn variant="ghost" onClick={offerLater} disabled={taking} style={{ textTransform:"none", letterSpacing:"0.01em" }}>später</Btn>
+              <Btn onClick={runTakeover} disabled={taking} style={{ textTransform:"none", letterSpacing:"0.01em" }}>{taking ? "übernehme…" : "übernehmen"}</Btn>
+            </div>
+          </div>
+        </div>
       )}
 
       {toast&&<Toast msg={toast.msg} type={toast.type} onClose={()=>setToast(null)}/>}

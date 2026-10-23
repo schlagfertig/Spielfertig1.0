@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
-import { C, sb, SETS, encodeShare, fmtDuration, sumDuration } from "./core";
+import { C, sb, SETS, encodeShare, fmtDuration } from "./core";
+import { songDuration } from "./chart";
 import { Btn, Field, SealLine, Spinner, useIsNarrow, useSwipeBack, ToolTile } from "./ui";
 import { SongRowMove } from "./songRow";
 import { exportPDF } from "./songPdf";
@@ -47,8 +48,8 @@ function PlaylistEditor({ playlist, allSongs, playlistSongs, onBack, onRefresh, 
   const setCounts = SETS.reduce((a,s)=>{a[s]=mySongs.filter(ps=>ps.set_name===s).length;return a;},{});
   const setDurations = SETS.reduce((a,s)=>{
     const list = mySongs.filter(ps=>ps.set_name===s).map(hydrate);
-    a[s] = sumDuration(list);
-    a[s+"_missing"] = list.filter(x=>!parseInt(x.duration,10)).length;
+    a[s] = list.reduce((sum, x) => sum + songDuration(x), 0);
+    a[s+"_missing"] = list.filter(x=>!songDuration(x)).length;
     return a;
   },{});
   const lastRegular = [...REGULAR_SETS].reverse().find(s => (setCounts[s]||0) > 0) || "Set 1";

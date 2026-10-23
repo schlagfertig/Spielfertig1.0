@@ -277,6 +277,20 @@ const sb = {
       headers: sb.headers(),
     }, 20000);
   },
+  async deleteStrict(table, filter) {
+    if (sb._local) {
+      await sb.delete(table, filter);
+      return;
+    }
+    const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
+      method: "DELETE",
+      headers: sb.headers(),
+    }, 20000);
+    if (!res.ok) {
+      const json = await parseJsonSafe(res);
+      throw new Error(json.message || json.msg || json.error_description || "löschen fehlgeschlagen");
+    }
+  },
   auth: {
     async signUp(email, password) {
       const res = await fetchWithTimeout(SUPABASE_URL + "/auth/v1/signup", {
