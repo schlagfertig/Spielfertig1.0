@@ -6,7 +6,7 @@ import { GigDock } from "./gigDock";
 import { GigNowCard } from "./gigNow";
 import { SongFold, FoldBtn } from "./songPanels";
 import { useViewPrefs, ViewPrefBar } from "./viewPrefs";
-import { ChartStrip, hasChart, songChart, songNotes, packSpecialties, chartSummary } from "./chart";
+import { ChartStrip, hasChart, songChart, songNotes, songDuration, songMeter, packSpecialties, chartSummary } from "./chart";
 import { useWakeLock } from "./wakeLock";
 
 const REGULAR_SETS = SETS.filter(s => s !== "Zugaben");
@@ -295,7 +295,7 @@ function GigMode({ playlist, songsInSet, setCounts, setDurations, activeSet, onS
       </div>
       {showDock && (
         <GigDock
-          current={current ? { ...current, bpm: bpmOverride[current.id] || current.bpm, meter: meterOverride[current.id] || current.meter || "4/4" } : current}
+          current={current ? { ...current, bpm: bpmOverride[current.id] || current.bpm, meter: meterOverride[current.id] || songMeter(current) || "4/4" } : current}
           nextSong={nextSong}
           onTapBpm={async (bpm) => {
             if (!current) return;
@@ -305,10 +305,14 @@ function GigMode({ playlist, songsInSet, setCounts, setDurations, activeSet, onS
           onCycleMeter={async () => {
             if (!current) return;
             const meters = ["4/4", "3/4", "6/8", "2/4", "5/4"];
-            const now = meterOverride[current.id] || current.meter || "4/4";
+            const now = meterOverride[current.id] || songMeter(current) || "4/4";
             const next = meters[(meters.indexOf(now) + 1) % meters.length];
             setMeterOverride(o => ({ ...o, [current.id]: next }));
-            try { await sb.update("songs", { meter: next }, "id=eq." + current.id); if (onRefresh) onRefresh(); } catch (_) {}
+            try {
+              const chart = { ...songChart(current), meter: next };
+              await sb.update("songs", { specialties: packSpecialties(songNotes(current), chart, songDuration(current)) }, "id=eq." + current.id);
+              if (onRefresh) onRefresh();
+            } catch (_) {}
           }}
           bpmNow={bpmNow}
           bpmNext={bpmNext}

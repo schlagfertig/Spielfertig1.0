@@ -2,7 +2,7 @@ import { useState } from "react";
 import { C, sb, SETS, parseDuration, fmtDuration } from "./core";
 import { Btn, Field, Sel, Modal, Confirm, Spinner } from "./ui";
 import { SongRow } from "./songRow";
-import { ChartEditor, emptyChart, packSpecialties, songNotes, songChart } from "./chart";
+import { ChartEditor, emptyChart, packSpecialties, songNotes, songChart, songDuration, songMeter, formatDurationField } from "./chart";
 
 function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, canEdit, onRefresh, show }) {
   const [search, setSearch]   = useState("");
@@ -36,7 +36,9 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
   const handleAdd = async () => {
     if (!form.title||!form.artist||!form.bpm) return;
     setSaving(true);
-    await sb.insert("songs", { band_id:band.id, title:form.title, artist:form.artist, bpm:parseInt(form.bpm), duration:parseDuration(form.duration), meter:form.meter||"4/4", drummer:form.drummer, specialties:packSpecialties(form.specialties, form.chart) });
+    const chart = { ...(form.chart || emptyChart()), meter: form.meter || (form.chart && form.chart.meter) || "" };
+    const row = await sb.insert("songs", { band_id:band.id, title:form.title, artist:form.artist, bpm:parseInt(form.bpm, 10) || 0, drummer:form.drummer, specialties:packSpecialties(form.specialties, chart, parseDuration(form.duration)) });
+    if (!row || row.id == null || row.message || row.code) { show("song konnte nicht gespeichert werden.", "error"); setSaving(false); return; }
     setForm({ title:"", artist:"", bpm:"", duration:"", meter:"4/4", drummer:band.drummers[0]||"Tom", specialties:"", chart: emptyChart() });
     await onRefresh(); show("Song hinzugefügt!"); setSaving(false); setAddOpen(false);
   };
@@ -45,7 +47,8 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
     await onRefresh(); show("Song gelöscht."); setConfirm(null);
   };
   const handleUpdate = async () => {
-    await sb.update("songs", { title:editSong.title, artist:editSong.artist, bpm:parseInt(editSong.bpm), duration:parseDuration(editSong.duration), meter:editSong.meter||"4/4", drummer:editSong.drummer, specialties:packSpecialties(editSong.specialties, editSong.chart), lyrics:editSong.lyrics||null }, "id=eq."+editSong.id);
+    const chart = { ...(editSong.chart || emptyChart()), meter: editSong.meter || (editSong.chart && editSong.chart.meter) || "" };
+    await sb.update("songs", { title:editSong.title, artist:editSong.artist, bpm:parseInt(editSong.bpm, 10) || 0, drummer:editSong.drummer, specialties:packSpecialties(editSong.specialties, chart, parseDuration(editSong.duration)), lyrics:editSong.lyrics||null }, "id=eq."+editSong.id);
     await onRefresh(); show("Song gespeichert!"); setEdit(null);
   };
   const handleBulkDelete = async () => {
@@ -61,7 +64,8 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
     const targetId = parseInt(copyTarget);
     const toCopy = bandSongs.filter(s=>selected.includes(s.id));
     for (const s of toCopy) {
-      await sb.insert("songs", { band_id: targetId, title: s.title, artist: s.artist, bpm: s.bpm, duration: s.duration || null, meter: s.meter || "4/4", drummer: s.drummer, specialties: s.specialties || null });
+      const chart = { ...songChart(s), meter: songMeter(s) || (songChart(s).meter || "") };
+      await sb.insert("songs", { band_id: targetId, title: s.title, artist: s.artist, bpm: s.bpm, drummer: s.drummer, lyrics: s.lyrics || null, specialties: packSpecialties(songNotes(s), chart, songDuration(s)) });
     }
     await onRefresh();
     show(toCopy.length + " Songs kopiert.");
@@ -154,7 +158,7 @@ function SongDatabase({ band, songs, gigs, playlists, playlistSongs, allBands, c
             <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
             <SongRow song={song} showDrummer={(band.drummers||[]).length>1}
               onDelete={canEdit?(s=>setConfirm(s)):undefined}
-              onEdit={canEdit?(s=>setEdit({...s,bpm:String(s.bpm),duration:fmtDuration(s.duration),specialties:songNotes(s),chart:songChart(s)})):undefined}
+              onEdit={canEdit?(s=>setEdit({...s,bpm:String(s.bpm),duration:formatDurationField(songDuration(s)) || fmtDuration(s.duration),meter:songMeter(s)||s.meter||"4/4",specialties:songNotes(s),chart:songChart(s)})):undefined}
               extra={canEdit?(<button onClick={e=>{e.stopPropagation();setAddTarget(song);setAtGig("");setAtPl("");setAtSet("Set 1");}}
                 style={{background:"transparent",border:"none",color:C.grayDim,cursor:"pointer",padding:"6px 10px",fontSize:16}}
                 title="Zur Setlist hinzufügen"

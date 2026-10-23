@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C, sb, getBandLogo, bandLogoImgStyle, getLogo, glassStyle, pageWash } from "./core";
+import { packFromExport, importPackIntoAccount } from "./takeover";
 import { Btn, Field, Badge, Modal, SealLine, Spinner, BrandWordmark, LiveMark } from "./ui";
 import { LegalLinks } from "./legal";
 
@@ -142,7 +143,7 @@ function shortDate(dateStr) {
   return String(d.getDate()).padStart(2,"0") + "." + String(d.getMonth()+1).padStart(2,"0");
 }
 
-function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect, onOpenNext, onLogout, onRefresh, show, theme, toggleTheme }) {
+function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect, onOpenNext, onLogout, onLeaveLocal, onRefresh, show, theme, toggleTheme }) {
   const [showAddBand, setShowAddBand] = useState(false);
   const [delBand, setDelBand] = useState(null);
   const [delSaving, setDelSaving] = useState(false);
@@ -184,19 +185,38 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
     }
   };
 
+  const accountMode = user && user.id !== "local";
   const runImport = async () => {
     if (!importText.trim()) return;
     setImporting(true);
     try {
       const payload = JSON.parse(importText);
-      const res = sb.importBackup(payload);
-      await onRefresh();
-      show("Import fertig: " + res.bands + " Bands, " + res.songs + " Songs.");
-      setShowImport(false);
-      setImportText("");
-      setShowAccount(false);
+      if (accountMode) {
+        const pack = packFromExport(payload);
+        const res = await importPackIntoAccount(sb, pack, user.id);
+        if (!res.ok) {
+          show(res.leftover && res.leftover.length
+            ? "hat nicht geklappt. ein teil liegt vielleicht noch im konto."
+            : "hat nicht geklappt. es wurde nichts halb gespeichert.", "error");
+        } else {
+          await onRefresh();
+          show("liegt jetzt in deinem konto.");
+          setShowImport(false);
+          setImportText("");
+          setShowAccount(false);
+        }
+      } else {
+        const res = sb.importBackup(payload);
+        await onRefresh();
+        show("Import fertig: " + res.bands + " Bands, " + res.songs + " Songs.");
+        setShowImport(false);
+        setImportText("");
+        setShowAccount(false);
+      }
     } catch(err) {
-      show("Import-Fehler: " + (err&&err.message ? err.message : "ungültiges Backup"), "error");
+      show(accountMode
+        ? ((err && err.message) ? err.message : "die datei konnte nicht gelesen werden")
+        : ("Import-Fehler: " + (err&&err.message ? err.message : "ungültiges Backup")), "error");
     }
     setImporting(false);
   };
@@ -236,7 +256,10 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           <Btn full variant="outline" onClick={()=>{ setShowAccount(false); setShowImport(true); setImportText(""); }}>Backup importieren</Btn>
           <SealLine/>
           {user && user.id === "local" ? (
-            <div style={{ color:C.grayDim, fontSize:12, lineHeight:1.5 }}>Lokalmodus — Songs und Setlists bleiben auf diesem Gerät. Sichere sie über Backup.</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              <div style={{ color:C.grayDim, fontSize:13, lineHeight:1.5 }}>nur auf diesem gerät. songs und setlists bleiben hier. sichere sie über backup, oder melde dich mit dem konto an.</div>
+              {onLeaveLocal && <Btn full onClick={onLeaveLocal} style={{ textTransform:"none", letterSpacing:"0.01em" }}>mit konto anmelden</Btn>}
+            </div>
           ) : (<>
           <div style={{ color:C.teal, fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase" }}>Passwort ändern</div>
           <Field value={newPw} onChange={setNewPw} type="password" placeholder="Neues Passwort…"/>
@@ -405,8 +428,10 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
       {showImport && (
         <Modal title="Backup importieren" onClose={()=>setShowImport(false)}>
           <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            <div style={{ color:C.grayDim, fontSize:12, lineHeight:1.5 }}>
-              Füge das gesicherte JSON ein oder wähle die Datei. Vorhandene Daten auf diesem Gerät werden ersetzt.
+            <div style={{ color:C.grayDim, fontSize:13, lineHeight:1.5 }}>
+              {accountMode
+                ? "datei ins konto laden. das legt alles noch einmal an. auf dem gerät wird nichts gelöscht."
+                : "Füge das gesicherte JSON ein oder wähle die Datei. Vorhandene Daten auf diesem Gerät werden ersetzt."}
             </div>
             <input type="file" accept="application/json,.json,.txt" onChange={(e)=>{
               const file = e.target.files && e.target.files[0];
