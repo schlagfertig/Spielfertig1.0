@@ -1,0 +1,19 @@
+{
+  "appId": "de.schlagfertig.live",
+  "appName": "Schlagfertig Live",
+  "webDir": "dist",
+  "backgroundColor": "#161a1d",
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#161a1d"
+  },
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#161a1d"
+    }
+  }
+}
