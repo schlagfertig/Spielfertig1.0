@@ -4,7 +4,6 @@
   "description": "Setlist & Songdatenbank · Thomas Schuster · SCHLAGFERTIG‽",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#5cc8b8",
   "icons": [

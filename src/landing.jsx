@@ -143,7 +143,7 @@ function shortDate(dateStr) {
   return String(d.getDate()).padStart(2,"0") + "." + String(d.getMonth()+1).padStart(2,"0");
 }
 
-function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect, onOpenNext, onLogout, onLeaveLocal, onRefresh, show, theme, toggleTheme }) {
+function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect, onOpenNext, onLogout, onLeaveLocal, onDeleteAccount, onRefresh, show, theme, toggleTheme }) {
   const [showAddBand, setShowAddBand] = useState(false);
   const [delBand, setDelBand] = useState(null);
   const [delSaving, setDelSaving] = useState(false);
@@ -157,6 +157,9 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
   const [newPw, setNewPw] = useState("");
   const [newPw2, setNewPw2] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
+  const [delStep, setDelStep] = useState(0);
+  const [delBusy, setDelBusy] = useState(false);
+  const [delError, setDelError] = useState("");
 
   const openBackup = () => {
     setBackupIds((bands||[]).map(b => b.id));
@@ -221,6 +224,27 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
     setImporting(false);
   };
 
+  const openDeleteAccount = () => {
+    setDelError("");
+    setDelStep(1);
+  };
+  const cancelDeleteAccount = () => {
+    if (delBusy) return;
+    setDelStep(0);
+    setDelError("");
+  };
+  const runDeleteAccount = async () => {
+    if (delBusy || !onDeleteAccount) return;
+    setDelBusy(true);
+    setDelError("");
+    try {
+      await onDeleteAccount();
+    } catch (_) {
+      setDelError("hat nicht geklappt. dein konto ist noch da.");
+      setDelBusy(false);
+    }
+  };
+
   const handleDeleteBand = async () => {
     setDelSaving(true);
     await sb.delete("bands", "id=eq." + delBand.id);
@@ -243,7 +267,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
               style={{ width:36, height:36, borderRadius:"50%", background:"rgba(92,200,184,0.12)", border:"1px solid rgba(255,255,255,0.22)", color:C.teal, fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
               {theme==="dark" ? "☀️" : "🌙"}
             </button>
-            <Btn variant="outline" size="sm" onClick={()=>{setShowAccount(true);setNewPw("");setNewPw2("");}}>Konto</Btn>
+            <Btn variant="outline" size="sm" onClick={()=>{setShowAccount(true);setNewPw("");setNewPw2("");setDelStep(0);setDelError("");}}>Konto</Btn>
           </div>
         </div>
       </header>
@@ -277,6 +301,9 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
           }}>{pwSaving?"Speichere…":"Passwort speichern"}</Btn>
           {newPw&&newPw.length<6&&<div style={{ color:C.grayDim, fontSize:11 }}>Mindestens 6 Zeichen.</div>}
           {newPw&&newPw2&&newPw!==newPw2&&<div style={{ color:C.red, fontSize:11 }}>Passwörter stimmen nicht überein.</div>}
+          <SealLine/>
+          <div style={{ color:C.grayDim, fontSize:13, lineHeight:1.5 }}>konto löschen nimmt deine bands mit songs und setlists mit. in bands von anderen bist du danach nicht mehr dabei.</div>
+          <Btn full variant="danger" onClick={openDeleteAccount} style={{ textTransform:"none", letterSpacing:"0.01em" }}>konto löschen</Btn>
           </>)}
           <SealLine/>
           <Btn full variant="ghost" onClick={onLogout}>{user && user.id === "local" ? "Lokal" : "Abmelden"}</Btn>
@@ -445,6 +472,27 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
             <Btn full disabled={!importText.trim()||importing} onClick={runImport}>{importing ? "Importiere…" : "Importieren"}</Btn>
           </div>
         </Modal>
+      )}
+      {delStep > 0 && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1100, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
+          <div style={{ ...glassStyle(), borderRadius:22, padding:28, maxWidth:360, width:"90%", border: delStep===2 ? "1px solid "+C.redBorder : undefined }}>
+            <p style={{ color: delStep===2 ? C.red : C.white, fontSize:16, fontWeight:700, marginBottom:8 }}>
+              {delStep===2 ? "wirklich endgültig?" : "konto löschen?"}
+            </p>
+            <p style={{ color:C.gray, fontSize:14, lineHeight:1.5, marginBottom: delError ? 10 : 18 }}>
+              {delStep===2
+                ? "danach ist das konto weg. anmelden geht damit nicht mehr."
+                : "deine bands, songs und setlists werden gelöscht. in bands von anderen bist du nicht mehr dabei. das geht nicht zurück."}
+            </p>
+            {delError && <p style={{ color:C.red, fontSize:13, lineHeight:1.45, marginBottom:16 }}>{delError}</p>}
+            <div style={{ display:"flex", gap:8, justifyContent:"flex-end", flexWrap:"wrap" }}>
+              <Btn variant="ghost" onClick={cancelDeleteAccount} disabled={delBusy} style={{ textTransform:"none", letterSpacing:"0.01em" }}>abbrechen</Btn>
+              {delStep===2
+                ? <Btn variant="danger" onClick={runDeleteAccount} disabled={delBusy} style={{ textTransform:"none", letterSpacing:"0.01em" }}>{delBusy ? "lösche…" : "endgültig löschen"}</Btn>
+                : <Btn variant="danger" onClick={()=>{ setDelError(""); setDelStep(2); }} disabled={delBusy} style={{ textTransform:"none", letterSpacing:"0.01em" }}>weiter</Btn>}
+            </div>
+          </div>
+        </div>
       )}
       {delBand && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.85)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" }}>

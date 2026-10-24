@@ -13,7 +13,7 @@ function pickErr(res) {
   return String(raw).substring(0, 220);
 }
 
-function AuthScreen({ onAuth, onLocal }) {
+function AuthScreen({ onAuth, onLocal, notice }) {
   const [mode, setMode]       = useState("login");
   const [email, setEmail]     = useState("");
   const [password, setPass]   = useState("");
@@ -73,6 +73,9 @@ function AuthScreen({ onAuth, onLocal }) {
             </div>
           </div>
 
+          {notice && (
+            <div style={{ color:C.teal, fontSize:14, lineHeight:1.45, textAlign:"center", marginBottom:14 }}>{notice}</div>
+          )}
           <div style={{ background:"rgba(13,13,13,0.88)", border:"1px solid #1c1c1c", borderRadius:14, padding:"22px 20px 20px", backdropFilter:"blur(8px)" }}>
             <SealLine/>
             <div style={{ display:"flex", gap:6, margin:"16px 0 14px" }}>

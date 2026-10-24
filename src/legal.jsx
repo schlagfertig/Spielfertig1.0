@@ -112,6 +112,7 @@ function Datenschutz() {
       <P>Kontodaten und App-Inhalte bleiben gespeichert, solange das Konto besteht bzw. die Band die Daten behält. Nach Löschung eines Songs, einer Band oder des Kontos entfernen wir die zugehörigen Datensätze, soweit keine gesetzlichen Aufbewahrungspflichten entgegenstehen. Server-Logs werden vom Hoster üblich nach wenigen Tagen bis Wochen gelöscht.</P>
       <H>7. Deine Rechte</H>
       <P>Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch gegen Verarbeitungen auf Basis berechtigten Interesses. Dafür reicht eine E-Mail an {LEGAL.email}.</P>
+      <P>Das Konto kannst du in der App selbst löschen. Die E-Mail bleibt für die anderen Rechte.</P>
       <P>Außerdem hast du das Recht, dich bei einer Datenschutzaufsichtsbehörde zu beschweren. Zuständig ist in der Regel die Behörde deines Wohnsitzes in Deutschland.</P>
       <H>8. Pflichtangaben</H>
       <P>Ohne E-Mail und Passwort ist kein Konto möglich. Song- und Setlist-Inhalte sind freiwillig, ohne sie bleibt die App aber leer.</P>
