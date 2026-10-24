@@ -1,6 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
+import { initNative } from './native.js'
+
+initNative()
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
