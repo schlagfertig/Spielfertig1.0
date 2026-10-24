@@ -1,5 +1,5 @@
 // SCHLAGFERTIG LIVE – Service Worker
-const CACHE = 'spielfertig-v78';
+const CACHE = 'spielfertig-v81';
 const PRECACHE = ['/', '/index.html', '/Logo-dark.png', '/Logo-light.png', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -17,7 +17,7 @@ self.addEventListener('fetch', e => {
   try { url = new URL(req.url); } catch (_) { return; }
   if (url.origin !== self.location.origin) return;
   if (url.hostname.includes('supabase.co')) return;
-  const isDocOrScript = req.destination === 'document' || req.destination === 'script' || req.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html') || url.pathname.endsWith('.jsx') || url.pathname.endsWith('.js');
+  const isDocOrScript = req.destination === 'document' || req.destination === 'script' || req.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html') || url.pathname.endsWith('.jsx') || url.pathname.endsWith('.js') || url.pathname.endsWith('/manifest.json');
   if (isDocOrScript) {
     e.respondWith(fetch(req).then(response => {
       if (response && response.ok) { const clone = response.clone(); caches.open(CACHE).then(c => c.put(req, clone)); }

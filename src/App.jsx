@@ -28,6 +28,7 @@ export default function App() {
   const [offer,         setOffer]  = useState(null);
   const [taking,        setTaking] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem("sf_theme") || "dark");
+  const [authNotice, setAuthNotice] = useState("");
   applyTheme(theme);
   const toggleTheme = () => { const t = theme==="dark"?"light":"dark"; localStorage.setItem("sf_theme",t); setTheme(t); };
   const show = (msg, type="success") => setToast({msg,type});
@@ -114,7 +115,7 @@ export default function App() {
     setOffer({ pack, hash });
   }, [user, shareId, legalPage]);
 
-  const handleAuth = (u) => { setUser(u); };
+  const handleAuth = (u) => { setAuthNotice(""); setUser(u); };
   const handleLogout = async () => {
     if (!user || user.id === "local") {
       show("daten bleiben auf diesem gerät.");
@@ -125,6 +126,14 @@ export default function App() {
     setBands([]); setSongs([]); setGigs([]); setPls([]); setPS([]);
     setSelBand(null);
     setOffer(null);
+  };
+  const handleDeleteAccount = async () => {
+    await sb.auth.deleteAccount();
+    setBands([]); setSongs([]); setGigs([]); setPls([]); setPS([]); setMembers([]);
+    setSelBand(null);
+    setOffer(null);
+    setUser(null);
+    setAuthNotice("dein konto ist gelöscht.");
   };
   const leaveLocal = () => {
     try { sessionStorage.removeItem("sf_lokal"); } catch (_) {}
@@ -163,7 +172,7 @@ export default function App() {
     </div>
   );
 
-  if (!user) return <AuthScreen onAuth={handleAuth} onLocal={startLocal}/>;
+  if (!user) return <AuthScreen onAuth={handleAuth} onLocal={startLocal} notice={authNotice}/>;
 
   return (
     <>
@@ -188,7 +197,7 @@ export default function App() {
         <BandDetail band={selBand} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} allBands={bands} members={members} user={user}
           onBack={()=>{setSelBand(null);setGigIntent(null);}} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme} startGig={gigIntent} onGigConsumed={()=>setGigIntent(null)}/>
       ) : (
-        <Landing bands={bands} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} user={user} onSelect={setSelBand} onOpenNext={(band,gig)=>{setGigIntent(gig);setSelBand(band);}} onLogout={handleLogout} onLeaveLocal={leaveLocal} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme}/>
+        <Landing bands={bands} songs={songs} gigs={gigs} playlists={playlists} playlistSongs={playlistSongs} user={user} onSelect={setSelBand} onOpenNext={(band,gig)=>{setGigIntent(gig);setSelBand(band);}} onLogout={handleLogout} onLeaveLocal={leaveLocal} onDeleteAccount={handleDeleteAccount} onRefresh={loadAll} show={show} theme={theme} toggleTheme={toggleTheme}/>
       )}
 
       {offer && (

@@ -330,6 +330,20 @@ const sb = {
       if (!res.ok) throw new Error(json.msg || json.error_description || "Update fehlgeschlagen");
       return json;
     },
+    async deleteAccount() {
+      if (sb._local || !sb._token) throw new Error("nicht angemeldet");
+      const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/rpc/delete_own_account", {
+        method: "POST",
+        headers: sb.headers(),
+        body: "{}",
+      }, 20000);
+      const json = await parseJsonSafe(res);
+      if (!res.ok) {
+        const raw = json && (json.message || json.msg || json.error_description || json.hint || "");
+        throw new Error(raw || "löschen fehlgeschlagen");
+      }
+      await sb.auth.signOut();
+    },
   },
 };
 
