@@ -38,6 +38,8 @@ export default function App() {
   const legalPage = params.get("legal");
 
   useEffect(()=>{
+    const native = typeof window !== "undefined" && window.Capacitor?.isNativePlatform?.();
+    if (native) return;
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(()=>{});
     }
