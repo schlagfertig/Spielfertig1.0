@@ -28,15 +28,11 @@ function AuthScreen({ onAuth, onLocal, notice }) {
         ? await sb.auth.signIn(email.trim(), password)
         : await sb.auth.signUp(email.trim(), password);
       const pretty = pickErr(res);
-      const token = res && (res.access_token || (res.session && res.session.access_token));
-      const u = (res && (res.user || (res.session && res.session.user))) || {};
-      if (pretty && !token) {
+      const saved = sb.auth.persist(res, email.trim());
+      if (pretty && !saved) {
         setError(pretty);
-      } else if (token) {
-        sb._token = token;
-        localStorage.setItem("sf_token", token);
-        localStorage.setItem("sf_user", JSON.stringify({ email: u.email || email.trim(), id: u.id }));
-        onAuth({ email: u.email || email.trim(), id: u.id });
+      } else if (saved) {
+        onAuth({ email: saved.email || email.trim(), id: saved.id });
       } else if (mode === "register") {
         setError("Bestätigungs-E-Mail gesendet! Bitte bestätigen, dann einloggen.");
       } else {

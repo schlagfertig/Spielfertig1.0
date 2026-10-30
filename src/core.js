@@ -46,7 +46,7 @@ function bandLogoImgStyle(extra = {}) {
   };
 }
 
-const fetchWithTimeout = async (url, options = {}, ms = 20000) => {
+const fetchWithTimeout = async (url, options = {}, ms = 20000, retry = true) => {
   const once = async () => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), ms);
@@ -59,7 +59,7 @@ const fetchWithTimeout = async (url, options = {}, ms = 20000) => {
   try {
     return await once();
   } catch (e) {
-    const retryable = e && (e.name === "AbortError" || e.name === "TimeoutError" || e.name === "TypeError");
+    const retryable = retry && e && (e.name === "AbortError" || e.name === "TimeoutError" || e.name === "TypeError");
     if (!retryable) throw e;
     return await once();
   }
@@ -78,6 +78,248 @@ function authHeaders() {
     apikey: SUPABASE_KEY,
     Authorization: "Bearer " + SUPABASE_KEY,
   };
+}
+
+const AUTH_EXPIRED_HINT = "deine anmeldung ist abgelaufen \u2013 bitte neu anmelden.";
+const REFRESH_SKEW_MS = 60 * 1000;
+const SESSION_KEY = "sf_session";
+
+function jwtExpMs(token) {
+  try {
+    if (!token || typeof token !== "string") return null;
+    const part = token.split(".")[1];
+    if (!part) return null;
+    let b64 = part.replace(/-/g, "+").replace(/_/g, "/");
+    const pad = b64.length % 4;
+    if (pad) b64 += "=".repeat(4 - pad);
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const json = JSON.parse(new TextDecoder().decode(bytes));
+    const exp = Number(json && json.exp);
+    if (!Number.isFinite(exp)) return null;
+    return exp * 1000;
+  } catch (_) {
+    return null;
+  }
+}
+
+function expiresAtMs(token, session) {
+  const times = [];
+  if (session && session.expires_at != null && session.expires_at !== "") {
+    const n = Number(session.expires_at);
+    if (Number.isFinite(n) && n > 0) times.push(n > 1e12 ? n : n * 1000);
+    else {
+      const parsed = Date.parse(String(session.expires_at));
+      if (!Number.isNaN(parsed)) times.push(parsed);
+    }
+  }
+  const fromJwt = jwtExpMs(token);
+  if (fromJwt != null) times.push(fromJwt);
+  if (!times.length) return null;
+  return Math.min.apply(null, times);
+}
+
+function tokenExpiresSoon(token, session, skewMs = REFRESH_SKEW_MS) {
+  const exp = expiresAtMs(token, session);
+  if (exp == null) return false;
+  return exp - Date.now() <= skewMs;
+}
+
+function isExpiredJwt(res, json) {
+  if (!res || res.status !== 401) return false;
+  const code = json && (json.code || json.error_code || "");
+  if (code === "PGRST301" || code === "PGRST303") return true;
+  const parts = json && typeof json === "object"
+    ? [json.message, json.msg, json.error_description, json.hint, typeof json.error === "string" ? json.error : ""]
+    : [];
+  return parts.filter(Boolean).join(" ").toLowerCase().includes("jwt expired");
+}
+
+function queryListError(rows) {
+  if (!Array.isArray(rows)) return "laden fehlgeschlagen";
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (Array.isArray(row)) continue;
+    let msg = "";
+    if (row && typeof row === "object") {
+      msg = row.message || row.msg || row.error_description || row.hint || (typeof row.error === "string" ? row.error : "") || row.code || "";
+    } else if (row != null && row !== "") {
+      msg = String(row);
+    }
+    return String(msg || "laden fehlgeschlagen");
+  }
+  return null;
+}
+
+function acceptLists(rows) {
+  const error = queryListError(rows);
+  if (error) return { ok: false, error: error, rows: null };
+  return { ok: true, error: null, rows: rows };
+}
+
+function readSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
+    return parsed;
+  } catch (_) {
+    return null;
+  }
+}
+
+function clearAuthStorage() {
+  sb._token = null;
+  try { localStorage.removeItem("sf_token"); } catch (_) {}
+  try { localStorage.removeItem("sf_user"); } catch (_) {}
+  try { localStorage.removeItem("sf_session"); } catch (_) {}
+}
+
+function dropSession() {
+  clearAuthStorage();
+  const fn = sb._onAuthLost;
+  if (typeof fn === "function") {
+    try { fn(AUTH_EXPIRED_HINT); } catch (_) {}
+  }
+}
+
+function sessionFromAuthResponse(res) {
+  if (!res || typeof res !== "object") return null;
+  const nested = res.session && typeof res.session === "object" ? res.session : null;
+  const access_token = res.access_token || (nested && nested.access_token) || "";
+  if (!access_token) return null;
+  const refresh_token = res.refresh_token || (nested && nested.refresh_token) || "";
+  let expires_at = res.expires_at != null ? res.expires_at : (nested && nested.expires_at != null ? nested.expires_at : null);
+  const expires_in = res.expires_in != null ? res.expires_in : (nested && nested.expires_in != null ? nested.expires_in : null);
+  if ((expires_at == null || expires_at === "") && expires_in != null && Number.isFinite(Number(expires_in))) {
+    expires_at = Math.floor(Date.now() / 1000) + Number(expires_in);
+  }
+  if (expires_at == null || expires_at === "") {
+    const ms = jwtExpMs(access_token);
+    if (ms != null) expires_at = Math.floor(ms / 1000);
+  }
+  const user = res.user || (nested && nested.user) || {};
+  return {
+    access_token: access_token,
+    refresh_token: refresh_token || "",
+    expires_at: expires_at == null || expires_at === "" ? null : Number(expires_at),
+    user: user && typeof user === "object" ? user : {},
+  };
+}
+
+function persistAuth(session, fallbackEmail) {
+  if (!session || !session.access_token) return null;
+  sb._token = session.access_token;
+  sb._local = false;
+  try {
+    localStorage.setItem("sf_token", session.access_token);
+    let prevUser = {};
+    try { prevUser = JSON.parse(localStorage.getItem("sf_user") || "{}") || {}; } catch (_) {}
+    const u = session.user || {};
+    const email = u.email || fallbackEmail || prevUser.email || "";
+    const id = u.id || prevUser.id;
+    if (id || email) localStorage.setItem("sf_user", JSON.stringify({ email: email, id: id }));
+    const prev = readSession() || {};
+    const refresh_token = session.refresh_token || prev.refresh_token || "";
+    const expires_at = session.expires_at != null ? session.expires_at : (prev.expires_at != null ? prev.expires_at : null);
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ refresh_token: refresh_token, expires_at: expires_at }));
+  } catch (_) {}
+  let stored = {};
+  try { stored = JSON.parse(localStorage.getItem("sf_user") || "{}") || {}; } catch (_) {}
+  return { email: stored.email || fallbackEmail || "", id: stored.id };
+}
+
+// Refresh tokens are single-use. Overlapping callers share one request.
+let refreshInFlight = null;
+
+async function performRefresh() {
+  const session = readSession();
+  const refreshToken = session && session.refresh_token;
+  if (!refreshToken) {
+    dropSession();
+    throw new Error(AUTH_EXPIRED_HINT);
+  }
+  const res = await fetchWithTimeout(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  }, 20000, false);
+  const json = await parseJsonSafe(res);
+  const next = sessionFromAuthResponse(json);
+  if (!res.ok || !next) {
+    dropSession();
+    throw new Error(AUTH_EXPIRED_HINT);
+  }
+  persistAuth(next);
+  return next.access_token;
+}
+
+function refreshAccessToken() {
+  if (sb._local) return Promise.resolve(null);
+  if (!refreshInFlight) {
+    refreshInFlight = performRefresh().finally(() => { refreshInFlight = null; });
+  }
+  return refreshInFlight;
+}
+
+async function ensureFreshToken() {
+  if (sb._local || !sb._token) return;
+  const session = readSession();
+  if (!tokenExpiresSoon(sb._token, session, REFRESH_SKEW_MS)) return;
+  if (!session || !session.refresh_token) {
+    dropSession();
+    throw new Error(AUTH_EXPIRED_HINT);
+  }
+  await refreshAccessToken();
+}
+
+async function refreshWhenVisible() {
+  if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+  if (sb._local || !sb._token) return;
+  const session = readSession();
+  if (!session || !session.refresh_token) {
+    if (tokenExpiresSoon(sb._token, session, REFRESH_SKEW_MS)) dropSession();
+    return;
+  }
+  await refreshAccessToken();
+}
+
+async function withAuthRetry(run) {
+  await ensureFreshToken();
+  if (!sb._local && !sb._token) throw new Error(AUTH_EXPIRED_HINT);
+  let res = await run();
+  let json = await parseJsonSafe(res);
+  if (isExpiredJwt(res, json)) {
+    await refreshAccessToken();
+    if (!sb._token) throw new Error(AUTH_EXPIRED_HINT);
+    res = await run();
+    json = await parseJsonSafe(res);
+  }
+  return { res: res, json: json };
+}
+
+function loadStoredSession() {
+  let token = "";
+  let saved = null;
+  try {
+    token = localStorage.getItem("sf_token") || "";
+    const raw = localStorage.getItem("sf_user");
+    saved = raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return { ok: false };
+  }
+  if (!token || !saved || !saved.id) return { ok: false };
+  const session = readSession();
+  const hasRefresh = !!(session && session.refresh_token);
+  if (tokenExpiresSoon(token, session, REFRESH_SKEW_MS) && !hasRefresh) {
+    clearAuthStorage();
+    return { ok: false, expired: true, notice: AUTH_EXPIRED_HINT };
+  }
+  sb._token = token;
+  sb._local = false;
+  return { ok: true, user: { id: saved.id, email: saved.email || "" } };
 }
 
 
@@ -164,6 +406,10 @@ const sb = {
     Authorization: "Bearer " + SUPABASE_KEY,
   }),
   _token: null,
+  _onAuthLost: null,
+  bootStoredAuth() {
+    return loadStoredSession();
+  },
   enableLocal() {
     sb._local = true;
     if (!loadLocal()) {
@@ -192,16 +438,23 @@ const sb = {
       const rows = applyOrder((db[table] || []).filter(r => matchFilter(r, options.filter)), options.order);
       return rows;
     }
-    let url = SUPABASE_URL + "/rest/v1/" + table + "?";
-    if (options.select)  url += "select=" + encodeURIComponent(options.select) + "&";
-    if (options.filter)  url += options.filter + "&";
-    if (options.order)   url += "order=" + options.order + "&";
-    const headers = {
-      ...(options.anon ? sb.anonHeaders() : sb.headers()),
-      Prefer: "return=representation",
+    const run = () => {
+      let url = SUPABASE_URL + "/rest/v1/" + table + "?";
+      if (options.select)  url += "select=" + encodeURIComponent(options.select) + "&";
+      if (options.filter)  url += options.filter + "&";
+      if (options.order)   url += "order=" + options.order + "&";
+      const headers = {
+        ...(options.anon ? sb.anonHeaders() : sb.headers()),
+        Prefer: "return=representation",
+      };
+      return fetchWithTimeout(url, { headers }, 20000);
     };
-    const res = await fetchWithTimeout(url, { headers }, 20000);
-    return parseJsonSafe(res);
+    if (options.anon) {
+      const res = await run();
+      return parseJsonSafe(res);
+    }
+    const out = await withAuthRetry(run);
+    return out.json;
   },
   async insert(table, data) {
     if (sb._local) {
@@ -212,13 +465,12 @@ const sb = {
       saveLocal(db);
       return row;
     }
-    const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table, {
+    const out = await withAuthRetry(() => fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table, {
       method: "POST",
       headers: { ...sb.headers(), Prefer: "return=representation" },
       body: JSON.stringify(data),
-    }, 20000);
-    const json = await parseJsonSafe(res);
-    return Array.isArray(json) ? json[0] : json;
+    }, 20000));
+    return Array.isArray(out.json) ? out.json[0] : out.json;
   },
   async update(table, data, filter) {
     if (sb._local) {
@@ -234,12 +486,12 @@ const sb = {
       saveLocal(db);
       return updated;
     }
-    const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
+    const out = await withAuthRetry(() => fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
       method: "PATCH",
       headers: { ...sb.headers(), Prefer: "return=representation" },
       body: JSON.stringify(data),
-    }, 20000);
-    return parseJsonSafe(res);
+    }, 20000));
+    return out.json;
   },
   importBackup(payload) {
     if (!sb._local) throw new Error("Import nur im lokalen Modus.");
@@ -272,22 +524,22 @@ const sb = {
       saveLocal(db);
       return;
     }
-    await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
+    await withAuthRetry(() => fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
       method: "DELETE",
       headers: sb.headers(),
-    }, 20000);
+    }, 20000));
   },
   async deleteStrict(table, filter) {
     if (sb._local) {
       await sb.delete(table, filter);
       return;
     }
-    const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
+    const out = await withAuthRetry(() => fetchWithTimeout(SUPABASE_URL + "/rest/v1/" + table + "?" + filter, {
       method: "DELETE",
       headers: sb.headers(),
-    }, 20000);
-    if (!res.ok) {
-      const json = await parseJsonSafe(res);
+    }, 20000));
+    if (!out.res.ok) {
+      const json = out.json || {};
       throw new Error(json.message || json.msg || json.error_description || "löschen fehlgeschlagen");
     }
   },
@@ -308,38 +560,49 @@ const sb = {
       }, 25000);
       return parseJsonSafe(res);
     },
+    persist(res, fallbackEmail) {
+      const session = sessionFromAuthResponse(res);
+      if (!session) return null;
+      return persistAuth(session, fallbackEmail);
+    },
+    refresh() {
+      return refreshAccessToken();
+    },
+    refreshOnForeground() {
+      return refreshWhenVisible();
+    },
     async signOut() {
       try {
-        await fetchWithTimeout(SUPABASE_URL + "/auth/v1/logout", {
-          method: "POST",
-          headers: sb.headers(),
-        }, 8000);
+        if (sb._token) {
+          await fetchWithTimeout(SUPABASE_URL + "/auth/v1/logout", {
+            method: "POST",
+            headers: sb.headers(),
+          }, 8000);
+        }
       } catch (_) {}
-      sb._token = null;
-      localStorage.removeItem("sf_token");
-      localStorage.removeItem("sf_user");
+      clearAuthStorage();
     },
     async updateUser(data) {
       if (sb._local) throw new Error("Kein Konto im lokalen Modus.");
-      const res = await fetchWithTimeout(SUPABASE_URL + "/auth/v1/user", {
+      const out = await withAuthRetry(() => fetchWithTimeout(SUPABASE_URL + "/auth/v1/user", {
         method: "PUT",
         headers: sb.headers(),
         body: JSON.stringify(data),
-      }, 20000);
-      const json = await parseJsonSafe(res);
-      if (!res.ok) throw new Error(json.msg || json.error_description || "Update fehlgeschlagen");
+      }, 20000));
+      const json = out.json || {};
+      if (!out.res.ok) throw new Error(json.msg || json.error_description || json.message || "Update fehlgeschlagen");
       return json;
     },
     async deleteAccount() {
       if (sb._local || !sb._token) throw new Error("nicht angemeldet");
-      const res = await fetchWithTimeout(SUPABASE_URL + "/rest/v1/rpc/delete_own_account", {
+      const out = await withAuthRetry(() => fetchWithTimeout(SUPABASE_URL + "/rest/v1/rpc/delete_own_account", {
         method: "POST",
         headers: sb.headers(),
         body: "{}",
-      }, 20000);
-      const json = await parseJsonSafe(res);
-      if (!res.ok) {
-        const raw = json && (json.message || json.msg || json.error_description || json.hint || "");
+      }, 20000));
+      if (!out.res.ok) {
+        const json = out.json || {};
+        const raw = json.message || json.msg || json.error_description || json.hint || "";
         throw new Error(raw || "löschen fehlgeschlagen");
       }
       await sb.auth.signOut();
@@ -425,6 +688,7 @@ export {
   encodeShare, decodeShare, decodeShareFromLocation,
   glass, glassStyle, pageWash,
   LOGO_HARDYS_DATA, fetchWithTimeout, sb, THEMES, C, applyTheme, SETS, DRUMMER_COLORS,
+  AUTH_EXPIRED_HINT, acceptLists, tokenExpiresSoon, jwtExpMs, isExpiredJwt,
   EXTRA_DRUMMER_PALETTE, dStyle,
   parseDuration, fmtDuration, sumDuration
 };
