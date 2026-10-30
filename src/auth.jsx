@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C, sb, getLogo } from "./core";
+import { C, sb } from "./core";
 import { SealLine, Btn, Field, LiveMark } from "./ui";
 import { LegalLinks } from "./legal";
 
@@ -51,7 +51,7 @@ function AuthScreen({ onAuth, onLocal, notice }) {
   return (
     <div style={{ minHeight:"100vh", background:"#161a1d", display:"flex", flexDirection:"column", position:"relative", overflow:"hidden" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@500;600;700&family=Raleway:wght@400;500;600;700;800;900&display=swap');`}</style>
-      <img src={getLogo()} alt="" aria-hidden="true"
+      <img src="/logo-schlagfertig.png" alt="" aria-hidden="true"
         style={{
           position:"absolute", left:"50%", top:"38%",
           width:"min(140vw,820px)", height:"auto",
@@ -62,7 +62,7 @@ function AuthScreen({ onAuth, onLocal, notice }) {
       <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"28px 20px 12px", position:"relative", zIndex:1 }}>
         <div style={{ width:"100%", maxWidth:400 }}>
           <div style={{ textAlign:"center", marginBottom:22 }}>
-            <img src={getLogo()} alt="Schlagfertig"
+            <img src="/logo-schlagfertig.png" alt="Schlagfertig"
               style={{ width:200, height:"auto", objectFit:"contain", display:"block", margin:"0 auto" }}/>
             <div style={{ display:"flex", justifyContent:"center", marginTop:6 }}>
               <LiveMark size={52} hero/>
