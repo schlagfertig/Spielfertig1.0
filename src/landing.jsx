@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C, sb, getBandLogo, bandLogoImgStyle, getLogo, glassStyle, pageWash } from "./core";
+import { C, sb, getBandLogo, bandLogoImgStyle, glassStyle, pageWash } from "./core";
 import { packFromExport, importPackIntoAccount } from "./takeover";
 import { Btn, Field, Badge, Modal, SealLine, Spinner, BrandWordmark, LiveMark } from "./ui";
 import { LegalLinks } from "./legal";
@@ -257,7 +257,7 @@ function Landing({ bands, songs, gigs, playlists, playlistSongs, user, onSelect,
     <div style={{ height:"100vh", background:pageWash, backgroundAttachment:"fixed", display:"flex", flexDirection:"column", overflow:"hidden" }}>
       <header style={{ ...glassStyle({ background: "rgba(22,30,34,0.62)", borderRadius: 0, border: "none", borderBottom: "1px solid rgba(255,255,255,0.16)" }), padding:"14px 16px", flexShrink:0, zIndex:20 }}>
         <div style={{ maxWidth:760, margin:"0 auto", display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
-          <img src={getLogo()} alt="" style={{ height:44, width:"auto", objectFit:"contain", flexShrink:0 }}/>
+          <img src="/logo-schlagfertig.png" alt="" style={{ height:44, width:"auto", objectFit:"contain", flexShrink:0 }}/>
           <div style={{ flex:1, minWidth:160 }}>
             <BrandWordmark size={22}/>
             <div style={{ marginTop:2 }}><LiveMark size={22}/></div>
