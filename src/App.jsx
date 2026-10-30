@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { C, sb, applyTheme, getLogo, pageWash } from "./core";
+import { AUTH_EXPIRED_HINT, C, acceptLists, sb, applyTheme, getLogo, pageWash } from "./core";
 import { SealIcon, Spinner, Toast, Btn } from "./ui";
 import { AuthScreen } from "./auth";
 import { BandDetail, Landing } from "./bands";
@@ -51,20 +51,34 @@ export default function App() {
     setUser({ id: "local", email: "Lokal" });
   };
 
+  useEffect(() => {
+    sb._onAuthLost = (hint) => {
+      setAuthNotice(hint || AUTH_EXPIRED_HINT);
+      setUser(null);
+      setLoading(false);
+    };
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      sb.auth.refreshOnForeground().catch(() => {});
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      sb._onAuthLost = null;
+    };
+  }, []);
+
   useEffect(()=>{
     if (shareId || legalPage) { setLoading(false); return; }
     const lokal = params.get("lokal") === "1" || (() => { try { return sessionStorage.getItem("sf_lokal") === "1"; } catch (_) { return false; } })();
     if (lokal) { startLocal(); return; }
     try {
-      const token = localStorage.getItem("sf_token");
-      const raw = localStorage.getItem("sf_user");
-      const saved = raw ? JSON.parse(raw) : null;
-      if (token && saved && saved.id) {
-        sb._token = token;
-        sb._local = false;
-        setUser({ id: saved.id, email: saved.email || "" });
+      const boot = sb.bootStoredAuth();
+      if (boot.ok) {
+        setUser(boot.user);
         return;
       }
+      if (boot.notice) setAuthNotice(boot.notice);
     } catch (_) {}
     setLoading(false);
   },[shareId, legalPage]);
@@ -80,12 +94,20 @@ export default function App() {
         sb.query("playlist_songs",{ select:"*", order:"position.asc" }),
         sb.query("band_members",  { select:"*", order:"created_at.asc" }),
       ]);
-      const _b=Array.isArray(b)?b:[], _s=Array.isArray(s)?s:[], _g=Array.isArray(g)?g:[], _pl=Array.isArray(pl)?pl:[], _ps=Array.isArray(ps)?ps:[];
-      setBands(_b); setSongs(_s); setGigs(_g); setPls(_pl); setPS(_ps); setMembers(Array.isArray(mem)?mem:[]);
-      try {
-        localStorage.setItem("sf_cache", JSON.stringify({ bands:_b, songs:_s, gigs:_g, pls:_pl, ps:_ps, ts:Date.now() }));
-      } catch(_) {}
-    } catch(e) { show("Ladefehler: "+e.message,"error"); }
+      const got = acceptLists([b, s, g, pl, ps, mem]);
+      if (!got.ok) {
+        show("Ladefehler: " + got.error, "error");
+      } else {
+        const [_b, _s, _g, _pl, _ps, _mem] = got.rows;
+        setBands(_b); setSongs(_s); setGigs(_g); setPls(_pl); setPS(_ps); setMembers(_mem);
+        try {
+          localStorage.setItem("sf_cache", JSON.stringify({ bands:_b, songs:_s, gigs:_g, pls:_pl, ps:_ps, ts:Date.now() }));
+        } catch(_) {}
+      }
+    } catch(e) {
+      const msg = e && e.message ? e.message : "";
+      if (msg !== AUTH_EXPIRED_HINT) show("Ladefehler: " + msg, "error");
+    }
     setLoading(false);
   },[]);
 
@@ -124,6 +146,7 @@ export default function App() {
       return;
     }
     await sb.auth.signOut();
+    setAuthNotice("");
     setUser(null);
     setBands([]); setSongs([]); setGigs([]); setPls([]); setPS([]);
     setSelBand(null);

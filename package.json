@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test": "node scripts/auth-session.test.mjs",
     "build:cap": "CAPACITOR=1 vite build",
     "cap:sync": "npm run build:cap && npx cap sync",
     "cap:ios": "npm run cap:sync && npx cap open ios",
